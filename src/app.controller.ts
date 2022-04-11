@@ -6,7 +6,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('pairs')
-  getAllPairs(): string[] {
+  async getAllPairs(): Promise<string[]> {
     return this.appService.getAllPairs();
   }
 }

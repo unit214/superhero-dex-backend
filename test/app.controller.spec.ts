@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from '../src/app.controller';
+import { AppService } from '../src/app.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -15,8 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return empty pairs', () => {
-      expect(appController.getAllPairs()).toStrictEqual([]);
+    it('should return empty pairs', async () => {
+      expect(await appController.getAllPairs()).toStrictEqual([]);
     });
   });
 });

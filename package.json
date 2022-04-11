@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "postinstall":"npx prisma generate",
+    "postinstall": "npx prisma generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "serve": "nest start",
@@ -28,10 +28,13 @@
     "postdb:deploy": "sleep 1.5; npm run db:push-schema"
   },
   "dependencies": {
+    "@aeternity/aepp-sdk": "^10.0.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@prisma/client": "^3.12.0",
+    "dex-contracts-v2": "github:aeternity/dex-contracts-v2",
+    "dotenv": "^16.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
@@ -66,11 +69,15 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "verbose": true,
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "setupFiles": [
+      "dotenv/config"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
