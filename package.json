@@ -76,7 +76,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "setupFiles": [
-      "dotenv/config"
+      "dotenv/config",
+      "./test/setup.ts"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"

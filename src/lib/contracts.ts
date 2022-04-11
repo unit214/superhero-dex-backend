@@ -1,8 +1,9 @@
 import NETWORKS from './networks';
-
 import { Universal, Node } from '@aeternity/aepp-sdk';
+import { nonNullable } from './utils';
 import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
 import * as factoryInteface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
+import * as pairInteface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
 
 const NETWORK_NAME = process.env.NETWORK_NAME || 'testnet';
 
@@ -44,9 +45,26 @@ const createWrappedMethods = (
 export type RouterMethods = {
   factory: () => Promise<string>;
 };
+
 export type FactoryMethods = {
   allPairs: () => Promise<string[]>;
 };
+
+export type PairMethods = {
+  token0: () => Promise<string>;
+  token1: () => Promise<string>;
+};
+
+export type MetaInfo = {
+  name: string;
+  symbol: string;
+  decimals: bigint;
+};
+
+export type Aex9Methods = {
+  metaInfo: () => Promise<MetaInfo>;
+};
+
 const wrapRouter = (router: any): RouterMethods => {
   const methods = createWrappedMethods(router);
 
@@ -58,27 +76,86 @@ const wrapFactory = (factory: any): FactoryMethods => {
   const methods = createWrappedMethods(factory);
 
   return {
-    allPairs: () => methods.get_all_pairs(),
+    allPairs: methods.get_all_pairs,
+  };
+};
+
+const wrapPair = (pair: any): PairMethods => {
+  const methods = createWrappedMethods(pair);
+
+  return {
+    token0: methods.token0,
+    token1: methods.token1,
+  };
+};
+
+const wrapAex9 = (token: any): Aex9Methods => {
+  const methods = createWrappedMethods(token);
+
+  return {
+    metaInfo: methods.meta_info,
   };
 };
 
 export type Context = {
   router: RouterMethods;
   factory: FactoryMethods;
+  getPair: (address: string) => Promise<PairMethods>;
+  getToken: (address: string) => Promise<Aex9Methods>;
 };
 
-export const getContext = async () => {
+const createGetToken =
+  (
+    tokens: { [key: string]: Aex9Methods | undefined },
+    getInstance: (source: string, address: string) => Promise<any>,
+  ) =>
+  async (tokenAddress: string): Promise<Aex9Methods> => {
+    const cached = tokens[tokenAddress];
+    if (cached) {
+      return cached;
+    }
+    const token = wrapAex9(await getInstance(pairInteface, tokenAddress));
+    tokens[tokenAddress] = token;
+    return token;
+  };
+
+const createGetPair =
+  (
+    pairs: { [key: string]: PairMethods | undefined },
+    getInstance: (source: string, address: string) => any,
+  ) =>
+  async (pairAddress: string): Promise<PairMethods> => {
+    const cached = pairs[pairAddress];
+    if (cached) {
+      return cached;
+    }
+    const pair = wrapPair(await getInstance(pairInteface, pairAddress));
+    pairs[pairAddress] = pair;
+    return pair;
+  };
+
+const instanceFactory = async () => {
   const client = await createClient();
-  const router = await client.getContractInstance({
-    source: routerInterface,
-    contractAddress: process.env.ROUTER_ADDRESS,
-  });
-  const factory = await client.getContractInstance({
-    source: factoryInteface,
-    contractAddress: process.env.FACTORY_ADDRESS,
-  });
+  return (source: string, contractAddress: string): Promise<any> =>
+    client.getContractInstance({ source, contractAddress });
+};
+
+export const getContext = async (): Promise<Context> => {
+  const getInstance = await instanceFactory();
+  const router = await getInstance(
+    routerInterface,
+    nonNullable(process.env.ROUTER_ADDRESS),
+  );
+  const factory = await getInstance(
+    factoryInteface,
+    nonNullable(process.env.FACTORY_ADDRESS),
+  );
+  const pairs: { [key: string]: PairMethods | undefined } = {};
+  const tokens: { [key: string]: Aex9Methods | undefined } = {};
   return {
     router: wrapRouter(router),
     factory: wrapFactory(factory),
+    getPair: createGetPair(pairs, getInstance),
+    getToken: createGetToken(tokens, getInstance),
   };
 };
