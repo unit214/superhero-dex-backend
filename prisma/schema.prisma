@@ -32,9 +32,9 @@ model Pair {
 }
 
 model PairLiquidityInfo {
-  id        Int    @id
-  pair      Pair   @relation("Pair_Info", fields: [id], references: [id])
-  liquidity BigInt
-  reserve0  BigInt
-  reserve1  BigInt
+  id          Int    @id
+  pair        Pair   @relation("Pair_Info", fields: [id], references: [id])
+  totalSupply String
+  reserve0    String
+  reserve1    String
 }

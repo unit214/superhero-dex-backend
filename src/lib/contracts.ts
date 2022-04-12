@@ -53,6 +53,8 @@ export type FactoryMethods = {
 export type PairMethods = {
   token0: () => Promise<string>;
   token1: () => Promise<string>;
+  totalSupply: () => Promise<bigint>;
+  reserves: () => Promise<{ reserve0: bigint; reserve1: bigint }>;
 };
 
 export type MetaInfo = {
@@ -86,6 +88,8 @@ const wrapPair = (pair: any): PairMethods => {
   return {
     token0: methods.token0,
     token1: methods.token1,
+    totalSupply: methods.total_supply,
+    reserves: methods.get_reserves,
   };
 };
 
