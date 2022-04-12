@@ -35,3 +35,10 @@ export const synchronise = async (
     },
   });
 };
+
+export const unsyncAllPairs = async () =>
+  prisma.pair.updateMany({
+    data: {
+      synchronized: false,
+    },
+  });

@@ -74,5 +74,6 @@ export default (ctx: Context) => {
   return {
     refreshPairsLiquidity,
     refreshPairs,
+    unsyncAllPairs: dal.pair.unsyncAllPairs,
   };
 };
