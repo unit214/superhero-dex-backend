@@ -7,6 +7,13 @@ export const getByAddress = (address: string) =>
   prisma.token.findFirst({
     where: { address },
   });
+
+export const getByAddressWithPairs = (address: string) =>
+  prisma.token.findFirst({
+    where: { address },
+    include: { pairs0: true, pairs1: true },
+  });
+
 export const upsertToken = (
   address: string,
   symbol: string,
