@@ -7,6 +7,9 @@ export class TokensService {
   async getAllTokens(): Promise<Token[]> {
     return dal.token.getAll();
   }
+  async getListedTokens(): Promise<Token[]> {
+    return dal.token.getListed();
+  }
 
   async getToken(address: string): Promise<
     | (Token & {

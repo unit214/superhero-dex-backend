@@ -21,6 +21,10 @@ export type Token = {
   decimals: number;
 };
 
-export type TokenWithPairs = Token & {
+export type TokenWithListed = Token & {
+  listed: boolean;
+};
+
+export type TokenWithPairs = TokenWithListed & {
   pairs: string[];
 };

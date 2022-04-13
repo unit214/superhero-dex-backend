@@ -7,8 +7,18 @@ export class TokensController {
   constructor(private readonly appService: TokensService) {}
 
   @Get()
-  async getAllTokens(): Promise<dto.Token[]> {
+  async getAllTokens(): Promise<dto.TokenWithListed[]> {
     return await this.appService.getAllTokens();
+  }
+
+  @Get('listed')
+  async getListedTokens(): Promise<dto.Token[]> {
+    return (await this.appService.getListedTokens()).map(
+      ({
+        listed, // eslint-disable-line @typescript-eslint/no-unused-vars
+        ...tail
+      }) => tail,
+    );
   }
 
   @Get(':address')

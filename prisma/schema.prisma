@@ -11,13 +11,14 @@ datasource db {
 }
 
 model Token {
-  id       Int    @id @default(autoincrement())
-  address  String @unique
+  id       Int     @id @default(autoincrement())
+  address  String  @unique
   symbol   String
   name     String
   decimals Int
-  pairs0   Pair[] @relation("Pair_Token0")
-  pairs1   Pair[] @relation("Pair_Token1")
+  pairs0   Pair[]  @relation("Pair_Token0")
+  pairs1   Pair[]  @relation("Pair_Token1")
+  listed   Boolean @default(false)
 }
 
 model Pair {

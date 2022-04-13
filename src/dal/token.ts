@@ -3,6 +3,9 @@ import prisma from './client';
 
 export const getAll = (): Promise<Token[]> => prisma.token.findMany({});
 
+export const getListed = (): Promise<Token[]> =>
+  prisma.token.findMany({ where: { listed: true } });
+
 export const getByAddress = (address: string) =>
   prisma.token.findFirst({
     where: { address },
