@@ -23,6 +23,7 @@
     "db": "docker compose up",
     "db:deploy": "docker compose up -d",
     "db:remove": "docker compose down ",
+    "db:redeploy":  "npm run db:remove; npm run db:deploy",
     "db:stop": "docker compose stop ",
     "db:push-schema": "npx prisma db push",
     "postdb:deploy": "sleep 1.5; npm run db:push-schema"
