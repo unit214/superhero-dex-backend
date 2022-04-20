@@ -17,6 +17,15 @@ export const getByAddressWithPairs = (address: string) =>
     include: { pairs0: true, pairs1: true },
   });
 
+export const getByAddressWithPairsAndLiquidity = (address: string) =>
+  prisma.token.findFirst({
+    where: { address },
+    include: {
+      pairs0: { include: { token1: true, liquidityInfo: true } },
+      pairs1: { include: { token0: true, liquidityInfo: true } },
+    },
+  });
+
 export const upsertToken = (
   address: string,
   symbol: string,

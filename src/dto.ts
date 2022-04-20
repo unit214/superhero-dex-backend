@@ -28,3 +28,15 @@ export type TokenWithListed = Token & {
 export type TokenWithPairs = TokenWithListed & {
   pairs: string[];
 };
+
+export type TokenPairWithLiquidityInfo = {
+  address: string;
+  synchronized: boolean;
+  oppositeToken: TokenWithListed;
+  liquidityInfo?: LiquidityInfo;
+};
+
+export type TokenPairs = {
+  pairs0: TokenPairWithLiquidityInfo[];
+  pairs1: TokenPairWithLiquidityInfo[];
+};

@@ -6,6 +6,7 @@ import { getContext } from './lib/contracts';
 async function bootstrap() {
   createWorker(await getContext()).startWorker();
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   await app.listen(3000);
 }
 bootstrap();

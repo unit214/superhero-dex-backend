@@ -1,9 +1,7 @@
 import prisma from './client';
 const onlyListedCondition = {
-  AND: {
-    token0: { is: { listed: true } },
-    token1: { is: { listed: true } },
-  },
+  token0: { is: { listed: true } },
+  token1: { is: { listed: true } },
 };
 export const getAll = (onlyListed?: boolean) =>
   prisma.pair.findMany({
