@@ -23,7 +23,7 @@
     "db": "docker compose up",
     "db:deploy": "docker compose up -d",
     "db:remove": "docker compose down ",
-    "db:redeploy":  "npm run db:remove; npm run db:deploy",
+    "db:redeploy": "npm run db:remove; npm run db:deploy",
     "db:stop": "docker compose stop ",
     "db:push-schema": "npx prisma db push",
     "postdb:deploy": "sleep 1.5; npm run db:push-schema"
@@ -33,12 +33,14 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/swagger": "^5.2.1",
     "@prisma/client": "^3.12.0",
     "dex-contracts-v2": "github:aeternity/dex-contracts-v2",
     "dotenv": "^16.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "swagger-ui-express": "^4.3.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
