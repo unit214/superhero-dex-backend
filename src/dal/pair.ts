@@ -1,10 +1,26 @@
 import prisma from './client';
-
-export const getAll = () =>
+const onlyListedCondition = {
+  AND: {
+    token0: { is: { listed: true } },
+    token1: { is: { listed: true } },
+  },
+};
+export const getAll = (onlyListed?: boolean) =>
   prisma.pair.findMany({
+    where: onlyListed ? onlyListedCondition : {},
     include: {
       token0: true,
       token1: true,
+    },
+  });
+
+export const getAllWithLiquidityInfo = (onlyListed?: boolean) =>
+  prisma.pair.findMany({
+    where: onlyListed ? onlyListedCondition : {},
+    include: {
+      token0: true,
+      token1: true,
+      liquidityInfo: true,
     },
   });
 

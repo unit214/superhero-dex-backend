@@ -1,21 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import * as dal from '../../dal';
-import { Pair, Token, PairLiquidityInfo } from '@prisma/client';
 
 @Injectable()
 export class PairsService {
-  async getAllPairs(): Promise<(Pair & { token0: Token; token1: Token })[]> {
-    return dal.pair.getAll();
+  async getAllPairs(onlyListed?: boolean) {
+    return dal.pair.getAll(onlyListed);
   }
 
-  async getPair(address: string): Promise<
-    | (Pair & {
-        token0: Token;
-        token1: Token;
-        liquidityInfo: PairLiquidityInfo | null;
-      })
-    | null
-  > {
+  async getAllPairsWithLiquidityInfo(onlyListed?: boolean) {
+    return dal.pair.getAllWithLiquidityInfo(onlyListed);
+  }
+
+  async getPair(address: string) {
     return dal.pair.getOne(address);
   }
 }
