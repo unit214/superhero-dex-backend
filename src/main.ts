@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './api/app.module';
 import createWorker from './worker';
 import { getContext } from './lib/contracts';
 

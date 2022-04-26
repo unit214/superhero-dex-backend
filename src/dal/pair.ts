@@ -1,7 +1,18 @@
-import { Pair } from '@prisma/client';
 import prisma from './client';
 
-export const getAll = (): Promise<Pair[]> => prisma.pair.findMany({});
+export const getAll = () =>
+  prisma.pair.findMany({
+    include: {
+      token0: true,
+      token1: true,
+    },
+  });
+
+export const getOne = (address: string) =>
+  prisma.pair.findUnique({
+    where: { address },
+    include: { token0: true, token1: true, liquidityInfo: true },
+  });
 
 export const count = () => prisma.pair.count();
 
