@@ -73,7 +73,7 @@ for this purpose use the individual \`pairs/:address\` route`,
     }));
   }
 
-  @Get(':address')
+  @Get('by-address/:address')
   @ApiOperation({
     summary: 'Gets a specific pair',
     description:

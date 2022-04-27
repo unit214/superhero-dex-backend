@@ -37,7 +37,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
     return (await this.appService.getListedTokens()).map(toDtoToken);
   }
 
-  @Get(':address')
+  @Get('by-address/:address')
   @ApiParam({
     name: 'address',
     required: true,
@@ -70,7 +70,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
     };
   }
 
-  @Get(':address/pairs')
+  @Get('by-address/:address/pairs')
   @ApiParam({
     name: 'address',
     required: true,
