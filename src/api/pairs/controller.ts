@@ -151,8 +151,8 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
       t0: data.token0.address,
       t1: data.token1.address,
     }));
-    return getPaths(from, to, edges).map((xs) =>
-      xs.map((pair) => toPairWithLiquidityInfo(pair)),
+    return getPaths(from, to, edges).map((pairs) =>
+      pairs.map((pair) => toPairWithLiquidityInfo(pair)),
     );
   }
 }
