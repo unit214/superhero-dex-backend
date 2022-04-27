@@ -1,11 +1,16 @@
 import NETWORKS from './networks';
 import { Universal, Node } from '@aeternity/aepp-sdk';
-import { nonNullable } from './utils';
+import {
+  CallData,
+  ContractAddress,
+  Hash,
+  nonNullable,
+  WalletAddress,
+} from './utils';
 import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
 import * as factoryInteface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
 import * as pairInteface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
-
-const NETWORK_NAME = process.env.NETWORK_NAME || 'testnet';
+import { NETWORK_NAME } from './utils';
 
 const createClient = async () => {
   const node = await Node({
@@ -47,7 +52,7 @@ export type RouterMethods = {
 };
 
 export type FactoryMethods = {
-  allPairs: () => Promise<string[]>;
+  allPairs: () => Promise<ContractAddress[]>;
 };
 
 export type PairMethods = {
@@ -101,11 +106,29 @@ const wrapAex9 = (token: any): Aex9Methods => {
   };
 };
 
+export type TxInfo = {
+  callerId: WalletAddress;
+  callerNonce: number;
+  contractId: ContractAddress;
+  gasPrice: number;
+  gasUsed: number;
+  height: number;
+  log: [
+    {
+      address: ContractAddress;
+      data: CallData;
+      topics: unknown[];
+    },
+  ];
+  returnType: 'ok' | 'revert';
+  returnValue: CallData;
+};
 export type Context = {
   router: RouterMethods;
   factory: FactoryMethods;
   getPair: (address: string) => Promise<PairMethods>;
   getToken: (address: string) => Promise<Aex9Methods>;
+  client: { getTxInfo: (hash: Hash) => Promise<TxInfo | null | undefined> };
 };
 
 const createGetToken =
@@ -138,14 +161,14 @@ const createGetPair =
     return pair;
   };
 
-const instanceFactory = async () => {
-  const client = await createClient();
+const instanceFactory = async (client: any) => {
   return (source: string, contractAddress: string): Promise<any> =>
     client.getContractInstance({ source, contractAddress });
 };
 
 export const getContext = async (): Promise<Context> => {
-  const getInstance = await instanceFactory();
+  const client = await createClient();
+  const getInstance = await instanceFactory(client);
   const router = await getInstance(
     routerInterface,
     nonNullable(process.env.ROUTER_ADDRESS),
@@ -161,5 +184,6 @@ export const getContext = async (): Promise<Context> => {
     factory: wrapFactory(factory),
     getPair: createGetPair(pairs, getInstance),
     getToken: createGetToken(tokens, getInstance),
+    client,
   };
 };

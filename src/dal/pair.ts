@@ -3,6 +3,16 @@ const onlyListedCondition = {
   token0: { is: { listed: true } },
   token1: { is: { listed: true } },
 };
+
+export const getAllAddresses = async () =>
+  (
+    await prisma.pair.findMany({
+      select: {
+        address: true,
+      },
+    })
+  ).map((x) => x.address);
+
 export const getAll = (onlyListed?: boolean) =>
   prisma.pair.findMany({
     where: onlyListed ? onlyListedCondition : {},
@@ -26,6 +36,11 @@ export const getOne = (address: string) =>
   prisma.pair.findUnique({
     where: { address },
     include: { token0: true, token1: true, liquidityInfo: true },
+  });
+
+export const getOneLite = (address: string) =>
+  prisma.pair.findUnique({
+    where: { address },
   });
 
 export const count = () => prisma.pair.count();
@@ -63,7 +78,5 @@ export const synchronise = async (
 
 export const unsyncAllPairs = async () =>
   prisma.pair.updateMany({
-    data: {
-      synchronized: false,
-    },
+    data: { synchronized: false },
   });

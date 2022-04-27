@@ -7,7 +7,7 @@ import { nonNullable } from './lib/utils';
 
 const version = nonNullable(process.env.npm_package_version);
 async function bootstrap() {
-  createWorker(await getContext()).startWorker();
+  createWorker(await getContext()).startWorker(true);
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   const config = new DocumentBuilder()
