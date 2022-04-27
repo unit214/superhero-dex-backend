@@ -7,10 +7,10 @@ export type Edge<E, N> = {
 const includes =
   <N>(y: N) =>
   (t0: N, t1: N) => {
-    if (t0 == y) {
+    if (t0 === y) {
       return -1;
     }
-    if (t1 == y) {
+    if (t1 === y) {
       return 1;
     }
     return 0;
@@ -36,7 +36,7 @@ const getGraph = <E, N extends string | number | symbol>(
   for (const { t0, t1, data } of edges) {
     const hasStart = includes(start)(t0, t1);
     if (hasStart) {
-      startEdges.push([hasStart == -1 ? t1 : t0, data]);
+      startEdges.push([hasStart === -1 ? t1 : t0, data]);
       continue;
     }
     addEdge(t0, t1, data);
@@ -54,7 +54,7 @@ export const getPaths = <E, N extends string | number | symbol>(
   const [graph, startEdges] = getGraph(start, edges);
   return startEdges.reduce((acc: E[][], [middleNode, data]) => {
     //this is the direct connection
-    if (middleNode == end) {
+    if (middleNode === end) {
       return [[data]].concat(acc);
     }
     const middleEdge = graph[middleNode];

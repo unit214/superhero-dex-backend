@@ -64,7 +64,7 @@ for this purpose use the individual \`pairs/:address\` route`,
   async getAllPairs(
     @Query('only-listed') onlyListedStr?: string, //false | true
   ): Promise<dto.Pair[]> {
-    const onlyListed = !!onlyListedStr && onlyListedStr != 'false';
+    const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
     return (await this.appService.getAllPairs(!!onlyListed)).map((pair) => ({
       address: pair.address,
       token0: pair.token0.address,
@@ -142,7 +142,7 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
     @Param('to') to: string,
     @Query('only-listed') onlyListedStr: string, //false | true
   ): Promise<dto.PairWithLiquidityAndTokenAddresses[][]> {
-    const onlyListed = !!onlyListedStr && onlyListedStr != 'false';
+    const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
     const pairs = await this.appService.getAllPairsWithLiquidityInfo(
       !!onlyListed,
     );
