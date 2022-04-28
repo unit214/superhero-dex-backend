@@ -12,16 +12,21 @@ import * as factoryInteface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js'
 import * as pairInteface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
 import { NETWORK_NAME } from './utils';
 
-const createClient = async () => {
-  const node = await Node({
-    url: NETWORKS[NETWORK_NAME].nodeUrl,
-    ignoreVersion: true,
-  });
+let client: any = null;
 
-  return await Universal({
-    nodes: [{ name: NETWORK_NAME, instance: node }],
-    compilerUrl: NETWORKS[NETWORK_NAME].compilerUrl,
-  });
+const getClient = async () => {
+  if (!client) {
+    const node = await Node({
+      url: NETWORKS[NETWORK_NAME].nodeUrl,
+      ignoreVersion: true,
+    });
+
+    client = await Universal({
+      nodes: [{ name: NETWORK_NAME, instance: node }],
+      compilerUrl: NETWORKS[NETWORK_NAME].compilerUrl,
+    });
+  }
+  return client;
 };
 
 const formatMethodName = (str: string) => {
@@ -167,7 +172,7 @@ const instanceFactory = async (client: any) => {
 };
 
 export const getContext = async (): Promise<Context> => {
-  const client = await createClient();
+  const client = await getClient();
   const getInstance = await instanceFactory(client);
   const router = await getInstance(
     routerInterface,
