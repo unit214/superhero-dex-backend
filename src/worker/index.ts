@@ -84,10 +84,10 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
     .reverse();
 
   logger.log(`${newAddresses.length} new pairs found`);
-  // insert new pairs one by one
-  for (const pairAddress of newAddresses) {
-    await insertNewPair(ctx, pairAddress);
-  }
+  // insert new pairs in parallel
+  await Promise.all(
+    newAddresses.map((pairAddress) => insertNewPair(ctx, pairAddress)),
+  );
   // if there are new pairs let's go another round to ensure
   // no other pair was created during this time
   // otherwise there is nothing to be done here
@@ -103,17 +103,15 @@ const refreshPairsLiquidity = async (ctx: Context) => {
   //get the all pairs
   const dbPairs = await dal.pair.getAll();
   logger.log(`Refreshing pairs liquidity...`);
-  for (const dbPair of dbPairs) {
-    await refreshPairLiquidy(ctx, dbPair);
-  }
+  await Promise.all(dbPairs.map((dbPair) => refreshPairLiquidy(ctx, dbPair)));
   logger.log(`Pairs liquidity refresh completed`);
 };
 
 const onFactoryEventReceived = async (ctx: Context) => {
   const newAddresses = await refreshPairs(ctx);
-  for (const address of newAddresses) {
-    await refreshPairLiquidyByAddress(ctx, address);
-  }
+  await Promise.all(
+    newAddresses.map((address) => refreshPairLiquidyByAddress(ctx, address)),
+  );
 };
 
 const createOnEventRecieved =
@@ -136,21 +134,23 @@ const createOnEventRecieved =
     const addresses: { [key: ContractAddress]: boolean | undefined } = (
       await dal.pair.getAllAddresses()
     ).reduce((a, v) => ({ ...a, [v]: true }), {});
+
     //parse events on be on
-    for (const contract of contracts) {
+    const allPromises = contracts.map((contract) => {
       //factory state was modified was modified
       if (contract === process.env.FACTORY_ADDRESS) {
-        //TODO hadne onFactoryEventReceived
-        await onFactoryEventReceived(ctx);
+        return onFactoryEventReceived(ctx);
       }
       // if the pair is newly created withing this transaction
       // the pair will be ingnore in this loop, but that's not a problem, because
       // factory event handler was also involved here and it will take care of
       // newly created pair
       else if (addresses[contract]) {
-        await refreshPairLiquidyByAddress(ctx, contract);
+        return refreshPairLiquidyByAddress(ctx, contract);
       }
-    }
+      return Promise.resolve();
+    });
+    return Promise.all(allPromises);
   };
 
 export default (ctx: Context) => {
