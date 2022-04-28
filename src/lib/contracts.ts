@@ -33,23 +33,15 @@ const formatMethodName = (str: string) => {
   const reservedWords = ['expectEvents', 'contract', 'deploy'];
   return reservedWords.some((x) => str === x) ? str + '2' : str;
 };
-const createWrappedMethods = (
-  contract: any,
-  extractor?: (ret: any) => any,
-): any => {
-  const methods = contract.methods;
-  const keys = Object.keys(methods);
-  const wrappedMethods = keys.reduce((acc, key) => {
-    const method = methods[key];
-    const wrappedMethod = async (...args: any[]) => {
-      const ret = await method.apply(contract, args);
-      return extractor ? extractor(ret) : ret.decodedResult;
+const createWrappedMethods = (contract: any): any => {
+  const ret: any = {};
+  for (const methodName in contract.methods) {
+    ret[formatMethodName(methodName)] = async (...args: any[]) => {
+      return (await contract.methods[methodName].apply(contract, args))
+        .decodedResult;
     };
-    const cloned = { ...acc };
-    cloned[formatMethodName(key)] = wrappedMethod;
-    return cloned;
-  }, {});
-  return wrappedMethods;
+  }
+  return ret;
 };
 
 export type RouterMethods = {
