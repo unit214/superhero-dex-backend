@@ -20,8 +20,8 @@ const upsertTokenInformation = async (
 
   const tokenFromDb = await dal.token.upsertToken(
     address,
-    name,
     symbol,
+    name,
     Number(decimals),
   );
   logger.debug(`Token ${symbol} [${address}] updated/inserted`);
