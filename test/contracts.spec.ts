@@ -14,7 +14,7 @@ const ctx = (): Context => {
 };
 describe('contract utilities and context', () => {
   it('gets context', async () => {
-    const factoryAddress = await ctx().router.factory();
+    const { decodedResult: factoryAddress } = await ctx().router.factory();
     expect(factoryAddress).toBe(process.env.FACTORY_ADDRESS);
   });
   it('get all pairs', async () => {

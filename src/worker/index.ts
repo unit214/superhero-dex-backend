@@ -16,7 +16,9 @@ const upsertTokenInformation = async (
     return token.id;
   }
   const tokenMethods = await ctx.getToken(address);
-  const { name, symbol, decimals } = await tokenMethods.metaInfo();
+  const {
+    decodedResult: { name, symbol, decimals },
+  } = await tokenMethods.metaInfo();
 
   const tokenFromDb = await dal.token.upsertToken(
     address,
@@ -49,7 +51,10 @@ const getPairTokens = async (
   address: ContractAddress,
 ): Promise<[ContractAddress, ContractAddress]> => {
   const instance = await ctx.getPair(address);
-  return [await instance.token0(), await instance.token1()];
+  return [
+    (await instance.token0()).decodedResult,
+    (await instance.token1()).decodedResult,
+  ];
 };
 
 const inserOnlyNewTokens = async (
@@ -77,8 +82,10 @@ const refreshPairLiquidyByAddress = async (
 };
 const refreshPairLiquidy = async (ctx: Context, dbPair: db.Pair) => {
   const pair = await ctx.getPair(dbPair.address);
-  const totalSupply = await pair.totalSupply();
-  const { reserve0, reserve1 } = await pair.reserves();
+  const { decodedResult: totalSupply } = await pair.totalSupply();
+  const {
+    decodedResult: { reserve0, reserve1 },
+  } = await pair.reserves();
   const ret = await dal.pair.synchronise(
     dbPair.id,
     totalSupply,
@@ -99,7 +106,7 @@ const refreshPairLiquidy = async (ctx: Context, dbPair: db.Pair) => {
 
 const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
   logger.log(`Getting all pairs from Factory...`);
-  const allFactoryPairs = await ctx.factory.allPairs();
+  const { decodedResult: allFactoryPairs } = await ctx.factory.allPairs();
   logger.log(`${allFactoryPairs.length} pairs found on DEX`);
   const allDbPairsLen = await dal.pair.count();
   //get new pairs, and reverse it , because allFactoryPairs is reversed by the factory contract

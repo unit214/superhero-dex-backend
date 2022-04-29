@@ -29,34 +29,20 @@ const getClient = async () => {
   return client;
 };
 
-const formatMethodName = (str: string) => {
-  const reservedWords = ['expectEvents', 'contract', 'deploy'];
-  return reservedWords.some((x) => str === x) ? str + '2' : str;
-};
-const createWrappedMethods = (contract: any): any => {
-  const ret: any = {};
-  for (const methodName in contract.methods) {
-    ret[formatMethodName(methodName)] = async (...args: any[]) => {
-      return (await contract.methods[methodName].apply(contract, args))
-        .decodedResult;
-    };
-  }
-  return ret;
-};
-
 export type RouterMethods = {
-  factory: () => Promise<string>;
+  factory: () => ContractMethodResult<string>;
 };
 
 export type FactoryMethods = {
-  allPairs: () => Promise<ContractAddress[]>;
+  allPairs: () => ContractMethodResult<ContractAddress[]>;
 };
 
+export type ContractMethodResult<T> = Promise<{ decodedResult: T }>;
 export type PairMethods = {
-  token0: () => Promise<ContractAddress>;
-  token1: () => Promise<ContractAddress>;
-  totalSupply: () => Promise<bigint>;
-  reserves: () => Promise<{ reserve0: bigint; reserve1: bigint }>;
+  token0: () => ContractMethodResult<ContractAddress>;
+  token1: () => ContractMethodResult<ContractAddress>;
+  totalSupply: () => ContractMethodResult<bigint>;
+  reserves: () => ContractMethodResult<{ reserve0: bigint; reserve1: bigint }>;
 };
 
 export type MetaInfo = {
@@ -66,18 +52,18 @@ export type MetaInfo = {
 };
 
 export type Aex9Methods = {
-  metaInfo: () => Promise<MetaInfo>;
+  metaInfo: () => ContractMethodResult<MetaInfo>;
 };
 
 const wrapRouter = (router: any): RouterMethods => {
-  const methods = createWrappedMethods(router);
+  const methods = router.methods;
 
   return {
     factory: methods.factory,
   };
 };
 const wrapFactory = (factory: any): FactoryMethods => {
-  const methods = createWrappedMethods(factory);
+  const methods = factory.methods;
 
   return {
     allPairs: methods.get_all_pairs,
@@ -85,7 +71,7 @@ const wrapFactory = (factory: any): FactoryMethods => {
 };
 
 const wrapPair = (pair: any): PairMethods => {
-  const methods = createWrappedMethods(pair);
+  const methods = pair.methods;
 
   return {
     token0: methods.token0,
@@ -96,7 +82,7 @@ const wrapPair = (pair: any): PairMethods => {
 };
 
 const wrapAex9 = (token: any): Aex9Methods => {
-  const methods = createWrappedMethods(token);
+  const methods = token.methods;
 
   return {
     metaInfo: methods.meta_info,
