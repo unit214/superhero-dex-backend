@@ -47,7 +47,11 @@ $ npm run serve
 # watch mode
 $ npm run serve:dev
 
+# debug mode
+$ npm run serve:debug
+
 # production mode
+$ npm run build
 $ npm run serve:prod
 ```
 
