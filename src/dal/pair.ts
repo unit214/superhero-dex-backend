@@ -1,4 +1,5 @@
 import prisma from './client';
+import { ContractAddress } from '../lib/utils';
 const onlyListedCondition = {
   token0: { is: { listed: true } },
   token1: { is: { listed: true } },
@@ -56,6 +57,29 @@ export const insert = (address: string, token0: number, token1: number) =>
     },
   });
 
+export const insertByTokenAddresses = (
+  address: string,
+  token0: ContractAddress,
+  token1: ContractAddress,
+) =>
+  prisma.pair.create({
+    select: {
+      id: true,
+      address: true,
+      token0: true,
+      token1: true,
+      liquidityInfo: false,
+      synchronized: false,
+    },
+    data: {
+      address,
+      token0: { connect: { address: token0 } },
+      token1: { connect: { address: token1 } },
+      liquidityInfo: undefined,
+      synchronized: false,
+    },
+  });
+
 export const synchronise = async (
   pairId: number,
   totalSupply: bigint,
@@ -69,6 +93,14 @@ export const synchronise = async (
   };
   return prisma.pair.update({
     where: { id: pairId },
+    select: {
+      id: true,
+      address: true,
+      token0: true,
+      token1: true,
+      liquidityInfo: true,
+      synchronized: true,
+    },
     data: {
       liquidityInfo: { upsert: { update, create: update } },
       synchronized: true,

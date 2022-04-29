@@ -53,8 +53,8 @@ export type FactoryMethods = {
 };
 
 export type PairMethods = {
-  token0: () => Promise<string>;
-  token1: () => Promise<string>;
+  token0: () => Promise<ContractAddress>;
+  token1: () => Promise<ContractAddress>;
   totalSupply: () => Promise<bigint>;
   reserves: () => Promise<{ reserve0: bigint; reserve1: bigint }>;
 };

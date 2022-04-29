@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { ContractAddress } from 'src/lib/utils';
 const logger = new Logger('Worker');
 
-const getSafeTokenId = async (
+const upsertTokenInformation = async (
   ctx: Context,
   address: string,
 ): Promise<number> => {
@@ -17,30 +17,52 @@ const getSafeTokenId = async (
   }
   const tokenMethods = await ctx.getToken(address);
   const { name, symbol, decimals } = await tokenMethods.metaInfo();
+
   const tokenFromDb = await dal.token.upsertToken(
     address,
     name,
     symbol,
     Number(decimals),
   );
+  logger.debug(`Token ${symbol} [${address}] updated/inserted`);
   return tokenFromDb.id;
 };
 
-const insertNewPair = async (ctx: Context, address: string) => {
-  const instance = await ctx.getPair(address);
-  const [token0Address, token1Address] = [
-    await instance.token0(),
-    await instance.token1(),
-  ];
-
-  const [token0Id, token1Id] = [
-    await getSafeTokenId(ctx, token0Address),
-    await getSafeTokenId(ctx, token1Address),
-  ];
-
-  const ret = await dal.pair.insert(address, token0Id, token1Id);
-  logger.debug(`${address} pair inserted`);
+const insertNewPair = async (
+  address: ContractAddress,
+  token0Address: ContractAddress,
+  token1Address: ContractAddress,
+) => {
+  const ret = await dal.pair.insertByTokenAddresses(
+    address,
+    token0Address,
+    token1Address,
+  );
+  logger.debug(
+    `Pair ${ret.token0.symbol}/${ret.token1.symbol} [${address}] inserted`,
+  );
   return ret;
+};
+
+const getPairTokens = async (
+  ctx: Context,
+  address: ContractAddress,
+): Promise<[ContractAddress, ContractAddress]> => {
+  const instance = await ctx.getPair(address);
+  return [await instance.token0(), await instance.token1()];
+};
+
+const inserOnlyNewTokens = async (
+  ctx: Context,
+  tokenAddreses: ContractAddress[],
+) => {
+  const allAddresses = new Set(await dal.token.getAllAddresses());
+  const newOnes = tokenAddreses.filter(
+    (tokenAddress) => !allAddresses.has(tokenAddress),
+  );
+  return Promise.all(
+    newOnes.map((tokenAddress) => upsertTokenInformation(ctx, tokenAddress)),
+  );
 };
 
 const refreshPairLiquidyByAddress = async (
@@ -64,7 +86,9 @@ const refreshPairLiquidy = async (ctx: Context, dbPair: db.Pair) => {
     reserve1,
   );
   logger.debug(
-    `${dbPair.address} pair synchronized with ${JSON.stringify({
+    `Pair ${ret.token0.symbol}/${ret.token1.symbol} [${
+      dbPair.address
+    }] synchronized with ${JSON.stringify({
       totalSupply: totalSupply.toString(),
       reserve0: reserve0.toString(),
       reserve1: reserve1.toString(),
@@ -84,17 +108,42 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
     .reverse();
 
   logger.log(`${newAddresses.length} new pairs found`);
-  // insert new pairs in parallel
-  await Promise.all(
-    newAddresses.map((pairAddress) => insertNewPair(ctx, pairAddress)),
-  );
-  // if there are new pairs let's go another round to ensure
-  // no other pair was created during this time
-  // otherwise there is nothing to be done here
+
   if (!newAddresses.length) {
     logger.log(`Pairs refresh completed`);
     return newAddresses;
   }
+
+  //get pair tokens in parallel
+  const pairWithTokens = await Promise.all(
+    newAddresses.map(
+      async (
+        pairAddress,
+      ): Promise<[ContractAddress, [ContractAddress, ContractAddress]]> => [
+        pairAddress,
+        await getPairTokens(ctx, pairAddress),
+      ],
+    ),
+  );
+
+  const tokenSet = new Set(
+    pairWithTokens.reduce(
+      (acc: ContractAddress[], data) => acc.concat(data[1]),
+      [],
+    ),
+  );
+
+  //ensure all new tokens will be inserted
+  await inserOnlyNewTokens(ctx, [...tokenSet]);
+
+  //finally insert new pairs sequential to preserve the right order
+  for (const [pairAddress, [token0Address, token1Address]] of pairWithTokens) {
+    await insertNewPair(pairAddress, token0Address, token1Address);
+  }
+
+  // because there are new pairs let's go another round to ensure
+  // no other pair was created during this time
+  logger.debug('We go another round to see if any pair was created');
   const futurePairs = await refreshPairs(ctx);
   return newAddresses.concat(futurePairs);
 };

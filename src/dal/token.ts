@@ -1,5 +1,6 @@
 import { Token } from '@prisma/client';
 import prisma from './client';
+import { ContractAddress } from '../lib/utils';
 
 export const getAll = (): Promise<Token[]> => prisma.token.findMany({});
 
@@ -25,6 +26,15 @@ export const getByAddressWithPairsAndLiquidity = (address: string) =>
       pairs1: { include: { token0: true, liquidityInfo: true } },
     },
   });
+
+export const getAllAddresses = async (): Promise<ContractAddress[]> =>
+  (
+    await prisma.token.findMany({
+      select: {
+        address: true,
+      },
+    })
+  ).map((x) => x.address as ContractAddress);
 
 export const upsertToken = (
   address: string,
