@@ -39,4 +39,5 @@ model PairLiquidityInfo {
   totalSupply String
   reserve0    String
   reserve1    String
+  height      Int
 }

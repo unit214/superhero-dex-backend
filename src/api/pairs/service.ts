@@ -11,7 +11,19 @@ export class PairsService {
     return dal.pair.getAllWithLiquidityInfo(onlyListed);
   }
 
+  async getCountStats() {
+    return {
+      all: await dal.pair.count(),
+      synced: await dal.pair.count('synchronized'),
+      listed: await dal.pair.count('listed'),
+    };
+  }
+
   async getPair(address: string) {
     return dal.pair.getOne(address);
+  }
+
+  async getTopHeight() {
+    return dal.pair.getTopHeight();
   }
 }

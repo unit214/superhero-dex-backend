@@ -23,6 +23,13 @@ export const getAll = (onlyListed?: boolean) =>
     },
   });
 
+export const getTopHeight = async () =>
+  (
+    await prisma.pairLiquidityInfo.aggregate({
+      _max: { height: true },
+    })
+  )._max.height;
+
 export const getAllWithLiquidityInfo = (onlyListed?: boolean) =>
   prisma.pair.findMany({
     where: onlyListed ? onlyListedCondition : {},
@@ -44,7 +51,16 @@ export const getOneLite = (address: string) =>
     where: { address },
   });
 
-export const count = () => prisma.pair.count();
+export type CountMode = 'all' | 'listed' | 'synchronized';
+export const count = (mode?: CountMode) =>
+  prisma.pair.count({
+    where:
+      mode === 'listed'
+        ? onlyListedCondition
+        : mode === 'synchronized'
+        ? { synchronized: true }
+        : {},
+  });
 
 export const insert = (address: string, token0: number, token1: number) =>
   prisma.pair.create({
@@ -85,11 +101,13 @@ export const synchronise = async (
   totalSupply: bigint,
   reserve0: bigint,
   reserve1: bigint,
+  height: number,
 ) => {
   const update = {
     totalSupply: totalSupply.toString(),
     reserve0: reserve0.toString(),
     reserve1: reserve1.toString(),
+    height,
   };
   return prisma.pair.update({
     where: { id: pairId },

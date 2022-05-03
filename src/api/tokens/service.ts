@@ -5,6 +5,9 @@ import { ContractAddress } from '../../lib/utils';
 
 @Injectable()
 export class TokensService {
+  async getCount(onlyListed?: boolean) {
+    return dal.token.count(onlyListed);
+  }
   async getAllTokens(): Promise<Token[]> {
     return dal.token.getAll();
   }

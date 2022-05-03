@@ -185,3 +185,42 @@ export class TokenPairs {
   })
   pairs1: TokenPairWithLiquidityInfo[];
 }
+
+export class GlobalState {
+  @ApiProperty({
+    description: 'Maximum block-height found in liquidity-info',
+    example: 598149,
+  })
+  topBlockHeight: number | null;
+
+  @ApiProperty({
+    description: 'How many pairs are synced (in percent)',
+    example: 25.5,
+  })
+  pairsSyncedPercent: number;
+
+  @ApiProperty({
+    description: 'Total number of tokens',
+    example: 7,
+  })
+  tokens: number;
+
+  @ApiProperty({
+    description: 'How many tokens are officialy listed',
+    example: 4,
+  })
+  listedTokens: number;
+
+  @ApiProperty({
+    description: 'Total number of pairs',
+    example: 16,
+  })
+  pairs: number;
+
+  @ApiProperty({
+    description:
+      'How many pairs contains only officialy listed tokens (token0 & token1)',
+    example: 7,
+  })
+  listedPairs: number;
+}

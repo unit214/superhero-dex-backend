@@ -24,6 +24,11 @@ export const getByAddressWithPairs = (address: string) =>
     include: { pairs0: true, pairs1: true },
   });
 
+export const count = (onlyListed?: boolean) =>
+  prisma.token.count({
+    where: onlyListed ? { listed: true } : {},
+  });
+
 export const getByAddressWithPairsAndLiquidity = (address: string) =>
   prisma.token.findFirst({
     where: { address },

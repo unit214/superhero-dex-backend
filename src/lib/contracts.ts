@@ -3,9 +3,9 @@ import { Universal, Node } from '@aeternity/aepp-sdk';
 import {
   CallData,
   ContractAddress,
+  WalletAddress,
   Hash,
   nonNullable,
-  WalletAddress,
 } from './utils';
 import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
 import * as factoryInteface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
@@ -37,7 +37,20 @@ export type FactoryMethods = {
   allPairs: () => ContractMethodResult<ContractAddress[]>;
 };
 
-export type ContractMethodResult<T> = Promise<{ decodedResult: T }>;
+export type ContractMethodResult<T> = Promise<{
+  result: {
+    callerId: WalletAddress;
+    callerNonce: number;
+    contractId: ContractAddress;
+    gasPrice: number;
+    gasUsed: number;
+    height: number;
+    log: any[];
+    returnType: 'ok' | 'revert';
+    returnValue: CallData;
+  };
+  decodedResult: T;
+}>;
 export type PairMethods = {
   token0: () => ContractMethodResult<ContractAddress>;
   token1: () => ContractMethodResult<ContractAddress>;
