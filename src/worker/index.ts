@@ -172,7 +172,14 @@ const onFactoryEventReceived = async (ctx: Context) => {
 
 const createOnEventRecieved =
   (ctx: Context) => async (event: mdw.SubscriptionEvent) => {
-    const { hash } = event.payload;
+    const {
+      hash,
+      tx: { type },
+    } = event.payload;
+    if (type !== 'ContractCallTx') {
+      logger.debug(`Ignoring transaction of type ${type}`);
+      return;
+    }
     //TODO: try to trow execption here to see if it reconnects
     const txInfo = await ctx.client.getTxInfo(hash);
     if (!txInfo) {

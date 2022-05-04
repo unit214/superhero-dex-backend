@@ -24,3 +24,4 @@ export type CallData = `cb_${string}`; //TODO: are all starting with cb?
 export type Signature = `sg_${string}`;
 export type Hash = `th_${string}`;
 export type BlockHash = `mh_${string}`;
+export type Payload = `ba_${string}`;

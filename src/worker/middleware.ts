@@ -10,6 +10,7 @@ import {
   pluralize,
   Signature,
   WalletAddress,
+  Payload,
 } from '../lib/utils';
 
 import { Logger } from '@nestjs/common';
@@ -17,25 +18,35 @@ const logger = new Logger('WebSocket');
 
 const MIDDLEWARE_URL: string = NETWORKS[NETWORK_NAME].middlewareUrl;
 const createWebSocketConnection = () => new WebSocket(MIDDLEWARE_URL);
-const ROUTER_ADDRESS = process.env.ROUTER_ADDRESS;
+const { ROUTER_ADDRESS, SUSBCRIBE_TO_ALL_TXS } = process.env;
 
 export type SubscriptionEvent = {
-  subscription: 'Object'; // add any other additional enum values if are used
+  subscription: 'Object' | 'Transactions'; // add any other additional enum values if are used
   source: string;
   payload: {
     tx: {
       version: number;
-      type: 'ContractCallTx'; // add any other additional enum values if are used
       nonce: number;
-      gas_price: number;
-      gas: number;
       fee: number;
-      contract_id: ContractAddress;
-      caller_id: WalletAddress;
-      call_data: CallData;
       amount: number;
-      abi_version: number;
-    };
+    } & (
+      | {
+          type: 'ContractCallTx'; // add any other additional enum values if are used
+          gas_price: number;
+          gas: number;
+          contract_id: ContractAddress;
+          caller_id: WalletAddress;
+          call_data: CallData;
+          abi_version: number;
+        }
+      | {
+          type: 'SpendTx';
+          ttl: number;
+          sender_id: WalletAddress;
+          recipient_id: WalletAddress;
+          payload: Payload;
+        }
+    );
     signatures: [Signature];
     hash: Hash;
     block_height: number;
@@ -49,6 +60,14 @@ const subscribeToContract = (ws: WebSocket, address: ContractAddress) =>
       op: 'Subscribe',
       payload: 'Object',
       target: address,
+    }),
+  );
+
+const subscribeToAllTxs = (ws: WebSocket) =>
+  ws.send(
+    JSON.stringify({
+      op: 'Subscribe',
+      payload: 'Transactions',
     }),
   );
 
@@ -68,7 +87,11 @@ export const createNewConnection = async (
 
   //3. on connect...
   const openHandler = async () => {
-    subscribeToContract(ws, nonNullable(ROUTER_ADDRESS) as ContractAddress);
+    if (SUSBCRIBE_TO_ALL_TXS && parseInt(SUSBCRIBE_TO_ALL_TXS)) {
+      subscribeToAllTxs(ws);
+    } else {
+      subscribeToContract(ws, nonNullable(ROUTER_ADDRESS) as ContractAddress);
+    }
     callBacks.onConnected && callBacks.onConnected();
   };
 
@@ -78,10 +101,16 @@ export const createNewConnection = async (
     const objMessage = JSON.parse(stringMessage);
     const onUnknownMessage = () => {
       ws.close();
-      logger.error(`Unknown message received: ${objMessage}`);
+      throw new Error(`Unknown message received: ${stringMessage}`);
     };
     if (Array.isArray(objMessage)) {
-      logger.debug(`Subscribed to ${pluralize(objMessage.length, 'contract')}`);
+      if (objMessage.some((x) => x === 'Transactions')) {
+        logger.debug(`Subscribed to all transactions`);
+      } else {
+        logger.debug(
+          `Subscribed to ${pluralize(objMessage.length, 'contract')}`,
+        );
+      }
       return;
     }
     if (typeof objMessage === 'string') {
@@ -91,7 +120,9 @@ export const createNewConnection = async (
       }
       // there is nothing of interest here, let's exit
       return;
-    } else if (objMessage.subscription !== 'Object') {
+    } else if (
+      !['Object', 'Transactions'].some((x) => objMessage.subscription !== x)
+    ) {
       onUnknownMessage();
       return;
     }
