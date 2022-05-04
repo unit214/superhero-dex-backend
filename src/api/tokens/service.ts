@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as dal from '../../dal';
 import { Pair, Token, PairLiquidityInfo } from '@prisma/client';
+import { ContractAddress } from '../../lib/utils';
 
 @Injectable()
 export class TokensService {
@@ -11,7 +12,15 @@ export class TokensService {
     return dal.token.getListed();
   }
 
-  async getToken(address: string): Promise<
+  async listToken(address: ContractAddress) {
+    return dal.token.updateListedValue(address, true);
+  }
+
+  async unlistToken(address: ContractAddress) {
+    return dal.token.updateListedValue(address, false);
+  }
+
+  async getToken(address: ContractAddress): Promise<
     | (Token & {
         pairs0: Pair[];
         pairs1: Pair[];
@@ -21,7 +30,7 @@ export class TokensService {
     return dal.token.getByAddressWithPairs(address);
   }
 
-  async getTokenWithPairsInfo(address: string): Promise<
+  async getTokenWithPairsInfo(address: ContractAddress): Promise<
     | (Token & {
         pairs0: (Pair & {
           token1: Token;

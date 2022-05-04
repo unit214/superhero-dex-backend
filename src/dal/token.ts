@@ -12,6 +12,12 @@ export const getByAddress = (address: string) =>
     where: { address },
   });
 
+export const updateListedValue = (address: string, listed: boolean) =>
+  prisma.token.update({
+    where: { address },
+    data: { listed },
+  });
+
 export const getByAddressWithPairs = (address: string) =>
   prisma.token.findFirst({
     where: { address },

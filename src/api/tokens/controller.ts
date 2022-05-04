@@ -1,10 +1,41 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Headers,
+  NotFoundException,
+  Post,
+  Delete,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TokensService } from './service';
 import * as dto from '../../dto';
-import { ApiResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { removeId } from '../../lib/utils';
+import {
+  ApiResponse,
+  ApiOperation,
+  ApiParam,
+  ApiHeaders,
+} from '@nestjs/swagger';
+import { removeId, ContractAddress } from '../../lib/utils';
 import * as prisma from '@prisma/client';
 
+const withTokenAuthorization = async <T>(
+  auth: string,
+  work: () => Promise<T>,
+): Promise<T> => {
+  if (auth !== process.env.AUTH_TOKEN) {
+    throw new UnauthorizedException('wrong authorization');
+  }
+  try {
+    return await work(); // await is not redundant is for the try catch purpose
+  } catch (error) {
+    if (error.message.indexOf('Record to update not found') > -1) {
+      throw new NotFoundException('Token not found');
+    } else {
+      throw error;
+    }
+  }
+};
 const toDtoToken = ({
   listed, // eslint-disable-line @typescript-eslint/no-unused-vars
   id, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -51,7 +82,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   @ApiResponse({ status: 200, type: dto.TokenWithPairAddresses })
   @ApiResponse({ status: 404 })
   async findOne(
-    @Param('address') address: string,
+    @Param('address') address: ContractAddress,
   ): Promise<dto.TokenWithPairAddresses> {
     const token = await this.appService.getToken(address);
     if (!token) {
@@ -85,7 +116,9 @@ the given token represents the token1`,
   })
   @ApiResponse({ status: 200, type: dto.TokenPairs })
   @ApiResponse({ status: 404 })
-  async pairs(@Param('address') address: string): Promise<dto.TokenPairs> {
+  async pairs(
+    @Param('address') address: ContractAddress,
+  ): Promise<dto.TokenPairs> {
     const token = await this.appService.getTokenWithPairsInfo(address);
     if (!token) {
       throw new NotFoundException('token not found');
@@ -111,5 +144,71 @@ the given token represents the token1`,
         }),
       ),
     };
+  }
+
+  @Post('by-address/:address/listed')
+  @ApiParam({
+    name: 'address',
+    required: true,
+    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    ...dto.pairAddressPropertyOptions,
+  })
+  @ApiOperation({
+    summary: 'Mark token as listed',
+    description: `Add a token in the official token list`,
+  })
+  @ApiHeaders([
+    {
+      name: 'Authorization',
+      description: 'authorization token',
+      required: true,
+      allowEmptyValue: false,
+      example:
+        '77e1c923ec679c11a3a2efbd0cde5927edf874818e5be54443da6b12a9280202',
+    },
+  ])
+  @ApiResponse({ status: 201, type: dto.TokenWithListed })
+  @ApiResponse({ status: 404 })
+  @ApiResponse({ status: 401 })
+  async listToken(
+    @Param('address') address: ContractAddress,
+    @Headers('Authorization') auth: string,
+  ): Promise<dto.TokenWithListed> {
+    return withTokenAuthorization(auth, async () =>
+      removeId(await this.appService.listToken(address)),
+    );
+  }
+
+  @Delete('by-address/:address/listed')
+  @ApiParam({
+    name: 'address',
+    required: true,
+    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    ...dto.pairAddressPropertyOptions,
+  })
+  @ApiOperation({
+    summary: 'Unmark token as listed',
+    description: `Remove a token from the official token list`,
+  })
+  @ApiHeaders([
+    {
+      name: 'Authorization',
+      description: 'authorization token',
+      required: true,
+      allowEmptyValue: false,
+      example:
+        '77e1c923ec679c11a3a2efbd0cde5927edf874818e5be54443da6b12a9280202',
+    },
+  ])
+  @ApiResponse({ status: 201, type: dto.TokenWithListed })
+  @ApiResponse({ status: 404 })
+  @ApiResponse({ status: 401 })
+  async unlistToken(
+    @Param('address') address: ContractAddress,
+    @Headers('Authorization') auth: string,
+  ): Promise<dto.TokenWithListed> {
+    return withTokenAuthorization(auth, async () =>
+      removeId(await this.appService.unlistToken(address)),
+    );
   }
 }
