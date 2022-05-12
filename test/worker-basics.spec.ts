@@ -1,32 +1,24 @@
 import { mockContext } from './utils/context.mockup';
 import createWorkerMethods from '../src/worker';
 import db from '../src/dal/client';
+import { clean as cleanDb } from './utils/db';
 import prisma from '@prisma/client';
 import * as data from './data/context-mockups';
 
 type WorkerMethods = ReturnType<typeof createWorkerMethods>;
-let workerMethods: WorkerMethods | null = null;
+let activeWorker: WorkerMethods;
 
 // Testing method
 // 1. before all create a common context
 // 2. before all reset mockups (Context and Prisma Client)
 // 3. run worker methods and and test the impact on db
 
-const activeWorker = (): WorkerMethods => {
-  if (!workerMethods) {
-    throw 'initiate worker first';
-  }
-  return workerMethods;
-};
-
 //
 beforeEach(async () => {
-  await db.pairLiquidityInfo.deleteMany();
-  await db.pair.deleteMany();
-  await db.token.deleteMany();
+  await cleanDb();
   const ctx = mockContext(data.context2);
-  workerMethods = createWorkerMethods(ctx);
-  await activeWorker().refreshPairs();
+  activeWorker = createWorkerMethods(ctx);
+  await activeWorker.refreshPairs();
 });
 it('inserts new pairs', async () => {
   const pairs: prisma.Pair[] = await db.pair.findMany();
@@ -40,7 +32,7 @@ it('inserts new pairs', async () => {
 });
 
 it('refresh pairs liquidity', async () => {
-  await activeWorker().refreshPairsLiquidity();
+  await activeWorker.refreshPairsLiquidity();
 
   const pairs = await db.pair.findMany({
     include: { liquidityInfo: true },
@@ -58,8 +50,8 @@ it('refresh pairs liquidity', async () => {
 
 it('refresh new added pairs', async () => {
   const ctx = mockContext(data.context21);
-  workerMethods = createWorkerMethods(ctx);
-  await activeWorker().refreshPairs();
+  activeWorker = createWorkerMethods(ctx);
+  await activeWorker.refreshPairs();
   const pairs: prisma.Pair[] = await db.pair.findMany();
   expect(await db.pair.count()).toBe(4);
   expect(pairs[3]).toMatchObject({
@@ -70,9 +62,9 @@ it('refresh new added pairs', async () => {
 
 it('refresh liquidity for new added pairs', async () => {
   const ctx = mockContext(data.context21);
-  workerMethods = createWorkerMethods(ctx);
-  await activeWorker().refreshPairs();
-  await activeWorker().refreshPairsLiquidity();
+  activeWorker = createWorkerMethods(ctx);
+  await activeWorker.refreshPairs();
+  await activeWorker.refreshPairsLiquidity();
   const pairs = await db.pair.findMany({
     include: { liquidityInfo: true },
     orderBy: { address: 'asc' },
@@ -86,7 +78,7 @@ it('refresh liquidity for new added pairs', async () => {
 });
 
 it('unsync all pairs', async () => {
-  await activeWorker().unsyncAllPairs();
+  await activeWorker.unsyncAllPairs();
   const pairs = await db.pair.findMany({ where: { synchronized: true } });
   expect(pairs.length).toBe(0);
 });
