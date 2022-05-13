@@ -139,10 +139,10 @@ the given token represents the token1`,
         }),
       ),
       pairs1: token.pairs1.map(
-        ({ address, synchronized, liquidityInfo, token0: oppositeToken }) => ({
+        ({ address, synchronized, liquidityInfo, token0 }) => ({
           address,
           synchronized,
-          oppositeToken,
+          oppositeToken: removeId(token0),
           liquidityInfo:
             (liquidityInfo && removeId(liquidityInfo)) || undefined,
         }),
