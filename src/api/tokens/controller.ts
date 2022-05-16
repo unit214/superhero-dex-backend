@@ -208,7 +208,7 @@ the given token represents the token1`,
         '77e1c923ec679c11a3a2efbd0cde5927edf874818e5be54443da6b12a9280202',
     },
   ])
-  @ApiResponse({ status: 201, type: dto.TokenWithListed })
+  @ApiResponse({ status: 200, type: dto.TokenWithListed })
   @ApiResponse({ status: 404 })
   @ApiResponse({ status: 401 })
   async unlistToken(

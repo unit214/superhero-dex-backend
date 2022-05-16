@@ -8,6 +8,7 @@ import { clean as cleanDb } from './utils/db';
 import * as data from './data/context-mockups';
 import * as dto from '../src/dto';
 import * as utils from './utils';
+import { nonNullable } from '../src/lib/utils';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
@@ -429,5 +430,174 @@ describe('tokens fetching (e2e)', () => {
         message: 'token not found',
         error: 'Not Found',
       });
+  });
+});
+describe('listed tokens management (e2e)', () => {
+  let app: INestApplication;
+  beforeEach(async () => {
+    await cleanDb();
+    const ctx = utils.mockContext(data.context2);
+    activeWorker = worker(ctx);
+    await activeWorker.refreshPairs();
+    //add some listed tokens
+    await utils.listToken('ct_t0');
+    await utils.listToken('ct_t3');
+  });
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+  describe('add to token list', () => {
+    it('/tokens/listed/ct_xxxx(POST) 401 with no auth key and with invalid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_t0 (POST) 401 with no auth key provided and valid token address', async () => {
+      //
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_t0')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (POST) 401 whith invalid auth key and invalid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (POST) 401 whith invalid auth key and valid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_t0')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (POST) 404 with valid auth key but with invalid token', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
+        .expect(404);
+    });
+    it('/tokens/listed/ct_t1 (POST) 201 with valid auth key and with valid token', async () => {
+      //verify before listing ct_t1
+      await request(app.getHttpServer())
+        .get('/tokens/by-address/ct_t1')
+        .expect(200)
+        .expect({
+          address: 'ct_t1',
+          symbol: 'B',
+          name: 'B Token',
+          decimals: 6,
+          listed: false,
+          pairs: ['ct_p2', 'ct_p1'],
+        });
+
+      //listing it
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_t1')
+        .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
+        .expect(201)
+        .expect({
+          address: 'ct_t1',
+          symbol: 'B',
+          name: 'B Token',
+          decimals: 6,
+          listed: true,
+        });
+      //
+      //re-verify ct_t1 to be sure it was persisted also
+      await request(app.getHttpServer())
+        .get('/tokens/by-address/ct_t1')
+        .expect(200)
+        .expect({
+          address: 'ct_t1',
+          symbol: 'B',
+          name: 'B Token',
+          decimals: 6,
+          listed: true,
+          pairs: ['ct_p2', 'ct_p1'],
+        });
+    });
+  });
+  describe('remove from token list', () => {
+    it('/tokens/listed/ct_xxxx (DELETE) 401 with no auth key and with invalid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_t0 (DELETE) 401 with no auth key provided and valid token address', async () => {
+      //
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_t0')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (DELETE) 401 whith invalid auth key and invalid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (DELETE) 401 whith invalid auth key and valid token', async () => {
+      //
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_t0')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+    it('/tokens/listed/ct_xxxx (DELETE) 404 with valid auth key but with invalid token', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
+        .expect(404);
+    });
+    it('/tokens/listed/ct_t3 (DELETE) 200 with valid auth key and with valid token', async () => {
+      //verify before unlisting ct_t3
+      await request(app.getHttpServer())
+        .get('/tokens/by-address/ct_t3')
+        .expect(200)
+        .expect({
+          address: 'ct_t3',
+          symbol: 'C',
+          name: 'C Token',
+          decimals: 10,
+          listed: true,
+          pairs: ['ct_p2', 'ct_p3'],
+        });
+
+      //unlisting it
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_t3')
+        .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
+        .expect(200)
+        .expect({
+          address: 'ct_t3',
+          symbol: 'C',
+          name: 'C Token',
+          decimals: 10,
+          listed: false,
+        });
+      //
+      //re-verify ct_t3 to be sure the unlisting was persisted too
+      await request(app.getHttpServer())
+        .get('/tokens/by-address/ct_t3')
+        .expect(200)
+        .expect({
+          address: 'ct_t3',
+          symbol: 'C',
+          name: 'C Token',
+          decimals: 10,
+          listed: false,
+          pairs: ['ct_p2', 'ct_p3'],
+        });
+    });
   });
 });
