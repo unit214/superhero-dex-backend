@@ -82,7 +82,9 @@ for this purpose use the individual \`pairs/:address\` route`,
   @ApiParam({
     name: 'address',
     required: true,
-    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    example:
+      process.env.DOC_PAIR ||
+      'ct_2JZNDfAQHZMfoBuh32Aijd9TR8A5SHUVBzxC6x5d4sS7o8xeqN',
     ...dto.pairAddressPropertyOptions,
   })
   @ApiResponse({ status: 200, type: dto.PairWithLiquidityAndTokens })
@@ -128,13 +130,17 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
   @ApiParam({
     name: 'from',
     required: true,
-    example: 'ct_2ZZwNQnX1XwBdAy9ZAI8cgyJ7ccafB9HbmmXO1shFCNqhl88F',
+    example:
+      process.env.DOC_TOKEN1 ||
+      'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
     ...dto.tokenAddressPropertyOptions,
   })
   @ApiParam({
     name: 'to',
     required: true,
-    example: 'ct_XWASad6omILdToOPfP58KoLxNnIzkWfIQJmIvHPSuHYZ5NxIjy',
+    example:
+      process.env.DOC_TOKEN2 ||
+      'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
     ...dto.tokenAddressPropertyOptions,
   })
   async getSwapRoutes(

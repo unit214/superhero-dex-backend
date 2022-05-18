@@ -72,7 +72,9 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   @ApiParam({
     name: 'address',
     required: true,
-    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    example:
+      process.env.DOC_TOKEN1 ||
+      'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
     ...dto.pairAddressPropertyOptions,
   })
   @ApiOperation({
@@ -105,7 +107,9 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   @ApiParam({
     name: 'address',
     required: true,
-    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    example:
+      process.env.DOC_TOKEN1 ||
+      'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
     ...dto.pairAddressPropertyOptions,
   })
   @ApiOperation({
@@ -150,7 +154,9 @@ the given token represents the token1`,
   @ApiParam({
     name: 'address',
     required: true,
-    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    example:
+      process.env.DOC_TOKEN2 ||
+      'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
     ...dto.pairAddressPropertyOptions,
   })
   @ApiOperation({
@@ -183,7 +189,9 @@ the given token represents the token1`,
   @ApiParam({
     name: 'address',
     required: true,
-    example: 'ct_CcujlSGNs3juOMWcrUZ7puLsAfsaTIwcYnTmhRi9sKnnXFJMX',
+    example:
+      process.env.DOC_TOKEN2 ||
+      'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
     ...dto.pairAddressPropertyOptions,
   })
   @ApiOperation({

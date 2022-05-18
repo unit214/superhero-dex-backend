@@ -101,7 +101,9 @@ export class PairWithLiquidityAndTokens extends PairWithLiquidity {
   @ApiProperty({
     description: 'Token stored as token0',
     example: {
-      address: 'ct_2ZZwNQnX1XwBdAy9ZAI8cgyJ7ccafB9HbmmXO1shFCNqhl88F',
+      address:
+        process.env.DOC_TOKEN1 ||
+        'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
       symbol: 'WAE',
       name: 'Wrapped AE',
       decimals: 18,
@@ -112,7 +114,9 @@ export class PairWithLiquidityAndTokens extends PairWithLiquidity {
   @ApiProperty({
     description: 'Token stored as token1',
     example: {
-      address: 'ct_XWASad6omILdToOPfP58KoLxNnIzkWfIQJmIvHPSuHYZ5NxIjy',
+      address:
+        process.env.DOC_TOKEN2 ||
+        'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
       symbol: 'USDT',
       name: 'Wrapped Theter',
       decimals: 18,
@@ -125,14 +129,18 @@ export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
   @ApiProperty({
     pattern: contractPattern,
     description: 'Contract address for the token stored as token0',
-    example: 'ct_2ZZwNQnX1XwBdAy9ZAI8cgyJ7ccafB9HbmmXO1shFCNqhl88F',
+    example:
+      process.env.DOC_TOKEN1 ||
+      'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
   })
   token0: string;
 
   @ApiProperty({
     pattern: contractPattern,
     description: 'Contract address for the token stored as token1',
-    example: 'ct_XWASad6omILdToOPfP58KoLxNnIzkWfIQJmIvHPSuHYZ5NxIjy',
+    example:
+      process.env.DOC_TOKEN2 ||
+      'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
   })
   token1: string;
 }
