@@ -45,7 +45,7 @@ const toLiquidityInfoDto = (
 
 @Controller('pairs')
 export class PairsController {
-  constructor(private readonly appService: PairsService) {}
+  constructor(private readonly pairsService: PairsService) {}
 
   @Get()
   @ApiOperation({
@@ -65,7 +65,7 @@ for this purpose use the individual \`pairs/:address\` route`,
     @Query('only-listed') onlyListedStr?: string, //false | true
   ): Promise<dto.Pair[]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
-    return (await this.appService.getAllPairs(!!onlyListed)).map((pair) => ({
+    return (await this.pairsService.getAllPairs(!!onlyListed)).map((pair) => ({
       address: pair.address,
       token0: pair.token0.address,
       token1: pair.token1.address,
@@ -90,7 +90,7 @@ for this purpose use the individual \`pairs/:address\` route`,
   async findOne(
     @Param('address') address: string,
   ): Promise<dto.PairWithLiquidityAndTokens> {
-    const pair = await this.appService.getPair(address);
+    const pair = await this.pairsService.getPair(address);
     if (!pair) {
       throw new NotFoundException('pair not found');
     }
@@ -143,7 +143,7 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
     @Query('only-listed') onlyListedStr: string, //false | true
   ): Promise<dto.PairWithLiquidityAndTokenAddresses[][]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
-    const pairs = await this.appService.getAllPairsWithLiquidityInfo(
+    const pairs = await this.pairsService.getAllPairsWithLiquidityInfo(
       !!onlyListed,
     );
     const edges = pairs.map((data) => ({

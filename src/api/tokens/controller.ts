@@ -43,7 +43,7 @@ const toDtoToken = ({
 }: prisma.Token) => tail;
 @Controller('tokens')
 export class TokensController {
-  constructor(private readonly appService: TokensService) {}
+  constructor(private readonly tokensService: TokensService) {}
 
   @Get()
   @ApiOperation({
@@ -52,7 +52,7 @@ export class TokensController {
   })
   @ApiResponse({ status: 200, type: [dto.TokenWithListed] })
   async getAllTokens(): Promise<dto.TokenWithListed[]> {
-    return (await this.appService.getAllTokens()).map((token) =>
+    return (await this.tokensService.getAllTokens()).map((token) =>
       removeId(token),
     );
   }
@@ -65,7 +65,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   })
   @ApiResponse({ status: 200, type: [dto.Token] })
   async getListedTokens(): Promise<dto.Token[]> {
-    return (await this.appService.getListedTokens()).map(toDtoToken);
+    return (await this.tokensService.getListedTokens()).map(toDtoToken);
   }
 
   @Get('by-address/:address')
@@ -84,7 +84,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   async findOne(
     @Param('address') address: ContractAddress,
   ): Promise<dto.TokenWithPairAddresses> {
-    const token = await this.appService.getToken(address);
+    const token = await this.tokensService.getToken(address);
     if (!token) {
       throw new NotFoundException('token not found');
     }
@@ -119,7 +119,7 @@ the given token represents the token1`,
   async pairs(
     @Param('address') address: ContractAddress,
   ): Promise<dto.TokenPairs> {
-    const token = await this.appService.getTokenWithPairsInfo(address);
+    const token = await this.tokensService.getTokenWithPairsInfo(address);
     if (!token) {
       throw new NotFoundException('token not found');
     }
@@ -175,7 +175,7 @@ the given token represents the token1`,
     @Headers('Authorization') auth: string,
   ): Promise<dto.TokenWithListed> {
     return withTokenAuthorization(auth, async () =>
-      removeId(await this.appService.listToken(address)),
+      removeId(await this.tokensService.listToken(address)),
     );
   }
 
@@ -208,7 +208,7 @@ the given token represents the token1`,
     @Headers('Authorization') auth: string,
   ): Promise<dto.TokenWithListed> {
     return withTokenAuthorization(auth, async () =>
-      removeId(await this.appService.unlistToken(address)),
+      removeId(await this.tokensService.unlistToken(address)),
     );
   }
 }
