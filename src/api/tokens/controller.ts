@@ -146,7 +146,7 @@ the given token represents the token1`,
     };
   }
 
-  @Post('by-address/:address/listed')
+  @Post('listed/:address')
   @ApiParam({
     name: 'address',
     required: true,
@@ -179,7 +179,7 @@ the given token represents the token1`,
     );
   }
 
-  @Delete('by-address/:address/listed')
+  @Delete('listed/:address')
   @ApiParam({
     name: 'address',
     required: true,
