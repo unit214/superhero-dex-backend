@@ -1,11 +1,11 @@
 import { Context, PairMethods } from '../src/lib/contracts';
-import { ContractAddress } from '../src/lib/utils';
 import { mockDeep } from 'jest-mock-extended';
 import {
   mockContext,
   ContextData,
   mockupContractMethod,
 } from './utils/context.mockup';
+import * as data from './data/context-mockups';
 
 describe('Context', () => {
   it('sample mockup', async () => {
@@ -50,7 +50,7 @@ const testContextDataMockup = (label: string, contextData: ContextData) => {
     }
 
     for (const pair of contextData.pairs) {
-      it(`test getPair('${pair.address} and token0(),token1()')`, async () => {
+      it(`test getPair('${pair.address}) and token0(),token1()'`, async () => {
         const pairMethods = await context.getPair(pair.address);
         expect((await pairMethods.token0()).decodedResult).toBe(
           contextData.tokens[pair.t0].address,
@@ -70,71 +70,8 @@ const testContextDataMockup = (label: string, contextData: ContextData) => {
   });
 };
 
-testContextDataMockup('test context data #1', {
-  factory: 'ct_1',
-  pairs: [],
-  tokens: [],
-});
+testContextDataMockup('test context data #1', data.context0);
 
-const tokens = [
-  {
-    address: 'ct_t0' as ContractAddress,
-    metaInfo: {
-      name: 'A Token',
-      symbol: 'A',
-      decimals: 18n,
-    },
-  },
-  {
-    address: 'ct_t1' as ContractAddress,
-    metaInfo: {
-      name: 'B Token',
-      symbol: 'B',
-      decimals: 6n,
-    },
-  },
-  {
-    address: 'ct_t3' as ContractAddress,
-    metaInfo: {
-      name: 'C Token',
-      symbol: 'B',
-      decimals: 10n,
-    },
-  },
-];
-testContextDataMockup('test context data #2', {
-  factory: 'ct_1',
-  pairs: [],
-  tokens: tokens,
-});
+testContextDataMockup('test context data #2', data.context1);
 
-testContextDataMockup('test context data #3', {
-  factory: 'ct_1',
-  pairs: [
-    {
-      address: 'ct_p1',
-      reserve0: 1n,
-      reserve1: 2n,
-      totalSupply: 2n * 1n,
-      t0: 0,
-      t1: 1,
-    },
-    {
-      address: 'ct_p2',
-      reserve0: 10n,
-      reserve1: 20000n,
-      totalSupply: 10n * 20000n,
-      t0: 1,
-      t1: 2,
-    },
-    {
-      address: 'ct_p3',
-      reserve0: 1n,
-      reserve1: 3n,
-      totalSupply: 1n * 3n,
-      t0: 0,
-      t1: 2,
-    },
-  ],
-  tokens: tokens,
-});
+testContextDataMockup('test context data #3', data.context2);

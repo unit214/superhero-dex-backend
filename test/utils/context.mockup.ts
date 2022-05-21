@@ -23,7 +23,9 @@ const mockupResult = () =>
     log: any[];
     returnType: 'ok' | 'revert';
     returnValue: CallData;
-  }>();
+  }>({
+    height: 1,
+  });
 export const mockupContractMethod = <T>(t: T) =>
   Promise.resolve({ decodedResult: t, result: mockupResult() });
 export type ContextData = {
