@@ -1,6 +1,8 @@
-export const nonNullable = <T>(t: T | null | undefined): T => {
+export const nonNullable = <T>(t: T | null | undefined, label?: string): T => {
   if (t == null) {
-    throw new Error('non nullable value expected');
+    throw new Error(
+      `${label ? label + ': ' : null} non nullable value expected`,
+    );
   }
   return t;
 };

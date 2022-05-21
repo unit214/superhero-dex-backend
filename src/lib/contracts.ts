@@ -30,7 +30,7 @@ const getClient = async () => {
 };
 
 export type RouterMethods = {
-  factory: () => ContractMethodResult<string>;
+  factory: () => ContractMethodResult<ContractAddress>;
 };
 
 export type FactoryMethods = {
@@ -122,8 +122,8 @@ export type TxInfo = {
 export type Context = {
   router: RouterMethods;
   factory: FactoryMethods;
-  getPair: (address: string) => Promise<PairMethods>;
-  getToken: (address: string) => Promise<Aex9Methods>;
+  getPair: (address: ContractAddress) => Promise<PairMethods>;
+  getToken: (address: ContractAddress) => Promise<Aex9Methods>;
   client: { getTxInfo: (hash: Hash) => Promise<TxInfo | null | undefined> };
 };
 

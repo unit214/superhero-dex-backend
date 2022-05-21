@@ -9,7 +9,7 @@ const logger = new Logger('Worker');
 
 const upsertTokenInformation = async (
   ctx: Context,
-  address: string,
+  address: ContractAddress,
 ): Promise<number> => {
   const token = await dal.token.getByAddress(address);
   if (token) {
@@ -86,7 +86,7 @@ const refreshPairLiquidity = async (
   dbPair: db.Pair,
   height?: number,
 ) => {
-  const pair = await ctx.getPair(dbPair.address);
+  const pair = await ctx.getPair(dbPair.address as ContractAddress);
   const { decodedResult: totalSupply } = await pair.totalSupply();
   const {
     decodedResult: { reserve0, reserve1 },
