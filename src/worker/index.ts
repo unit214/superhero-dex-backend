@@ -236,7 +236,7 @@ export default (ctx: Context) => {
   };
   const onEventReceived = createOnEventRecieved(ctx);
 
-  async function startWorker(autoStart?: boolean) {
+  async function startWorker(autoStart?: boolean, crashWhenClosed?: boolean) {
     logger.log('Starting worker...');
     await unsyncAllPairs();
     await mdw.createNewConnection({
@@ -244,12 +244,13 @@ export default (ctx: Context) => {
         await refreshPairs(ctx);
         await refreshPairsLiquidity(ctx);
       },
-      onDisconnected: async () => {
-        logger.warn('Middleware disconnected');
+      onDisconnected: async (error) => {
+        logger.warn(`Middleware disconnected: ${error}`);
         await unsyncAllPairs();
-        logger.debug('All pairs marked as unsynced');
         if (autoStart) {
           setTimeout(() => startWorker(true), 2000);
+        } else if (crashWhenClosed) {
+          throw new Error('Middleware connection closed');
         }
       },
       onEventReceived,

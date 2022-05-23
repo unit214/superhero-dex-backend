@@ -18,7 +18,7 @@ const logger = new Logger('WebSocket');
 
 const MIDDLEWARE_URL: string = NETWORKS[NETWORK_NAME].middlewareUrl;
 const createWebSocketConnection = () => new WebSocket(MIDDLEWARE_URL);
-const { ROUTER_ADDRESS, SUSBCRIBE_TO_ALL_TXS } = process.env;
+const { ROUTER_ADDRESS, SUBSCRIBE_TO_ALL_TXS } = process.env;
 
 export type SubscriptionEvent = {
   subscription: 'Object' | 'Transactions'; // add any other additional enum values if are used
@@ -71,6 +71,32 @@ const subscribeToAllTxs = (ws: WebSocket) =>
     }),
   );
 
+const startPingMechanism = (ws: WebSocket) => {
+  let isAlive = false;
+
+  const pingTimeOut = parseInt(process.env.MDW_PING_TIMEOUT_MS || '0');
+  const interval = pingTimeOut
+    ? setInterval(function ping() {
+        if (isAlive === false) {
+          logger.warn('Ws terminate because of ping-timeout');
+          interval && clearInterval(interval);
+          ws.terminate();
+          return;
+        }
+
+        isAlive = false;
+        ws.ping();
+      }, pingTimeOut)
+    : null;
+  return {
+    setAlive: () => {
+      isAlive = true;
+    },
+    stopPing: () => {
+      interval && clearInterval(interval);
+    },
+  };
+};
 export const createNewConnection = async (
   callBacks: {
     onDisconnected?: (error?: Error) => any;
@@ -78,8 +104,11 @@ export const createNewConnection = async (
     onConnected?: () => any;
   } = {},
 ) => {
-  //2. connect
+  //1. connect
   const ws = createWebSocketConnection();
+
+  //2. crate ping time-out checker
+  const { setAlive, stopPing } = startPingMechanism(ws);
 
   //
   // setup the subscription
@@ -87,7 +116,10 @@ export const createNewConnection = async (
 
   //3. on connect...
   const openHandler = async () => {
-    if (SUSBCRIBE_TO_ALL_TXS && parseInt(SUSBCRIBE_TO_ALL_TXS)) {
+    setAlive();
+    ws.on('pong', setAlive);
+
+    if (SUBSCRIBE_TO_ALL_TXS && parseInt(SUBSCRIBE_TO_ALL_TXS)) {
       subscribeToAllTxs(ws);
     } else {
       subscribeToContract(ws, nonNullable(ROUTER_ADDRESS) as ContractAddress);
@@ -133,17 +165,19 @@ export const createNewConnection = async (
     callBack && (await callBack(event));
   };
 
-  const closeHandler = () => {
-    callBacks.onDisconnected && callBacks.onDisconnected();
-  };
-  const errorHandler = (error: Error) => {
+  const errorHandler = (error?: Error) => {
     callBacks.onDisconnected && callBacks.onDisconnected(error);
+    stopPing();
+    ws.removeAllListeners();
   };
+  const closeHandler = () => errorHandler();
+  const onPing = (event: Buffer) => ws.pong(event);
 
   ws.on('error', errorHandler);
   ws.on('message', messageHandler);
   ws.on('open', openHandler);
   ws.on('close', closeHandler);
+  ws.on('ping', onPing);
 
   return ws;
 };
