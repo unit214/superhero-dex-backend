@@ -8,8 +8,8 @@ import {
   nonNullable,
 } from './utils';
 import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
-import * as factoryInteface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
-import * as pairInteface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
+import * as factoryInterface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
+import * as pairInterface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
 import { NETWORK_NAME } from './utils';
 
 let client: any = null;
@@ -137,7 +137,7 @@ const createGetToken =
     if (cached) {
       return cached;
     }
-    const token = wrapAex9(await getInstance(pairInteface, tokenAddress));
+    const token = wrapAex9(await getInstance(pairInterface, tokenAddress));
     tokens[tokenAddress] = token;
     return token;
   };
@@ -152,7 +152,7 @@ const createGetPair =
     if (cached) {
       return cached;
     }
-    const pair = wrapPair(await getInstance(pairInteface, pairAddress));
+    const pair = wrapPair(await getInstance(pairInterface, pairAddress));
     pairs[pairAddress] = pair;
     return pair;
   };
@@ -170,7 +170,7 @@ export const getContext = async (): Promise<Context> => {
     nonNullable(process.env.ROUTER_ADDRESS),
   );
   const factory = await getInstance(
-    factoryInteface,
+    factoryInterface,
     nonNullable(process.env.FACTORY_ADDRESS),
   );
   const pairs: { [key: string]: PairMethods | undefined } = {};

@@ -77,7 +77,7 @@ for this purpose use the individual \`pairs/:address\` route`,
   @ApiOperation({
     summary: 'Gets a specific pair',
     description:
-      'The pair retrieved comes also with liquidity info and full token informations',
+      'The pair retrieved comes also with liquidity info and full token information',
   })
   @ApiParam({
     name: 'address',

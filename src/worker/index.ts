@@ -57,12 +57,12 @@ const getPairTokens = async (
   ];
 };
 
-const inserOnlyNewTokens = async (
+const insertOnlyNewTokens = async (
   ctx: Context,
-  tokenAddreses: ContractAddress[],
+  tokenAddresses: ContractAddress[],
 ) => {
   const allAddresses = new Set(await dal.token.getAllAddresses());
-  const newOnes = tokenAddreses.filter(
+  const newOnes = tokenAddresses.filter(
     (tokenAddress) => !allAddresses.has(tokenAddress),
   );
   return Promise.all(
@@ -70,7 +70,7 @@ const inserOnlyNewTokens = async (
   );
 };
 
-const refreshPairLiquidyByAddress = async (
+const refreshPairLiquidityByAddress = async (
   ctx: Context,
   address: ContractAddress,
   height?: number,
@@ -79,9 +79,9 @@ const refreshPairLiquidyByAddress = async (
   if (!found) {
     throw new Error(`Pair not found ${address}`);
   }
-  await refreshPairLiquidy(ctx, found, height);
+  await refreshPairLiquidity(ctx, found, height);
 };
-const refreshPairLiquidy = async (
+const refreshPairLiquidity = async (
   ctx: Context,
   dbPair: db.Pair,
   height?: number,
@@ -148,7 +148,7 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
   );
 
   //ensure all new tokens will be inserted
-  await inserOnlyNewTokens(ctx, [...tokenSet]);
+  await insertOnlyNewTokens(ctx, [...tokenSet]);
 
   //finally insert new pairs sequential to preserve the right order
   for (const [pairAddress, [token0Address, token1Address]] of pairWithTokens) {
@@ -166,7 +166,7 @@ const refreshPairsLiquidity = async (ctx: Context) => {
   //get the all pairs
   const dbPairs = await dal.pair.getAll();
   logger.log(`Refreshing pairs liquidity...`);
-  await Promise.all(dbPairs.map((dbPair) => refreshPairLiquidy(ctx, dbPair)));
+  await Promise.all(dbPairs.map((dbPair) => refreshPairLiquidity(ctx, dbPair)));
   logger.log(`Pairs liquidity refresh completed`);
 };
 
@@ -174,12 +174,12 @@ const onFactoryEventReceived = async (ctx: Context, height: number) => {
   const newAddresses = await refreshPairs(ctx);
   await Promise.all(
     newAddresses.map((address) =>
-      refreshPairLiquidyByAddress(ctx, address, height),
+      refreshPairLiquidityByAddress(ctx, address, height),
     ),
   );
 };
 
-const createOnEventRecieved =
+const createOnEventReceived =
   (ctx: Context) => async (event: mdw.SubscriptionEvent) => {
     const {
       hash,
@@ -189,7 +189,7 @@ const createOnEventRecieved =
       logger.debug(`Ignoring transaction of type ${type}`);
       return;
     }
-    //TODO: try to trow execption here to see if it reconnects
+    //TODO: try to trow exception here to see if it reconnects
     const txInfo = await ctx.client.getTxInfo(hash);
     if (!txInfo) {
       //TODO: what happens if no txInfo??
@@ -214,11 +214,11 @@ const createOnEventRecieved =
         return onFactoryEventReceived(ctx, event.payload.block_height);
       }
       // if the pair is newly created withing this transaction
-      // the pair will be ingnore in this loop, but that's not a problem, because
+      // the pair will be ignore in this loop, but that's not a problem, because
       // factory event handler was also involved here and it will take care of
       // newly created pair
       else if (addresses[contract]) {
-        return refreshPairLiquidyByAddress(
+        return refreshPairLiquidityByAddress(
           ctx,
           contract,
           event.payload.block_height,
@@ -232,9 +232,9 @@ const createOnEventRecieved =
 export default (ctx: Context) => {
   const unsyncAllPairs = async () => {
     const batch = await dal.pair.unsyncAllPairs();
-    logger.log(`${batch.count} pairs marked as unsynced`);
+    logger.log(`${batch.count} pairs marked as unsync`);
   };
-  const onEventReceived = createOnEventRecieved(ctx);
+  const onEventReceived = createOnEventReceived(ctx);
 
   async function startWorker(autoStart?: boolean, crashWhenClosed?: boolean) {
     logger.log('Starting worker...');

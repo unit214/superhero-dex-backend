@@ -13,7 +13,7 @@ export const tokenAddressPropertyOptions = {
 
 export class LiquidityInfo {
   @ApiProperty({
-    description: 'Total suplly of Liquidity Tokens',
+    description: 'Total supply of Liquidity Tokens',
     pattern: bigNumberPattern,
   })
   totalSupply: string;
@@ -148,7 +148,7 @@ export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
 export class TokenWithListed extends Token {
   @ApiProperty({
     description:
-      'Specifies if a token is supported/listed officialy by the DEX or is just added by a random user',
+      'Specifies if a token is supported/listed officially by the DEX or is just added by a random user',
     examples: [true, false],
   })
   listed: boolean;
@@ -157,7 +157,7 @@ export class TokenWithListed extends Token {
 export class TokenWithPairAddresses extends TokenWithListed {
   @ApiProperty({
     description:
-      'All pairs addresses in wich a given token takes part (as token0 or as token1)',
+      'All pairs addresses in which a given token takes part (as token0 or as token1)',
     pattern: contractPattern,
   })
   pairs: string[];
@@ -214,7 +214,7 @@ export class GlobalState {
   tokens: number;
 
   @ApiProperty({
-    description: 'How many tokens are officialy listed',
+    description: 'How many tokens are officially listed',
     example: 4,
   })
   listedTokens: number;
@@ -227,7 +227,7 @@ export class GlobalState {
 
   @ApiProperty({
     description:
-      'How many pairs contains only officialy listed tokens (token0 & token1)',
+      'How many pairs contains only officially listed tokens (token0 & token1)',
     example: 7,
   })
   listedPairs: number;
