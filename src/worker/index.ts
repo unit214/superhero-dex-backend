@@ -179,24 +179,31 @@ const onFactoryEventReceived = async (ctx: Context, height: number) => {
   );
 };
 
-const createOnEventReceived =
-  (ctx: Context) => async (event: mdw.SubscriptionEvent) => {
+export const createOnEventReceived =
+  (
+    ctx: Context,
+    logger: Logger,
+    onFactory: typeof onFactoryEventReceived,
+    refreshPairLiquidity: typeof refreshPairLiquidityByAddress,
+    getAllAddresses: () => Promise<ContractAddress[]>,
+  ) =>
+  async (event: mdw.SubscriptionEvent) => {
     const {
       hash,
       tx: { type },
     } = event.payload;
     if (type !== 'ContractCallTx') {
-      logger.debug(`Ignoring transaction of type ${type}`);
+      logger.debug(`Ignoring transaction of type '${type}'`);
       return;
     }
     //TODO: try to trow exception here to see if it reconnects
     const txInfo = await ctx.client.getTxInfo(hash);
     if (!txInfo) {
       //TODO: what happens if no txInfo??
-      throw new Error(`No tx info for hash ${hash}`);
+      throw new Error(`No tx info for hash '${hash}'`);
     }
     if (txInfo.returnType !== 'ok') {
-      logger.debug(`Ignore reverted transaction: ${hash}`);
+      logger.debug(`Ignore reverted transaction: '${hash}'`);
       return;
     }
     // make a list with all unique contracts
@@ -204,25 +211,21 @@ const createOnEventReceived =
 
     // get all known addresses
     const addresses: { [key: ContractAddress]: boolean | undefined } = (
-      await dal.pair.getAllAddresses()
+      await getAllAddresses()
     ).reduce((a, v) => ({ ...a, [v]: true }), {});
 
     //parse events on be on
     const allPromises = contracts.map((contract) => {
       //factory state was modified was modified
       if (contract === process.env.FACTORY_ADDRESS) {
-        return onFactoryEventReceived(ctx, event.payload.block_height);
+        return onFactory(ctx, event.payload.block_height);
       }
       // if the pair is newly created withing this transaction
       // the pair will be ignore in this loop, but that's not a problem, because
       // factory event handler was also involved here and it will take care of
       // newly created pair
       else if (addresses[contract]) {
-        return refreshPairLiquidityByAddress(
-          ctx,
-          contract,
-          event.payload.block_height,
-        );
+        return refreshPairLiquidity(ctx, contract, event.payload.block_height);
       }
       return Promise.resolve();
     });
@@ -234,9 +237,18 @@ export default (ctx: Context) => {
     const batch = await dal.pair.unsyncAllPairs();
     logger.log(`${batch.count} pairs marked as unsync`);
   };
-  const onEventReceived = createOnEventReceived(ctx);
+  const onEventReceived = createOnEventReceived(
+    ctx,
+    logger,
+    onFactoryEventReceived,
+    refreshPairLiquidityByAddress,
+    () => dal.pair.getAllAddresses(),
+  );
 
-  async function startWorker(autoStart?: boolean, crashWhenClosed?: boolean) {
+  const startWorker = async (
+    autoStart?: boolean,
+    crashWhenClosed?: boolean,
+  ) => {
     logger.log('Starting worker...');
     await unsyncAllPairs();
     await mdw.createNewConnection({
@@ -255,7 +267,7 @@ export default (ctx: Context) => {
       },
       onEventReceived,
     });
-  }
+  };
   return {
     refreshPairsLiquidity: () => refreshPairsLiquidity(ctx),
     refreshPairs: () => refreshPairs(ctx),

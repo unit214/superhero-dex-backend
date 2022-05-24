@@ -109,13 +109,11 @@ export type TxInfo = {
   gasPrice: number;
   gasUsed: number;
   height: number;
-  log: [
-    {
-      address: ContractAddress;
-      data: CallData;
-      topics: unknown[];
-    },
-  ];
+  log: {
+    address: ContractAddress;
+    data: CallData;
+    topics: unknown[];
+  }[];
   returnType: 'ok' | 'revert';
   returnValue: CallData;
 };

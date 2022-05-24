@@ -12,7 +12,7 @@ export const getAllAddresses = async () =>
         address: true,
       },
     })
-  ).map((x) => x.address);
+  ).map((x) => x.address as ContractAddress);
 
 export const getAll = (onlyListed?: boolean) =>
   prisma.pair.findMany({
