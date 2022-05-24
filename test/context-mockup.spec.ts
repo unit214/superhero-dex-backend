@@ -14,13 +14,13 @@ describe('Context', () => {
     const mockedPM = mockDeep<PairMethods>();
     mockedPM.token0
       .calledWith()
-      .mockReturnValue(Promise.resolve(mockupContractMethod('ct_asdada')));
+      .mockReturnValue(Promise.resolve(mockupContractMethod('ct_sample')));
 
     mocked.getPair
-      .calledWith('ct_asda')
+      .calledWith('ct_sample')
       .mockReturnValue(Promise.resolve(mockedPM));
-    const ss = await mocked.getPair('ct_asda');
-    expect((await ss.token0()).decodedResult).toBe('ct_asdada');
+    const ss = await mocked.getPair('ct_sample');
+    expect((await ss.token0()).decodedResult).toBe('ct_sample');
   });
 });
 

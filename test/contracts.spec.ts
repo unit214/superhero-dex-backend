@@ -25,7 +25,7 @@ describe('with real Context on testnet', () => {
       (await ctx().factory.allPairs()).decodedResult.length,
     ).toBeGreaterThanOrEqual(16);
   });
-  it('pair should return right token addreses', async () => {
+  it('pair should return right token addresses', async () => {
     const { decodedResult: allPairs } = await ctx().factory.allPairs();
     const pairAddress = allPairs[15];
     expect(pairAddress).toBe(

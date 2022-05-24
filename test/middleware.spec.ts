@@ -68,7 +68,7 @@ describe('createMessageHandler', () => {
     await msgHandler('["ct_1",2,5]' as any);
     expect(logger.debug).toHaveBeenCalledWith('Subscribed to 3 contracts');
   });
-  it('unrecongnized object will cause error', async () => {
+  it('unrecognized object will cause error', async () => {
     expect(() =>
       msgHandler('{"prop": "oject without proper shape"}' as any),
     ).rejects.toThrow(

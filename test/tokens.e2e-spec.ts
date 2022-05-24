@@ -454,26 +454,22 @@ describe('listed tokens management (e2e)', () => {
   });
   describe('add to token list', () => {
     it('/tokens/listed/ct_xxxx(POST) 401 with no auth key and with invalid token', async () => {
-      //
       await request(app.getHttpServer())
         .post('/tokens/listed/ct_xxxx')
         .expect(401);
     });
     it('/tokens/listed/ct_t0 (POST) 401 with no auth key provided and valid token address', async () => {
-      //
       await request(app.getHttpServer())
         .post('/tokens/listed/ct_t0')
         .expect(401);
     });
-    it('/tokens/listed/ct_xxxx (POST) 401 whith invalid auth key and invalid token', async () => {
-      //
+    it('/tokens/listed/ct_xxxx (POST) 401 with invalid auth key and invalid token', async () => {
       await request(app.getHttpServer())
         .post('/tokens/listed/ct_xxxx')
         .set('Authorization', 'wrong-key')
         .expect(401);
     });
-    it('/tokens/listed/ct_xxxx (POST) 401 whith invalid auth key and valid token', async () => {
-      //
+    it('/tokens/listed/ct_xxxx (POST) 401 with invalid auth key and valid token', async () => {
       await request(app.getHttpServer())
         .post('/tokens/listed/ct_t0')
         .set('Authorization', 'wrong-key')
@@ -511,7 +507,6 @@ describe('listed tokens management (e2e)', () => {
           decimals: 6,
           listed: true,
         });
-      //
       //re-verify ct_t1 to be sure it was persisted also
       await request(app.getHttpServer())
         .get('/tokens/by-address/ct_t1')
@@ -528,26 +523,22 @@ describe('listed tokens management (e2e)', () => {
   });
   describe('remove from token list', () => {
     it('/tokens/listed/ct_xxxx (DELETE) 401 with no auth key and with invalid token', async () => {
-      //
       await request(app.getHttpServer())
         .delete('/tokens/listed/ct_xxxx')
         .expect(401);
     });
     it('/tokens/listed/ct_t0 (DELETE) 401 with no auth key provided and valid token address', async () => {
-      //
       await request(app.getHttpServer())
         .delete('/tokens/listed/ct_t0')
         .expect(401);
     });
-    it('/tokens/listed/ct_xxxx (DELETE) 401 whith invalid auth key and invalid token', async () => {
-      //
+    it('/tokens/listed/ct_xxxx (DELETE) 401 with invalid auth key and invalid token', async () => {
       await request(app.getHttpServer())
         .delete('/tokens/listed/ct_xxxx')
         .set('Authorization', 'wrong-key')
         .expect(401);
     });
-    it('/tokens/listed/ct_xxxx (DELETE) 401 whith invalid auth key and valid token', async () => {
-      //
+    it('/tokens/listed/ct_xxxx (DELETE) 401 with invalid auth key and valid token', async () => {
       await request(app.getHttpServer())
         .delete('/tokens/listed/ct_t0')
         .set('Authorization', 'wrong-key')
@@ -585,7 +576,6 @@ describe('listed tokens management (e2e)', () => {
           decimals: 10,
           listed: false,
         });
-      //
       //re-verify ct_t3 to be sure the unlisting was persisted too
       await request(app.getHttpServer())
         .get('/tokens/by-address/ct_t3')

@@ -245,7 +245,7 @@ describe('pairs fetching (e2e)', () => {
         },
       });
   });
-  it('/pairs/by-address/ct_0000 (GET) 404 unfound pair', async () => {
+  it('/pairs/by-address/ct_0000 (GET) 404 not founded pair', async () => {
     return request(app.getHttpServer())
       .get('/pairs/by-address/ct_0000')
       .expect(404)

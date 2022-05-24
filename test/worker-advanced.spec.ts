@@ -50,7 +50,7 @@ beforeEach(() => {
 });
 
 describe('createOnEventReceived', () => {
-  it('ignores unkown types', async () => {
+  it('ignores unknown types', async () => {
     await eventHandler({
       ...objSubEv,
       payload: {
