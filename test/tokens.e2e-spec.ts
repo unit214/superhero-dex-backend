@@ -4,7 +4,6 @@ import * as request from 'supertest';
 import { AppModule } from './../src/api/app.module';
 
 import worker from '../src/worker';
-import db from '../src/dal/client';
 import { clean as cleanDb } from './utils/db';
 import * as data from './data/context-mockups';
 import * as dto from '../src/dto';
@@ -77,18 +76,9 @@ describe('tokens fetching (e2e)', () => {
       .expect([]);
   });
 
-  const listToken = (address: string) =>
-    db.token.update({
-      where: {
-        address,
-      },
-      data: {
-        listed: true,
-      },
-    });
   it('/tokens/listed (GET) 200 non-empty', async () => {
-    await listToken('ct_t0');
-    await listToken('ct_t3');
+    await utils.listToken('ct_t0');
+    await utils.listToken('ct_t3');
     const response = await request(app.getHttpServer())
       .get('/tokens/listed')
       .expect(200);
@@ -111,8 +101,8 @@ describe('tokens fetching (e2e)', () => {
   });
 
   it('/tokens (GET) 200 with some listed', async () => {
-    await listToken('ct_t0');
-    await listToken('ct_t3');
+    await utils.listToken('ct_t0');
+    await utils.listToken('ct_t3');
     const response = await request(app.getHttpServer())
       .get('/tokens')
       .expect(200);
@@ -276,8 +266,8 @@ describe('tokens fetching (e2e)', () => {
     activeWorker = worker(ctx);
     await activeWorker.refreshPairs();
     await activeWorker.refreshPairsLiquidity();
-    await listToken('ct_t0');
-    await listToken('ct_t3');
+    await utils.listToken('ct_t0');
+    await utils.listToken('ct_t3');
 
     const response = await request(app.getHttpServer())
       .get('/tokens/by-address/ct_t3/pairs')
@@ -348,8 +338,8 @@ describe('tokens fetching (e2e)', () => {
     activeWorker = worker(ctx);
     await activeWorker.refreshPairs();
     await activeWorker.refreshPairsLiquidity();
-    await listToken('ct_t0');
-    await listToken('ct_t3');
+    await utils.listToken('ct_t0');
+    await utils.listToken('ct_t3');
 
     const response = await request(app.getHttpServer())
       .get('/tokens/by-address/ct_t3/pairs')

@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/api/app.module';
 
-import { mockContext } from './utils/context.mockup';
+import { mockContext, listToken } from './utils';
 import worker from '../src/worker';
 import * as db from './utils/db';
 import * as data from './data/context-mockups';
@@ -49,7 +49,7 @@ describe('swap-routes fetching (e2e)', () => {
       .expect(200)
       .expect([]);
   });
-  it('/pairs/swap-routes/ct_t0/ct_t5 (GET) 200 no paths for unexisting pair', async () => {
+  it('/pairs/swap-routes/ct_t0/ct_t5 (GET) 200 no path for unexisting pair', async () => {
     await init({
       ...data.context2,
       tokens: data.context2.tokens.concat({
@@ -160,6 +160,25 @@ describe('swap-routes fetching (e2e)', () => {
             address: 'ct_p2',
             token0: 'ct_t1',
             token1: 'ct_t3',
+            synchronized: false,
+          },
+        ],
+      ]);
+  });
+  it('/pairs/swap-routes/ct_t0/ct_t1?only-listed=true (GET) 200 suppress some paths', async () => {
+    await init(data.context2);
+
+    await listToken('ct_t0');
+    await listToken('ct_t1');
+    return request(app.getHttpServer())
+      .get('/pairs/swap-routes/ct_t0/ct_t1?only-listed=true')
+      .expect(200)
+      .expect([
+        [
+          {
+            address: 'ct_p1',
+            token0: 'ct_t0',
+            token1: 'ct_t1',
             synchronized: false,
           },
         ],

@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/api/app.module';
-
-import { mockContext } from './utils/context.mockup';
+import { mockContext, listToken, sortByAddress } from './utils';
 import createWorkerMethods from '../src/worker';
 import * as data from './data/context-mockups';
 import * as db from './utils/db';
@@ -68,13 +67,8 @@ describe('pairs fetching (e2e)', () => {
     const response = await request(app.getHttpServer())
       .get('/pairs')
       .expect(200);
-    const value = JSON.parse(response.text);
 
-    expect(
-      value.sort((a: { address: string }, b: { address: string }) =>
-        a.address.localeCompare(b.address),
-      ),
-    ).toEqual([
+    expect(sortByAddress(JSON.parse(response.text))).toEqual([
       {
         address: 'ct_p1',
         token0: 'ct_t0',
@@ -104,13 +98,8 @@ describe('pairs fetching (e2e)', () => {
     const response = await request(app.getHttpServer())
       .get('/pairs')
       .expect(200);
-    const value = JSON.parse(response.text);
 
-    expect(
-      value.sort((a: { address: string }, b: { address: string }) =>
-        a.address.localeCompare(b.address),
-      ),
-    ).toEqual([
+    expect(sortByAddress(JSON.parse(response.text))).toEqual([
       {
         address: 'ct_p1',
         token0: 'ct_t0',
@@ -134,6 +123,40 @@ describe('pairs fetching (e2e)', () => {
         synchronized: false,
         token0: 'ct_t0',
         token1: 'ct_t4',
+      },
+    ]);
+  });
+
+  it('/pairs (GET) 200 only-listed=true', async () => {
+    await activeWorker.refreshPairsLiquidity();
+    const ctx = mockContext(data.context21);
+    activeWorker = createWorkerMethods(ctx);
+    await activeWorker.refreshPairs();
+
+    let response = await request(app.getHttpServer())
+      .get('/pairs?only-listed=true')
+      .expect(200);
+
+    expect(sortByAddress(JSON.parse(response.text))).toEqual([]);
+    await listToken('ct_t0');
+    await listToken('ct_t3');
+    await listToken('ct_t4');
+
+    response = await request(app.getHttpServer())
+      .get('/pairs?only-listed=true')
+      .expect(200);
+    expect(sortByAddress(JSON.parse(response.text))).toEqual([
+      {
+        address: 'ct_p3',
+        token0: 'ct_t0',
+        token1: 'ct_t3',
+        synchronized: true,
+      },
+      {
+        address: 'ct_p4',
+        token0: 'ct_t0',
+        token1: 'ct_t4',
+        synchronized: false,
       },
     ]);
   });

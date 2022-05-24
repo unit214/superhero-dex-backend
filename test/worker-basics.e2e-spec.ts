@@ -52,7 +52,9 @@ it('refresh new added pairs', async () => {
   const ctx = mockContext(data.context21);
   activeWorker = createWorkerMethods(ctx);
   await activeWorker.refreshPairs();
-  const pairs: prisma.Pair[] = await db.pair.findMany();
+  const pairs: prisma.Pair[] = await db.pair.findMany({
+    orderBy: { id: 'asc' },
+  });
   expect(await db.pair.count()).toBe(4);
   expect(pairs[3]).toMatchObject({
     address: data.context21.pairs[3].address,
