@@ -5,7 +5,6 @@ import {
   CallData,
   ContractAddress,
   Hash,
-  NETWORK_NAME,
   nonNullable,
   pluralize,
   Signature,
@@ -16,9 +15,8 @@ import {
 import { Logger } from '@nestjs/common';
 const logger = new Logger('WebSocket');
 
-const MIDDLEWARE_URL: string = NETWORKS[NETWORK_NAME].middlewareUrl;
-const createWebSocketConnection = () => new WebSocket(MIDDLEWARE_URL);
-const { ROUTER_ADDRESS, SUBSCRIBE_TO_ALL_TXS } = process.env;
+const createWebSocketConnection = () =>
+  new WebSocket(NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareUrl);
 
 export type SubscriptionEvent = {
   subscription: 'Object' | 'Transactions'; // add any other additional enum values if are used
@@ -119,6 +117,7 @@ export const createNewConnection = async (
     setAlive();
     ws.on('pong', setAlive);
 
+    const { ROUTER_ADDRESS, SUBSCRIBE_TO_ALL_TXS } = process.env;
     if (SUBSCRIBE_TO_ALL_TXS && parseInt(SUBSCRIBE_TO_ALL_TXS)) {
       subscribeToAllTxs(ws);
     } else {

@@ -10,11 +10,11 @@ import {
 import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
 import * as factoryInterface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
 import * as pairInterface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
-import { NETWORK_NAME } from './utils';
 
 let client: any = null;
 
 const getClient = async () => {
+  const NETWORK_NAME = nonNullable(process.env.NETWORK_NAME);
   if (!client) {
     const node = await Node({
       url: NETWORKS[NETWORK_NAME].nodeUrl,
