@@ -1,0 +1,50 @@
+name: Dex Backend Tests Pipeline
+
+on:
+  push:
+    branches: 
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+    types: [ opened ]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    name: Dex backend tests
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: 12345
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_SCHEMA: test
+          POSTGRES_HOST_PORT: 5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: npm install
+      - run: npm ci
+
+      - name: unit test
+      - run: npm run test
+
+      - name: e2e test
+      - run: npm run test:e2e
