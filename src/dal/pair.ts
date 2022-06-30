@@ -1,8 +1,20 @@
 import prisma from './client';
 import { ContractAddress } from '../lib/utils';
-const onlyListedCondition = {
-  token0: { is: { listed: true } },
-  token1: { is: { listed: true } },
+import { validTokenCondition } from './token';
+
+const tokenCondition = (showInvalidTokens: boolean, onlyListed?: boolean) => ({
+  is: {
+    ...(onlyListed ? { listed: true } : {}),
+    ...(showInvalidTokens ? {} : validTokenCondition),
+  },
+});
+
+const tokensCondition = (showInvalidTokens: boolean, onlyListed?: boolean) => {
+  const condition = tokenCondition(showInvalidTokens, !!onlyListed);
+  return {
+    token0: condition,
+    token1: condition,
+  };
 };
 
 export const getAllAddresses = async () =>
@@ -14,9 +26,9 @@ export const getAllAddresses = async () =>
     })
   ).map((x) => x.address as ContractAddress);
 
-export const getAll = (onlyListed?: boolean) =>
+export const getAll = (showInvalidTokens: boolean, onlyListed?: boolean) =>
   prisma.pair.findMany({
-    where: onlyListed ? onlyListedCondition : {},
+    where: tokensCondition(showInvalidTokens, onlyListed),
     include: {
       token0: true,
       token1: true,
@@ -30,9 +42,12 @@ export const getTopHeight = async () =>
     })
   )._max.height;
 
-export const getAllWithLiquidityInfo = (onlyListed?: boolean) =>
+export const getAllWithLiquidityInfo = (
+  showInvalidTokens: boolean,
+  onlyListed?: boolean,
+) =>
   prisma.pair.findMany({
-    where: onlyListed ? onlyListedCondition : {},
+    where: tokensCondition(showInvalidTokens, onlyListed),
     include: {
       token0: true,
       token1: true,
@@ -52,14 +67,12 @@ export const getOneLite = (address: string) =>
   });
 
 export type CountMode = 'all' | 'listed' | 'synchronized';
-export const count = (mode?: CountMode) =>
+export const count = (showInvalidTokens: boolean, mode?: CountMode) =>
   prisma.pair.count({
-    where:
-      mode === 'listed'
-        ? onlyListedCondition
-        : mode === 'synchronized'
-        ? { synchronized: true }
-        : {},
+    where: {
+      ...tokensCondition(showInvalidTokens, mode === 'listed'),
+      ...(mode === 'synchronized' ? { synchronized: true } : {}),
+    },
   });
 
 export const insert = (address: string, token0: number, token1: number) =>

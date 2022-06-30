@@ -36,7 +36,6 @@ const testContextDataMockup = (label: string, contextData: ContextData) => {
 
     it('test factory.allPairs()', async () => {
       const { decodedResult: pairs } = await context.factory.allPairs();
-      debugger;
       expect(pairs).toEqual(contextData.pairs.map((x) => x.address).reverse());
     });
 

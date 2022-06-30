@@ -66,10 +66,25 @@ export class Token {
   name: string;
 
   @ApiProperty({
-    description: 'Total number of decimals represented by the token',
+    description: `Total number of decimals represented by the token. \
+If the token is marked as malformed or no contract was found decimals will be \`-1\``,
     example: 18,
   })
   decimals: number;
+
+  @ApiProperty({
+    description:
+      "`true` in token meta-info (name/symbol/decimals/) could not be retrieved or doesn't follow AEX9 specifications",
+    example: false,
+  })
+  malformed: boolean;
+
+  @ApiProperty({
+    description:
+      '`true` if there is no contract deployed at the specified address',
+    example: false,
+  })
+  noContract: boolean;
 }
 
 export class Pair extends PairBase {

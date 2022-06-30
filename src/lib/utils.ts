@@ -25,3 +25,6 @@ export type Signature = `sg_${string}`;
 export type Hash = `th_${string}`;
 export type BlockHash = `mh_${string}`;
 export type Payload = `ba_${string}`;
+
+const parseEnv = (x) => x && JSON.parse(x);
+export const presentInvalidTokens = parseEnv(process.env.SHOW_INVALID_TOKENS);

@@ -52,6 +52,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'A Token',
         decimals: 18,
         listed: false,
+        malformed: false,
+        noContract: false,
       },
       {
         address: 'ct_t1',
@@ -59,6 +61,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'B Token',
         decimals: 6,
         listed: false,
+        malformed: false,
+        noContract: false,
       },
       {
         address: 'ct_t3',
@@ -66,6 +70,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'C Token',
         decimals: 10,
         listed: false,
+        malformed: false,
+        noContract: false,
       },
     ]);
   });
@@ -91,12 +97,16 @@ describe('tokens fetching (e2e)', () => {
         symbol: 'A',
         name: 'A Token',
         decimals: 18,
+        malformed: false,
+        noContract: false,
       },
       {
         address: 'ct_t3',
         symbol: 'C',
         name: 'C Token',
         decimals: 10,
+        malformed: false,
+        noContract: false,
       },
     ]);
   });
@@ -120,6 +130,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'A Token',
         decimals: 18,
         listed: true,
+        malformed: false,
+        noContract: false,
       },
       {
         address: 'ct_t1',
@@ -127,6 +139,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'B Token',
         decimals: 6,
         listed: false,
+        malformed: false,
+        noContract: false,
       },
       {
         address: 'ct_t3',
@@ -134,6 +148,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'C Token',
         decimals: 10,
         listed: true,
+        malformed: false,
+        noContract: false,
       },
     ]);
   });
@@ -148,6 +164,8 @@ describe('tokens fetching (e2e)', () => {
         name: 'A Token',
         decimals: 18,
         listed: false,
+        malformed: false,
+        noContract: false,
         pairs: ['ct_p1', 'ct_p3'],
       });
   });
@@ -180,6 +198,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
       },
       {
@@ -191,6 +211,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'C Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
       },
     ]);
@@ -218,6 +240,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -235,6 +259,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'C Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -252,6 +278,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'D Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -287,6 +315,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           totalSupply: '200000',
@@ -304,6 +334,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'A Token',
           decimals: 18,
           listed: true,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -358,6 +390,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'D Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -375,6 +409,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -394,6 +430,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -411,6 +449,8 @@ describe('tokens fetching (e2e)', () => {
           name: 'A Token',
           decimals: 18,
           listed: true,
+          malformed: false,
+          noContract: false,
         },
         liquidityInfo: {
           height: 1,
@@ -492,6 +532,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
           pairs: ['ct_p2', 'ct_p1'],
         });
 
@@ -506,6 +548,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: true,
+          malformed: false,
+          noContract: false,
         });
       //re-verify ct_t1 to be sure it was persisted also
       await request(app.getHttpServer())
@@ -517,6 +561,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: true,
+          malformed: false,
+          noContract: false,
           pairs: ['ct_p2', 'ct_p1'],
         });
     });
@@ -561,6 +607,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'C Token',
           decimals: 10,
           listed: true,
+          malformed: false,
+          noContract: false,
           pairs: ['ct_p2', 'ct_p3'],
         });
 
@@ -575,6 +623,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'C Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
         });
       //re-verify ct_t3 to be sure the unlisting was persisted too
       await request(app.getHttpServer())
@@ -586,6 +636,8 @@ describe('listed tokens management (e2e)', () => {
           name: 'C Token',
           decimals: 10,
           listed: false,
+          malformed: false,
+          noContract: false,
           pairs: ['ct_p2', 'ct_p3'],
         });
     });

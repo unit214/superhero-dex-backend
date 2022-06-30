@@ -173,6 +173,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'A Token',
           decimals: 18,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         token1: {
           address: 'ct_t1',
@@ -180,6 +182,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         synchronized: false,
       });
@@ -197,6 +201,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'A Token',
           decimals: 18,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         token1: {
           address: 'ct_t1',
@@ -204,6 +210,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         synchronized: true,
         liquidityInfo: {
@@ -228,6 +236,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'A Token',
           decimals: 18,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         token1: {
           address: 'ct_t1',
@@ -235,6 +245,8 @@ describe('pairs fetching (e2e)', () => {
           name: 'B Token',
           decimals: 6,
           listed: false,
+          malformed: false,
+          noContract: false,
         },
         synchronized: false,
         liquidityInfo: {

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import * as dal from '../../dal';
 import { Pair, Token, PairLiquidityInfo } from '@prisma/client';
-import { ContractAddress } from '../../lib/utils';
+import { ContractAddress, presentInvalidTokens } from '../../lib/utils';
 
 @Injectable()
 export class TokensService {
   async getCount(onlyListed?: boolean) {
-    return dal.token.count(onlyListed);
+    return dal.token.count(presentInvalidTokens, onlyListed);
   }
   async getAllTokens(): Promise<Token[]> {
-    return dal.token.getAll();
+    return dal.token.getAll(presentInvalidTokens);
   }
   async getListedTokens(): Promise<Token[]> {
     return dal.token.getListed();

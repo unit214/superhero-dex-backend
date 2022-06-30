@@ -1,4 +1,4 @@
-import { Context } from '../lib/contracts';
+import { Context, Aex9Methods } from '../lib/contracts';
 import * as dal from '../dal';
 import * as db from '@prisma/client';
 import * as mdw from './middleware';
@@ -6,6 +6,30 @@ import * as mdw from './middleware';
 import { Logger } from '@nestjs/common';
 import { ContractAddress } from 'src/lib/utils';
 const logger = new Logger('Worker');
+
+const updateTokenMetadata = async (
+  address: ContractAddress,
+  tokenMethods: Aex9Methods,
+) => {
+  try {
+    const {
+      decodedResult: { name, symbol, decimals },
+    } = await tokenMethods.metaInfo();
+
+    const tokenFromDb = await dal.token.upsertToken(
+      address,
+      symbol,
+      name,
+      Number(decimals),
+    );
+    logger.debug(`Token ${symbol} [${address}] updated/inserted`);
+    return tokenFromDb.id;
+  } catch (error) {
+    const tokenFromDb = await dal.token.upsertMalformedToken(address);
+    logger.warn(`Token ${address} is malformed`, error.message);
+    return tokenFromDb.id;
+  }
+};
 
 const upsertTokenInformation = async (
   ctx: Context,
@@ -15,19 +39,20 @@ const upsertTokenInformation = async (
   if (token) {
     return token.id;
   }
-  const tokenMethods = await ctx.getToken(address);
-  const {
-    decodedResult: { name, symbol, decimals },
-  } = await tokenMethods.metaInfo();
+  let tokenMethods: Aex9Methods;
+  try {
+    tokenMethods = await ctx.getToken(address);
+  } catch (error) {
+    const noContract = `Contract with address ${address} not found on-chain`;
+    if (error.message && error.message.indexOf(noContract) > -1) {
+      const tokenFromDb = await dal.token.upsertNoContractForToken(address);
+      logger.warn(`No contract for Token ${address}`);
+      return tokenFromDb.id;
+    }
+    throw error;
+  }
 
-  const tokenFromDb = await dal.token.upsertToken(
-    address,
-    symbol,
-    name,
-    Number(decimals),
-  );
-  logger.debug(`Token ${symbol} [${address}] updated/inserted`);
-  return tokenFromDb.id;
+  return await updateTokenMetadata(address, tokenMethods);
 };
 
 const insertNewPair = async (
@@ -61,7 +86,7 @@ const insertOnlyNewTokens = async (
   ctx: Context,
   tokenAddresses: ContractAddress[],
 ) => {
-  const allAddresses = new Set(await dal.token.getAllAddresses());
+  const allAddresses = new Set(await dal.token.getAllAddresses(true));
   const newOnes = tokenAddresses.filter(
     (tokenAddress) => !allAddresses.has(tokenAddress),
   );
@@ -115,7 +140,7 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
   logger.log(`Getting all pairs from Factory...`);
   const { decodedResult: allFactoryPairs } = await ctx.factory.allPairs();
   logger.log(`${allFactoryPairs.length} pairs found on DEX`);
-  const allDbPairsLen = await dal.pair.count();
+  const allDbPairsLen = await dal.pair.count(true);
   //get new pairs, and reverse it , because allFactoryPairs is reversed by the factory contract
   const newAddresses = allFactoryPairs
     .slice(0, allFactoryPairs.length - allDbPairsLen)
@@ -164,7 +189,7 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
 
 const refreshPairsLiquidity = async (ctx: Context) => {
   //get the all pairs
-  const dbPairs = await dal.pair.getAll();
+  const dbPairs = await dal.pair.getAll(true);
   logger.log(`Refreshing pairs liquidity...`);
   await Promise.all(dbPairs.map((dbPair) => refreshPairLiquidity(ctx, dbPair)));
   logger.log(`Pairs liquidity refresh completed`);

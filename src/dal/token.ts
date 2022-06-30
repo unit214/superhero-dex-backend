@@ -2,21 +2,39 @@ import { Token } from '@prisma/client';
 import prisma from './client';
 import { ContractAddress } from '../lib/utils';
 
-export const getAll = (): Promise<Token[]> => prisma.token.findMany({});
+export const validTokenCondition = { malformed: false, noContract: false };
+
+export const getAll = (showInvalidTokens: boolean): Promise<Token[]> =>
+  prisma.token.findMany({
+    where: showInvalidTokens ? {} : validTokenCondition,
+  });
 
 export const getListed = (): Promise<Token[]> =>
-  prisma.token.findMany({ where: { listed: true } });
+  //there is no reason to list invalid tokens
+  prisma.token.findMany({ where: { ...validTokenCondition, listed: true } });
 
 export const getByAddress = (address: string) =>
   prisma.token.findFirst({
     where: { address },
   });
 
-export const updateListedValue = (address: string, listed: boolean) =>
-  prisma.token.update({
+export const updateListedValue = async (address: string, listed: boolean) => {
+  //ensure the token is valid in order to be listed
+  if (listed) {
+    const exists = await prisma.token.findFirst({
+      where: { address },
+      select: { malformed: true, noContract: true },
+    });
+    if (exists?.malformed || exists?.noContract) {
+      throw new Error("An invalid token can't be listed");
+    }
+  }
+  return prisma.token.update({
+    //we don't want to list invalid tokens
     where: { address },
     data: { listed },
   });
+};
 
 export const getByAddressWithPairs = (address: string) =>
   prisma.token.findFirst({
@@ -24,9 +42,12 @@ export const getByAddressWithPairs = (address: string) =>
     include: { pairs0: true, pairs1: true },
   });
 
-export const count = (onlyListed?: boolean) =>
+export const count = (showInvalidTokens: boolean, onlyListed?: boolean) =>
   prisma.token.count({
-    where: onlyListed ? { listed: true } : {},
+    where: {
+      ...(onlyListed ? { listed: true } : {}),
+      ...(() => (showInvalidTokens ? {} : validTokenCondition))(),
+    },
   });
 
 export const getByAddressWithPairsAndLiquidity = (address: string) =>
@@ -38,9 +59,12 @@ export const getByAddressWithPairsAndLiquidity = (address: string) =>
     },
   });
 
-export const getAllAddresses = async (): Promise<ContractAddress[]> =>
+export const getAllAddresses = async (
+  showInvalidTokens: boolean,
+): Promise<ContractAddress[]> =>
   (
     await prisma.token.findMany({
+      where: showInvalidTokens ? {} : validTokenCondition,
       select: {
         address: true,
       },
@@ -53,10 +77,25 @@ export const upsertToken = (
   name: string,
   decimals: number,
 ): Promise<Token> =>
+  commonUpsert(address, {
+    symbol,
+    name,
+    decimals,
+    noContract: false,
+    malformed: false,
+  });
+
+export const upsertMalformedToken = (address: string): Promise<Token> =>
+  commonUpsert(address, { malformed: true, noContract: false });
+
+export const upsertNoContractForToken = (address: string): Promise<Token> =>
+  commonUpsert(address, { malformed: false, noContract: true });
+
+const commonUpsert = <T>(address: string, common: T): Promise<Token> =>
   prisma.token.upsert({
     where: {
       address,
     },
-    update: { symbol, name, decimals },
-    create: { address, symbol, name, decimals },
+    update: common,
+    create: { address, ...common },
   });
