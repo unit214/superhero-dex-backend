@@ -27,7 +27,7 @@ describe('with real Context on testnet', () => {
   });
   it('pair should return right token addresses', async () => {
     const { decodedResult: allPairs } = await ctx().factory.allPairs();
-    const pairAddress = allPairs[15];
+    const pairAddress = allPairs[allPairs.length - 1];
     expect(pairAddress).toBe(
       'ct_efYtiwDg4YZxDWE3iLPzvrjb92CJPvzGwriv4ZRuvuTDMNMb9',
     );

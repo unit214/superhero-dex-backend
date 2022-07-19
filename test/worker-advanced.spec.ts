@@ -74,12 +74,17 @@ describe('createOnEventReceived', () => {
     ).rejects.toThrow(`No tx info for hash 'th_1'`);
   });
   it('ignores inverted transaction', async () => {
-    ctx.client.getTxInfo.calledWith(swapEvent.payload.hash).mockReturnValue(
-      Promise.resolve({
-        ...swapTxInfo,
-        returnType: 'revert',
-      }),
-    );
+    ctx.node.getTransactionInfoByHash
+      .calledWith(swapEvent.payload.hash)
+      .mockReturnValue(
+        Promise.resolve({
+          ...swapTxInfo,
+          callInfo: {
+            ...swapTxInfo.callInfo,
+            returnType: 'revert',
+          },
+        }),
+      );
     await eventHandler({
       ...swapEvent,
     });
@@ -88,18 +93,23 @@ describe('createOnEventReceived', () => {
     );
   });
   it('refresh pairs in factory', async () => {
-    ctx.client.getTxInfo.calledWith(objSubEv.payload.hash).mockReturnValue(
-      Promise.resolve({
-        ...swapTxInfo,
-        log: [
-          {
-            address: process.env.FACTORY_ADDRESS as any,
-            data: 'cb_1=',
-            topics: [],
+    ctx.node.getTransactionInfoByHash
+      .calledWith(objSubEv.payload.hash)
+      .mockReturnValue(
+        Promise.resolve({
+          ...swapTxInfo,
+          callInfo: {
+            ...swapTxInfo.callInfo,
+            log: [
+              {
+                address: process.env.FACTORY_ADDRESS as any,
+                data: 'cb_1=',
+                topics: [],
+              },
+            ],
           },
-        ],
-      }),
-    );
+        }),
+      );
     getAllAddresses.calledWith().mockReturnValue(Promise.resolve([]));
     await eventHandler({
       ...objSubEv,
@@ -107,29 +117,34 @@ describe('createOnEventReceived', () => {
     expect(onFactory).toHaveBeenCalledWith(ctx, 1);
   });
   it('refresh pair liquidity', async () => {
-    ctx.client.getTxInfo.calledWith(objSubEv.payload.hash).mockReturnValue(
-      Promise.resolve({
-        ...swapTxInfo,
-        log: [
-          {
-            address: 'ct_p1',
-            data: 'cb_1=',
-            topics: [],
+    ctx.node.getTransactionInfoByHash
+      .calledWith(objSubEv.payload.hash)
+      .mockReturnValue(
+        Promise.resolve({
+          ...swapTxInfo,
+          callInfo: {
+            ...swapTxInfo.callInfo,
+            log: [
+              {
+                address: 'ct_p1',
+                data: 'cb_1=',
+                topics: [],
+              },
+              {
+                address: 'ct_p2',
+                data: 'cb_1=',
+                topics: [],
+              },
+              //this will not be called
+              {
+                address: 'ct_p3',
+                data: 'cb_1=',
+                topics: [],
+              },
+            ],
           },
-          {
-            address: 'ct_p2',
-            data: 'cb_1=',
-            topics: [],
-          },
-          //this will not be called
-          {
-            address: 'ct_p3',
-            data: 'cb_1=',
-            topics: [],
-          },
-        ],
-      }),
-    );
+        }),
+      );
     getAllAddresses
       .calledWith()
       .mockReturnValue(Promise.resolve(['ct_p1', 'ct_p2']));

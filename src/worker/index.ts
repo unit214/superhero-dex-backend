@@ -43,7 +43,7 @@ const upsertTokenInformation = async (
   try {
     tokenMethods = await ctx.getToken(address);
   } catch (error) {
-    const noContract = `Contract with address ${address} not found on-chain`;
+    const noContract = `v3/contracts/${address} error: Contract not found`;
     if (error.message && error.message.indexOf(noContract) > -1) {
       const tokenFromDb = await dal.token.upsertNoContractForToken(address);
       logger.warn(`No contract for Token ${address}`);
@@ -222,17 +222,21 @@ export const createOnEventReceived =
       return;
     }
     //TODO: try to trow exception here to see if it reconnects
-    const txInfo = await ctx.client.getTxInfo(hash);
+    const txInfo = await ctx.node.getTransactionInfoByHash(hash);
     if (!txInfo) {
-      //TODO: what happens if no txInfo??
       throw new Error(`No tx info for hash '${hash}'`);
     }
-    if (txInfo.returnType !== 'ok') {
+    if (!txInfo.callInfo) {
+      throw new Error(`No tx.callInfo for hash '${hash}'`);
+    }
+    if (txInfo.callInfo.returnType !== 'ok') {
       logger.debug(`Ignore reverted transaction: '${hash}'`);
       return;
     }
     // make a list with all unique contracts
-    const contracts = [...new Set(txInfo.log.map((x) => x.address))];
+    const contracts = [
+      ...new Set(txInfo.callInfo?.log.map((x) => x.address as ContractAddress)),
+    ];
 
     // get all known addresses
     const addresses: { [key: ContractAddress]: boolean | undefined } = (
