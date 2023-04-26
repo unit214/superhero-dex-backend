@@ -1,5 +1,27 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/aeternity/dex-backend/compare/v1.0.0...v1.0.1) (2023-04-26)
+
+
+### Bug Fixes
+
+* fix gitsha ([57e765c](https://www.github.com/aeternity/dex-backend/commit/57e765c06e29e2065b24df5503602558be774d38))
+
+
+### CI / CD
+
+* **build:** patch-deprecated-gh-action-steps ([70ce082](https://www.github.com/aeternity/dex-backend/commit/70ce0828b6f84982d6d949b3f96285aa10134b6b))
+* change dockerfile to remove unused files and folders ([25dbffa](https://www.github.com/aeternity/dex-backend/commit/25dbffa209806bfd21fe9d38de570603b48844e4))
+* check pr deployment state before sync ([8ed4de4](https://www.github.com/aeternity/dex-backend/commit/8ed4de44f50344bea7196f72365fc0349298c771))
+* exclude and prisma folder from delete ([5b32ebc](https://www.github.com/aeternity/dex-backend/commit/5b32ebc5f70c5707691e64330a6b0b87d93a2f57))
+* fix spelling ([5cdd9e2](https://www.github.com/aeternity/dex-backend/commit/5cdd9e2e6d892868dc90961f8b6aef75bdcf8874))
+
+
+### Miscellaneous
+
+* update to middleware v2 ([825019a](https://www.github.com/aeternity/dex-backend/commit/825019acd8d64af238faf5c39f03a3347aaf71d9))
+* upgrades minor dependency versions ([5d4524f](https://www.github.com/aeternity/dex-backend/commit/5d4524fba2f2ace08e69c9ca6bfb026f0cd3818f))
+
 ## 1.0.0 (2022-07-25)
 
 
