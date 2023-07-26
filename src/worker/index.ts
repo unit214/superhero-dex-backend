@@ -278,7 +278,7 @@ export default (ctx: Context) => {
     autoStart?: boolean,
     crashWhenClosed?: boolean,
   ) => {
-    logger.log('Starting worker...');
+    logger.log(`Starting ${process.env.NETWORK_NAME} worker...`);
     await unsyncAllPairs();
     await mdw.createNewConnection({
       onConnected: async () => {

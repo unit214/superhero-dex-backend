@@ -112,6 +112,6 @@ export const swapTxInfo = {
       },
     ],
     returnValue: 'cb_I2+IDeC2s6dj/8BviDdWMlDilUHN2k8STg==',
-    returnType: 'ok',
+    returnType: 'ok' as const,
   },
 };

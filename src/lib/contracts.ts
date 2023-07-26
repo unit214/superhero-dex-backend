@@ -1,9 +1,9 @@
 import NETWORKS from './networks';
 import { AeSdk, Node } from '@aeternity/aepp-sdk';
 import { CallData, ContractAddress, WalletAddress, nonNullable } from './utils';
-import * as routerInterface from 'dex-contracts-v2/build/IAedexV2Router.aes.js';
-import * as factoryInterface from 'dex-contracts-v2/build/IAedexV2Factory.aes.js';
-import * as pairInterface from 'dex-contracts-v2/build/IAedexV2Pair.aes';
+import * as routerInterface from 'dex-contracts-v2/build/AedexV2Router.aci.json';
+import * as factoryInterface from 'dex-contracts-v2/build/AedexV2Factory.aci.json';
+import * as pairInterface from 'dex-contracts-v2/build/AedexV2Pair.aci.json';
 
 let client: AeSdk;
 let node: Node;
@@ -17,7 +17,6 @@ const getClient = async (): Promise<[AeSdk, Node]> => {
 
     client = new AeSdk({
       nodes: [{ name: NETWORK_NAME, instance: node }],
-      compilerUrl: NETWORKS[NETWORK_NAME].compilerUrl,
     });
   }
   return [client, node];
@@ -63,36 +62,28 @@ export type Aex9Methods = {
 };
 
 const wrapRouter = (router: any): RouterMethods => {
-  const methods = router.methods;
-
   return {
-    factory: methods.factory,
+    factory: router.factory,
   };
 };
 const wrapFactory = (factory: any): FactoryMethods => {
-  const methods = factory.methods;
-
   return {
-    allPairs: methods.get_all_pairs,
+    allPairs: factory.get_all_pairs,
   };
 };
 
 const wrapPair = (pair: any): PairMethods => {
-  const methods = pair.methods;
-
   return {
-    token0: methods.token0,
-    token1: methods.token1,
-    totalSupply: methods.total_supply,
-    reserves: methods.get_reserves,
+    token0: pair.token0,
+    token1: pair.token1,
+    totalSupply: pair.total_supply,
+    reserves: pair.get_reserves,
   };
 };
 
 const wrapAex9 = (token: any): Aex9Methods => {
-  const methods = token.methods;
-
   return {
-    metaInfo: methods.meta_info,
+    metaInfo: token.meta_info,
   };
 };
 
@@ -134,21 +125,27 @@ const createGetPair =
     return pair;
   };
 
-const instanceFactory = async (client: any) => {
-  return (source: string, contractAddress: string): Promise<any> =>
-    client.getContractInstance({ source, contractAddress });
+const instanceFactory = async (client: AeSdk) => {
+  return (aci: any, contractAddress: ContractAddress) =>
+    client.initializeContract({ aci, address: contractAddress });
 };
 
 export const getContext = async (): Promise<Context> => {
+  const routerAddress = process.env.ROUTER_ADDRESS;
+  if (!routerAddress) {
+    throw new Error('Router address is not set');
+  }
   const [client, node] = await getClient();
   const getInstance = await instanceFactory(client);
   const router = await getInstance(
     routerInterface,
-    nonNullable(process.env.ROUTER_ADDRESS),
+    nonNullable<ContractAddress>(routerAddress as ContractAddress),
   );
   const factory = await getInstance(
     factoryInterface,
-    nonNullable(process.env.FACTORY_ADDRESS),
+    nonNullable<ContractAddress>(
+      process.env.FACTORY_ADDRESS as ContractAddress,
+    ),
   );
   const pairs: { [key: string]: PairMethods | undefined } = {};
   const tokens: { [key: string]: Aex9Methods | undefined } = {};
