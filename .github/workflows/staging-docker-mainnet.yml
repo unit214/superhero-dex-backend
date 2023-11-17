@@ -89,6 +89,7 @@ jobs:
         with:
           repository: aeternity/gitops-apps-aelabs.git
           ref: stg
+          github_token: ${{ secrets.BOT_GITHUB_TOKEN }}
           persist-credentials: false
           fetch-depth: 0
       
