@@ -90,7 +90,7 @@ jobs:
           repository: aeternity/gitops-apps-aelabs.git
           ref: stg
           persist-credentials: false
-          github_token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
           fetch-depth: 0
       
       - name: Staging PR Sync
