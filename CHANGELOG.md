@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0](https://www.github.com/aeternity/dex-backend/compare/v1.0.1...v1.1.0) (2024-02-14)
+
+
+### Features
+
+* upgrades types to correct sdk types ([3233306](https://www.github.com/aeternity/dex-backend/commit/3233306099cd973f4494cb160aab497a0875cdfb))
+
+
+### CI / CD
+
+* add auth for repo checkout stg ([ffe7229](https://www.github.com/aeternity/dex-backend/commit/ffe7229b7080abbd8f33e2afcdbbd633cc1d5d25))
+* change gitops repo for stg ([daff046](https://www.github.com/aeternity/dex-backend/commit/daff0464dfbb734b435368b3fbb8881f0681658c))
+* change token key ([ed0fbc8](https://www.github.com/aeternity/dex-backend/commit/ed0fbc8dbc18cbe0c5087e1231a3dbfb5e8137d0))
+
+
+### Miscellaneous
+
+* update to sdk@13 ([1760101](https://www.github.com/aeternity/dex-backend/commit/1760101fe8e5b15ac2d815cecd27725cd45d462a))
+
 ### [1.0.1](https://www.github.com/aeternity/dex-backend/compare/v1.0.0...v1.0.1) (2023-04-26)
 
 
