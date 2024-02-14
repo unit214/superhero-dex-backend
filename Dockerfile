@@ -1,4 +1,4 @@
-FROM node:16 as builder
+FROM node:20 as builder
 
 RUN mkdir -p /home/node/app
 RUN mkdir -p /home/node/app/prisma
