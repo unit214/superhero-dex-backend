@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.1.1](https://www.github.com/aeternity/dex-backend/compare/v1.1.0...v1.1.1) (2024-02-14)
+
+
+### CI / CD
+
+* change ops repo in prd pipelines ([1f5abcc](https://www.github.com/aeternity/dex-backend/commit/1f5abcc2b608a0227fedff022a00adf5ed96d864))
+* fix token for checkout in prd pipelines ([62661c1](https://www.github.com/aeternity/dex-backend/commit/62661c1f196475956323bc6203aa55eeae1601b0))
+* update node version in dockerfile ([6e26a98](https://www.github.com/aeternity/dex-backend/commit/6e26a98301d4870ab9515330e86b4a4e316472f4))
+
 ## [1.1.0](https://www.github.com/aeternity/dex-backend/compare/v1.0.1...v1.1.0) (2024-02-14)
 
 
