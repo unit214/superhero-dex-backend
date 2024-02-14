@@ -4,20 +4,15 @@ import {
   MetaInfo,
   Aex9Methods,
 } from '../../src/lib/contracts';
-import {
-  ContractAddress,
-  WalletAddress,
-  CallData,
-  nonNullable,
-} from '../../src/lib/utils';
+import { ContractAddress, CallData, nonNullable } from '../../src/lib/utils';
 import { mockDeep } from 'jest-mock-extended';
-
+import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 const mockupResult = () =>
   mockDeep<{
-    callerId: WalletAddress;
-    callerNonce: number;
-    contractId: ContractAddress;
-    gasPrice: number;
+    callerId: string;
+    callerNonce: string;
+    contractId: string;
+    gasPrice: bigint;
     gasUsed: number;
     height: number;
     log: any[];
@@ -26,8 +21,13 @@ const mockupResult = () =>
   }>({
     height: 1,
   });
+
 export const mockupContractMethod = <T>(t: T) =>
-  Promise.resolve({ decodedResult: t, result: mockupResult() });
+  Promise.resolve({
+    decodedResult: t,
+    result: mockupResult(),
+  } as unknown as any);
+
 export type ContextData = {
   factory: ContractAddress;
   pairs: {
@@ -50,7 +50,7 @@ export const mockContext = (data: ContextData) => {
     .mockReturnValue(mockupContractMethod(data.factory));
 
   // factory
-  mocked.factory.allPairs
+  mocked.factory.get_all_pairs
     .calledWith()
     .mockReturnValue(
       mockupContractMethod(data.pairs.map((x) => x.address).reverse()),
@@ -58,13 +58,13 @@ export const mockContext = (data: ContextData) => {
 
   //getPair
   for (const pair of data.pairs) {
-    const pairMethodsMocked = mockDeep<PairMethods>();
+    const pairMethodsMocked = mockDeep<ContractWithMethods<PairMethods>>();
     mocked.getPair
       .calledWith(pair.address)
       .mockReturnValue(Promise.resolve(pairMethodsMocked));
 
     //total supply
-    pairMethodsMocked.totalSupply
+    pairMethodsMocked.total_supply
       .calledWith()
       .mockReturnValue(mockupContractMethod(pair.totalSupply));
 
@@ -81,7 +81,7 @@ export const mockContext = (data: ContextData) => {
       );
 
     //reserves
-    pairMethodsMocked.reserves.calledWith().mockReturnValue(
+    pairMethodsMocked.get_reserves.calledWith().mockReturnValue(
       mockupContractMethod({
         reserve0: pair.reserve0,
         reserve1: pair.reserve1,
@@ -91,14 +91,14 @@ export const mockContext = (data: ContextData) => {
 
   //getToken
   for (const token of data.tokens) {
-    const tokenMethodsMocked = mockDeep<Aex9Methods>();
+    const tokenMethodsMocked = mockDeep<ContractWithMethods<Aex9Methods>>();
 
     mocked.getToken
       .calledWith(token.address)
       .mockReturnValue(Promise.resolve(tokenMethodsMocked));
 
     //meta info
-    tokenMethodsMocked.metaInfo
+    tokenMethodsMocked.meta_info
       .calledWith()
       .mockReturnValue(mockupContractMethod(token.metaInfo));
   }

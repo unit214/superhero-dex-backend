@@ -1,4 +1,4 @@
-import { mockContext } from './utils/context.mockup';
+import { mockContext } from './utils';
 import createWorkerMethods from '../src/worker';
 import db from '../src/dal/client';
 import { clean as cleanDb } from './utils/db';

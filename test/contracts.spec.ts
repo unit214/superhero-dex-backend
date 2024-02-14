@@ -22,11 +22,11 @@ describe('with real Context on testnet', () => {
   });
   it('should have at least 16 pairs', async () => {
     expect(
-      (await ctx().factory.allPairs()).decodedResult.length,
+      (await ctx().factory.get_all_pairs()).decodedResult.length,
     ).toBeGreaterThanOrEqual(16);
   });
   it('pair should return right token addresses', async () => {
-    const { decodedResult: allPairs } = await ctx().factory.allPairs();
+    const { decodedResult: allPairs } = await ctx().factory.get_all_pairs();
     const pairAddress = allPairs[allPairs.length - 1];
     expect(pairAddress).toBe(
       'ct_efYtiwDg4YZxDWE3iLPzvrjb92CJPvzGwriv4ZRuvuTDMNMb9',
@@ -47,7 +47,7 @@ describe('with real Context on testnet', () => {
       'ct_7tTzPfvv3Vx8pCEcuk1kmgtn4sFsYCQDzLi1LvFs8T5PJqgsC',
     );
 
-    const { decodedResult: metaInfo } = await tokenMethods.metaInfo();
+    const { decodedResult: metaInfo } = await tokenMethods.meta_info();
     expect(metaInfo).toEqual({
       decimals: 18n,
       name: 'TestAEX9-B',
@@ -58,7 +58,7 @@ describe('with real Context on testnet', () => {
     const tokenMethods = await ctx().getToken(
       'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
     );
-    const { decodedResult: metaInfo } = await tokenMethods.metaInfo();
+    const { decodedResult: metaInfo } = await tokenMethods.meta_info();
     expect(metaInfo).toEqual({
       decimals: 18n,
       name: 'Wrapped Aeternity',

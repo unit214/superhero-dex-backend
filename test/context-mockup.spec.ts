@@ -1,17 +1,14 @@
 import { Context, PairMethods } from '../src/lib/contracts';
 import { mockDeep } from 'jest-mock-extended';
-import {
-  mockContext,
-  ContextData,
-  mockupContractMethod,
-} from './utils/context.mockup';
+import { mockContext, ContextData, mockupContractMethod } from './utils';
 import * as data from './data/context-mockups';
+import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 
 describe('Context', () => {
   it('sample mockup', async () => {
     const mocked = mockDeep<Context>();
 
-    const mockedPM = mockDeep<PairMethods>();
+    const mockedPM = mockDeep<ContractWithMethods<PairMethods>>();
     mockedPM.token0
       .calledWith()
       .mockReturnValue(Promise.resolve(mockupContractMethod('ct_sample')));
@@ -35,14 +32,14 @@ const testContextDataMockup = (label: string, contextData: ContextData) => {
     });
 
     it('test factory.allPairs()', async () => {
-      const { decodedResult: pairs } = await context.factory.allPairs();
+      const { decodedResult: pairs } = await context.factory.get_all_pairs();
       expect(pairs).toEqual(contextData.pairs.map((x) => x.address).reverse());
     });
 
     for (const token of contextData.tokens) {
       it(`test getToken('${token.address}')`, async () => {
         const methods = await context.getToken(token.address);
-        expect((await methods.metaInfo()).decodedResult).toEqual(
+        expect((await methods.meta_info()).decodedResult).toEqual(
           token.metaInfo,
         );
       });
@@ -57,10 +54,10 @@ const testContextDataMockup = (label: string, contextData: ContextData) => {
         expect((await pairMethods.token1()).decodedResult).toBe(
           contextData.tokens[pair.t1].address,
         );
-        expect((await pairMethods.totalSupply()).decodedResult).toBe(
+        expect((await pairMethods.total_supply()).decodedResult).toBe(
           pair.totalSupply,
         );
-        expect((await pairMethods.reserves()).decodedResult).toEqual({
+        expect((await pairMethods.get_reserves()).decodedResult).toEqual({
           reserve0: pair.reserve0,
           reserve1: pair.reserve1,
         });

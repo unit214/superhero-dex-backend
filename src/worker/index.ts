@@ -5,16 +5,17 @@ import * as mdw from './middleware';
 
 import { Logger } from '@nestjs/common';
 import { ContractAddress } from 'src/lib/utils';
+import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 const logger = new Logger('Worker');
 
 const updateTokenMetadata = async (
   address: ContractAddress,
-  tokenMethods: Aex9Methods,
+  tokenMethods: ContractWithMethods<Aex9Methods>,
 ) => {
   try {
     const {
       decodedResult: { name, symbol, decimals },
-    } = await tokenMethods.metaInfo();
+    } = await tokenMethods.meta_info();
 
     const tokenFromDb = await dal.token.upsertToken(
       address,
@@ -39,7 +40,7 @@ const upsertTokenInformation = async (
   if (token) {
     return token.id;
   }
-  let tokenMethods: Aex9Methods;
+  let tokenMethods: ContractWithMethods<Aex9Methods>;
   try {
     tokenMethods = await ctx.getToken(address);
   } catch (error) {
@@ -112,17 +113,22 @@ const refreshPairLiquidity = async (
   height?: number,
 ) => {
   const pair = await ctx.getPair(dbPair.address as ContractAddress);
-  const { decodedResult: totalSupply } = await pair.totalSupply();
+  const { decodedResult: totalSupply } = await pair.total_supply();
   const {
     decodedResult: { reserve0, reserve1 },
-    result: { height: heightFromDryRun },
-  } = await pair.reserves();
+    result,
+  } = await pair.get_reserves();
+  const syncHeight = height || result?.height;
+  if (!syncHeight) {
+    console.error('Could not get height');
+    return;
+  }
   const ret = await dal.pair.synchronise(
     dbPair.id,
     totalSupply,
     reserve0,
     reserve1,
-    height || heightFromDryRun,
+    syncHeight,
   );
   logger.debug(
     `Pair ${ret.token0.symbol}/${ret.token1.symbol} [${
@@ -138,7 +144,7 @@ const refreshPairLiquidity = async (
 
 const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
   logger.log(`Getting all pairs from Factory...`);
-  const { decodedResult: allFactoryPairs } = await ctx.factory.allPairs();
+  const { decodedResult: allFactoryPairs } = await ctx.factory.get_all_pairs();
   logger.log(`${allFactoryPairs.length} pairs found on DEX`);
   const allDbPairsLen = await dal.pair.count(true);
   //get new pairs, and reverse it , because allFactoryPairs is reversed by the factory contract
@@ -157,7 +163,7 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
   const pairWithTokens = await Promise.all(
     newAddresses.map(
       async (
-        pairAddress,
+        pairAddress: ContractAddress,
       ): Promise<[ContractAddress, [ContractAddress, ContractAddress]]> => [
         pairAddress,
         await getPairTokens(ctx, pairAddress),
@@ -165,7 +171,7 @@ const refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
     ),
   );
 
-  const tokenSet = new Set(
+  const tokenSet: Set<ContractAddress> = new Set(
     pairWithTokens.reduce(
       (acc: ContractAddress[], data) => acc.concat(data[1]),
       [],
