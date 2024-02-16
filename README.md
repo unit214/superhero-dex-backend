@@ -9,7 +9,7 @@
 $ npm install
 ```
 
-## Databse
+## Database
 ```
 # after any schema definition change run
 $ npm install
