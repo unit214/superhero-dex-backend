@@ -91,7 +91,10 @@ export const upsertMalformedToken = (address: string): Promise<Token> =>
 export const upsertNoContractForToken = (address: string): Promise<Token> =>
   commonUpsert(address, { malformed: false, noContract: true });
 
-const commonUpsert = <T>(address: string, common: T): Promise<Token> =>
+const commonUpsert = (
+  address: string,
+  common: Partial<Token>,
+): Promise<Token> =>
   prisma.token.upsert({
     where: {
       address,
