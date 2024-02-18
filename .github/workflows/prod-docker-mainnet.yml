@@ -89,7 +89,6 @@ jobs:
           fetch-depth: 0
 
       - name: Production Deploy
-        if: ${{ steps.release.outputs.release_created }}
         uses: aeternity/ae-github-actions/argocd-deploy@v4
         with:
           git-sha: ${{ steps.git-sha.outputs.GIT_SHA }}

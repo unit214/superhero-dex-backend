@@ -1,4 +1,4 @@
-name: Production Dex Backend Release
+name: Release Dex Backend
 
 on:
   push:
