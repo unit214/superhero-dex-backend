@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/api/app.module';
+import { AppModule } from '../src/app.module';
 import { mockContext, listToken, sortByAddress } from './utils';
 import createWorkerMethods from '../src/worker';
 import * as data from './data/context-mockups';
