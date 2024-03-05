@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
-import { PairsService } from './pairs/service';
-import { TokensService } from './tokens/service';
-import * as dto from '../dto';
+import { PairsService } from './api/pairs/service';
+import { TokensService } from './api/tokens/service';
+import * as dto from './dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('')

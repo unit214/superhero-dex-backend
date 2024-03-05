@@ -30,3 +30,6 @@ export type Payload = Encoded.Bytearray;
 
 const parseEnv = (x) => x && JSON.parse(x);
 export const presentInvalidTokens = parseEnv(process.env.SHOW_INVALID_TOKENS);
+
+export const contractIdToAccountId = (address: string) =>
+  address.replace('ct_', 'ak_');

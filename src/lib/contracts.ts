@@ -1,9 +1,5 @@
 import NETWORKS from './networks';
-import {
-  AeSdk,
-  Node,
-  ContractMethodsBase,
-} from '@aeternity/aepp-sdk';
+import { AeSdk, Node, ContractMethodsBase } from '@aeternity/aepp-sdk';
 import { ContractAddress, nonNullable } from './utils';
 import * as routerInterface from 'dex-contracts-v2/build/AedexV2Router.aci.json';
 import * as factoryInterface from 'dex-contracts-v2/build/AedexV2Factory.aci.json';
@@ -13,7 +9,7 @@ import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 let client: AeSdk;
 let node: Node;
 
-const getClient = async (): Promise<[AeSdk, Node]> => {
+export const getClient = async (): Promise<[AeSdk, Node]> => {
   const NETWORK_NAME = nonNullable(process.env.NETWORK_NAME);
   if (!client) {
     node = new Node(NETWORKS[NETWORK_NAME].nodeUrl, {

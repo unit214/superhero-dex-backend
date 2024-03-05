@@ -25,14 +25,16 @@ model Token {
 }
 
 model Pair {
-  id            Int                @id @default(autoincrement())
-  address       String             @unique
-  token0        Token              @relation("Pair_Token0", fields: [t0], references: [id])
-  t0            Int
-  token1        Token              @relation("Pair_Token1", fields: [t1], references: [id])
-  t1            Int
-  liquidityInfo PairLiquidityInfo? @relation("Pair_Info")
-  synchronized  Boolean
+  id                        Int                             @id @default(autoincrement())
+  address                   String                          @unique
+  token0                    Token                           @relation("Pair_Token0", fields: [t0], references: [id])
+  t0                        Int
+  token1                    Token                           @relation("Pair_Token1", fields: [t1], references: [id])
+  t1                        Int
+  liquidityInfo             PairLiquidityInfo?              @relation("Pair_Info")
+  synchronized              Boolean
+  liquidityInfoHistory      PairLiquidityInfoHistory[]
+  liquidityInfoHistoryError PairLiquidityInfoHistoryError[]
 }
 
 model PairLiquidityInfo {
@@ -42,4 +44,29 @@ model PairLiquidityInfo {
   reserve0    String
   reserve1    String
   height      Int
+}
+
+model PairLiquidityInfoHistory {
+  id             Int    @id @default(autoincrement())
+  pair           Pair   @relation(fields: [pairId], references: [id])
+  pairId         Int
+  totalSupply    String
+  reserve0       String
+  reserve1       String
+  height         Int
+  microBlockHash String
+  microBlockTime BigInt
+  keyblockHash   String
+
+  @@unique(name: "pairIdHeightUniqueIndex", [pairId, microBlockHash])
+}
+
+model PairLiquidityInfoHistoryError {
+  id             Int      @id @default(autoincrement())
+  pair           Pair     @relation(fields: [pairId], references: [id])
+  pairId         Int
+  microBlockHash String
+  functionCall   String
+  error          String
+  createdAt      DateTime @default(now())
 }
