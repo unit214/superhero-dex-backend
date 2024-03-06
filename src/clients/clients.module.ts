@@ -5,4 +5,4 @@ import { MdwClientService } from './mdw-client.service';
   providers: [MdwClientService],
   exports: [MdwClientService],
 })
-export class MdwClientModule {}
+export class ClientsModule {}
