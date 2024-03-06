@@ -11,7 +11,6 @@ import { PairLiquidityInfoHistoryErrorService } from './pair-liquidity-info-hist
     PairLiquidityInfoHistoryErrorService,
   ],
   exports: [
-    PrismaService,
     PairService,
     PairLiquidityInfoHistoryService,
     PairLiquidityInfoHistoryErrorService,

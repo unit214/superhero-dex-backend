@@ -19,7 +19,9 @@ export class PairLiquidityInfoHistoryService {
     });
   }
 
-  upsertPaidLiquidityState(data: Omit<PairLiquidityInfoHistory, 'id'>) {
+  upsertPaidLiquidityState(
+    data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt'>,
+  ) {
     return this.prisma.pairLiquidityInfoHistory.upsert({
       where: {
         pairIdHeightUniqueIndex: {

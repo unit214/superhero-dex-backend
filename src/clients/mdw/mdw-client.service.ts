@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import NETWORKS from '../../lib/networks';
 import { nonNullable } from '../../lib/utils';
 import {
@@ -12,13 +11,7 @@ import { isInteger, parse } from 'lossless-json';
 
 @Injectable()
 export class MdwClientService {
-  constructor(private readonly httpService: HttpService) {
-    // TODO remove axios
-    // this.httpService.axiosRef.interceptors.response.use((response) => {
-    //   response.data = parse(response.data);
-    //   return response;
-    // });
-  }
+  constructor() {}
 
   private LIMIT = 100;
   private DIRECTION = 'forward';
@@ -45,30 +38,41 @@ export class MdwClientService {
     );
   }
 
-  private customNumberParser(value) {
+  private customNumberParser(value: string): number | bigint {
     return isInteger(value) ? BigInt(value) : parseFloat(value);
   }
 
   private async get<T>(url: string): Promise<T> {
-    return fetch(
-      `${NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareHttpUrl}${url}`,
-    )
-      .then(async (response) => {
-        if (response.ok) {
-          return response.text();
+    const fullUrl = `${NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareHttpUrl}${url}`;
+    return fetch(fullUrl)
+      .then(async (res) => {
+        if (res.ok) {
+          return res.text();
         } else {
-          return Promise.reject(await response.text());
+          throw new Error(
+            `GET ${url} failed with status ${res.status}. Response body: ${await res.text()}`,
+          );
         }
       })
       .then((text) => parse(text, null, this.customNumberParser) as T);
   }
 
-  // TODO add error handling
   private async getAllPages<T>(next: string): Promise<T[]> {
     const url = `${NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareHttpUrl}${next}`;
-    const result: MdwPaginatedResponse = await fetch(url).then(
-      (res) => res.json() as Promise<{ next: string; data: any }>,
-    );
+    const result: MdwPaginatedResponse<T> = await fetch(url)
+      .then(async (res) => {
+        if (res.ok) {
+          return res.text();
+        } else {
+          throw new Error(
+            `GET ${url} failed with status ${res.status}. Response body: ${await res.text()}`,
+          );
+        }
+      })
+      .then(
+        (text) =>
+          parse(text, null, this.customNumberParser) as MdwPaginatedResponse<T>,
+      );
 
     if (result.next) {
       return result.data.concat(await this.getAllPages(result.next));
