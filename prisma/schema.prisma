@@ -53,12 +53,12 @@ model PairLiquidityInfoHistory {
   totalSupply    String
   reserve0       String
   reserve1       String
-  height         BigInt
+  height         Int
   microBlockHash String
   microBlockTime BigInt
   updatedAt      DateTime @default(now()) @updatedAt
 
-  @@unique(name: "pairIdHeightUniqueIndex", [pairId, microBlockHash])
+  @@unique(name: "pairIdMicroBlockHashUniqueIndex", [pairId, microBlockHash])
 }
 
 model PairLiquidityInfoHistoryError {

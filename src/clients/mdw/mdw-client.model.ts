@@ -7,33 +7,33 @@ export type MdwPaginatedResponse<T> = {
 export type ContractLog = {
   args: string[];
   block_hash: string;
-  block_time: bigint;
+  block_time: string;
   call_tx_hash: string;
-  call_txi: number;
+  call_txi: string;
   contract_id: string;
   contract_tx_hash: string;
-  contract_txi: number;
+  contract_txi: string;
   data: string;
   event_hash: string;
   event_name?: string;
   ext_caller_contract_id?: string;
   ext_caller_contract_tx_hash?: string;
   ext_caller_contract_txi: string;
-  height: bigint;
-  log_idx: number;
-  micro_index: number;
+  height: string;
+  log_idx: string;
+  micro_index: string;
   parent_contract_id: string;
 };
 
 export type AccountBalance = {
   account: string;
-  amount: bigint;
+  amount: string;
   contract: string;
 };
 
 export type BalancesV1 = {
-  amounts: Record<string, bigint>;
+  amounts: Record<string, string>;
   block_hash: string;
   contract_id: string;
-  height: number;
+  height: string;
 };
