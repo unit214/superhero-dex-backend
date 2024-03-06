@@ -63,8 +63,8 @@ model PairLiquidityInfoHistory {
 
 model PairLiquidityInfoHistoryError {
   id             Int      @id @default(autoincrement())
-  pair           Pair     @relation(fields: [pairId], references: [id])
-  pairId         Int
+  pair           Pair?    @relation(fields: [pairId], references: [id])
+  pairId         Int?
   microBlockHash String?
   error          String
   createdAt      DateTime @default(now())
