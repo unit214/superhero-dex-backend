@@ -6,13 +6,13 @@ import { DatabaseModule } from './database/database.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TokensService } from './api/tokens/service';
 import { PairsService } from './api/pairs/service';
-import { MdwClientModule } from './clients/mdw/mdw-client.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
     PairsModule,
     TokensModule,
-    MdwClientModule,
+    ClientsModule,
     DatabaseModule,
     TasksModule,
   ],

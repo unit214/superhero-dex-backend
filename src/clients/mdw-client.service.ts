@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import NETWORKS from '../../lib/networks';
-import { nonNullable } from '../../lib/utils';
+import NETWORKS from '../lib/networks';
+import { nonNullable } from '../lib/utils';
 import {
   AccountBalance,
   BalancesV1,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MdwClientService } from '../clients/mdw/mdw-client.service';
+import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
 import { isEqual, uniqWith, values } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
