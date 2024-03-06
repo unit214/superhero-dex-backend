@@ -1,7 +1,7 @@
-export type MdwPaginatedResponse = {
+export type MdwPaginatedResponse<T> = {
   next?: string;
   prev?: string;
-  data: any[];
+  data: T[];
 };
 
 export type ContractLog = {
@@ -19,7 +19,7 @@ export type ContractLog = {
   ext_caller_contract_id?: string;
   ext_caller_contract_tx_hash?: string;
   ext_caller_contract_txi: string;
-  height: number;
+  height: bigint;
   log_idx: number;
   micro_index: number;
   parent_contract_id: string;
