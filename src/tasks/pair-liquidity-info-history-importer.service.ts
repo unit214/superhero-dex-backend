@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MdwClientService } from '../clients/mdw/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
-import { isEqual, sum, uniqWith, values } from 'lodash';
+import { isEqual, uniqWith, values } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
 import { contractIdToAccountId } from '../lib/utils';
 import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
@@ -11,7 +11,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 type MicroBlock = {
   hash: string;
   timestamp: bigint;
-  height: bigint;
+  height: number;
 };
 
 @Injectable()
@@ -54,7 +54,7 @@ export class PairLiquidityInfoHistoryImporterService {
             microBlockTime: lastSyncedBlockTime,
           } = (await this.pairLiquidityStateService.getLastSyncedHeight(
             pairWithTokens.id,
-          )) || { height: 0, microBlockTime: 0 };
+          )) || { height: 0, microBlockTime: 0n };
 
           // Fetch all logs for pair contract
           const pairContractLogs = await this.mdwClientService.getContractLogs(
@@ -67,14 +67,14 @@ export class PairLiquidityInfoHistoryImporterService {
             pairContractLogs
               .filter((contractLog) =>
                 lastSyncedHeight < currentHeight - 10
-                  ? contractLog.block_time > lastSyncedBlockTime
-                  : contractLog.height >= currentHeight - 10,
+                  ? BigInt(contractLog.block_time) > lastSyncedBlockTime
+                  : parseInt(contractLog.height) >= currentHeight - 10,
               )
               .map((contractLog) => {
                 return {
                   hash: contractLog.block_hash,
-                  timestamp: contractLog.block_time,
-                  height: contractLog.height,
+                  timestamp: BigInt(contractLog.block_time),
+                  height: parseInt(contractLog.height),
                 };
               }),
             isEqual,
@@ -104,8 +104,8 @@ export class PairLiquidityInfoHistoryImporterService {
                 .upsertPaidLiquidityState({
                   pairId: pairWithTokens.id,
                   totalSupply: liquidity.totalSupply.toString(),
-                  reserve0: liquidity.reserve0.toString(),
-                  reserve1: liquidity.reserve1.toString(),
+                  reserve0: liquidity.reserve0,
+                  reserve1: liquidity.reserve1,
                   height: block.height,
                   microBlockHash: block.hash,
                   microBlockTime: block.timestamp,
@@ -150,16 +150,13 @@ export class PairLiquidityInfoHistoryImporterService {
     block: MicroBlock,
   ) {
     // Total supply is the sum of all amounts of the pair contract's balances
-    const totalSupply = sum(
-      values(
-        (
-          await this.mdwClientService.getBalancesV1(
-            pairWithTokens.address,
-            block.hash,
-          )
-        ).amounts,
-      ),
+    const pairBalances = await this.mdwClientService.getBalancesV1(
+      pairWithTokens.address,
+      block.hash,
     );
+    const totalSupply = values(pairBalances.amounts)
+      .map((amount) => BigInt(amount))
+      .reduce((a, b) => a + b, 0n);
 
     // reserve0 is the balance of the pair contract's account of token0
     const reserve0 = (
