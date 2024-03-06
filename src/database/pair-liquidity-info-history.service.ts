@@ -24,7 +24,7 @@ export class PairLiquidityInfoHistoryService {
   ) {
     return this.prisma.pairLiquidityInfoHistory.upsert({
       where: {
-        pairIdHeightUniqueIndex: {
+        pairIdMicroBlockHashUniqueIndex: {
           pairId: data.pairId,
           microBlockHash: data.microBlockHash,
         },
