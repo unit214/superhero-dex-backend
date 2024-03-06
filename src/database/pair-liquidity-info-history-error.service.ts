@@ -10,7 +10,6 @@ export class PairLiquidityInfoHistoryErrorService {
       data: {
         pairId: data.pairId,
         microBlockHash: data.microBlockHash,
-        functionCall: data.functionCall,
         error: data.error,
       },
     });
