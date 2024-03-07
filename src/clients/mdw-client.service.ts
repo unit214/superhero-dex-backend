@@ -69,6 +69,12 @@ export class MdwClientService {
     );
   }
 
+  async getKeyBlockMicroBlocks(hashOrKbi: string): Promise<MdwMicroBlock[]> {
+    return this.getAllPages<MdwMicroBlock>(
+      `/v2/key-blocks/${hashOrKbi}/micro-blocks?${this.params}`,
+    );
+  }
+
   private async get<T>(url: string): Promise<T> {
     const fullUrl = `${NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareHttpUrl}${url}`;
     return fetch(fullUrl).then(async (res) => {
