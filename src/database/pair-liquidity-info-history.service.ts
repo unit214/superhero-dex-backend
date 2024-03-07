@@ -38,4 +38,14 @@ export class PairLiquidityInfoHistoryService {
       create: data,
     });
   }
+
+  deleteFromMicroBlockTime(microBlockTime: bigint) {
+    return this.prisma.pairLiquidityInfoHistory.deleteMany({
+      where: {
+        microBlockTime: {
+          gte: microBlockTime,
+        },
+      },
+    });
+  }
 }
