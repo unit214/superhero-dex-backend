@@ -40,7 +40,7 @@ export class PairLiquidityInfoHistoryImporterService {
       }
     } catch (error) {
       this.isSyncRunning = false;
-      this.logger.error(`Sync failed. ${JSON.stringify(error)}`);
+      this.logger.error(`Sync failed. ${error}`);
     }
   }
 
