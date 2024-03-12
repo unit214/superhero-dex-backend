@@ -4,6 +4,15 @@ export type MdwPaginatedResponse<T> = {
   data: T[];
 };
 
+export type Contract = {
+  aexn_type: string;
+  block_hash: string;
+  contract: string;
+  source_tx_hash: string;
+  source_tx_type: string;
+  create_tx: any;
+};
+
 export type ContractLog = {
   args: string[];
   block_hash: string;
@@ -36,4 +45,19 @@ export type BalancesV1 = {
   block_hash: string;
   contract_id: string;
   height: string;
+};
+
+export type MdwMicroBlock = {
+  micro_block_index: string;
+  transactions_count: string;
+  hash: string;
+  height: string;
+  pof_hash: string;
+  prev_hash: string;
+  prev_key_hash: string;
+  signature: string;
+  state_hash: string;
+  time: string;
+  txs_hash: string;
+  version: string;
 };
