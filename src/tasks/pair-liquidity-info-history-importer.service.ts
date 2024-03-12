@@ -3,13 +3,17 @@ import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
 import { isEqual, uniqWith, values } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
-import { ContractAddress, contractAddrToAccountAddr } from '../lib/utils';
+import {
+  ContractAddress,
+  contractAddrToAccountAddr,
+  MicroBlockHash,
+} from '../lib/utils';
 import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
 import { getClient } from '../lib/contracts';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 type MicroBlock = {
-  hash: string;
+  hash: MicroBlockHash;
   timestamp: bigint;
   height: number;
 };
@@ -115,7 +119,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
         if (microBlocksToFetch.length > 0) {
           this.logger.log(
-            `Started syncing pair ${pairWithTokens.address}. Need to sync ${microBlocksToFetch.length} microBlocks. This can take some time.`,
+            `Started syncing pair ${pairWithTokens.address}. Need to sync ${microBlocksToFetch.length} microBlock(s). This can take some time.`,
           );
         } else {
           this.logger.log(
@@ -174,7 +178,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
         if (numUpserted > 0) {
           this.logger.log(
-            `Completed sync for pair ${pairWithTokens.address}. Synced ${numUpserted} microBlocks.`,
+            `Completed sync for pair ${pairWithTokens.address}. Synced ${numUpserted} microBlock(s).`,
           );
         }
       } catch (error) {
@@ -197,7 +201,7 @@ export class PairLiquidityInfoHistoryImporterService {
     );
     if (count === 0) {
       const pairContract = await this.mdwClientService.getContract(
-        pairWithToken.address,
+        pairWithToken.address as ContractAddress,
       );
       const microBlock = await this.mdwClientService.getMicroBlock(
         pairContract.block_hash,
@@ -225,7 +229,7 @@ export class PairLiquidityInfoHistoryImporterService {
   ) {
     // Total supply is the sum of all amounts of the pair contract's balances
     const pairBalances =
-      await this.mdwClientService.getContractBalancesAtHashV1(
+      await this.mdwClientService.getContractBalancesAtMicroBlockHashV1(
         pairWithTokens.address as ContractAddress,
         block.hash,
       );
@@ -235,7 +239,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
     // reserve0 is the balance of the pair contract's account of token0
     const reserve0 = (
-      await this.mdwClientService.getAccountBalanceForContractAtHash(
+      await this.mdwClientService.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token0.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,
@@ -244,7 +248,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
     // reserve1 is the balance of the pair contract's account of token1
     const reserve1 = (
-      await this.mdwClientService.getAccountBalanceForContractAtHash(
+      await this.mdwClientService.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token1.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,
