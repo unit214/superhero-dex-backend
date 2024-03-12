@@ -4,7 +4,9 @@ import { nonNullable } from '../lib/utils';
 import {
   AccountBalance,
   BalancesV1,
+  Contract,
   ContractLog,
+  MdwMicroBlock,
   MdwPaginatedResponse,
 } from './mdw-client.model';
 
@@ -17,6 +19,9 @@ export class MdwClientService {
   private INT_AS_STRING = true;
   private params = `direction=${this.DIRECTION}&limit=${this.LIMIT}&int-as-string=${this.INT_AS_STRING}`;
 
+  getContract(contractId: string): Promise<Contract> {
+    return this.get<Contract>(`/v2/contracts/${contractId}?${this.params}`);
+  }
   getContractLogs(contractId: string): Promise<ContractLog[]> {
     return this.getAllPages<ContractLog>(
       `/v2/contracts/logs?contract_id=${contractId}&${this.params}`,
@@ -30,6 +35,12 @@ export class MdwClientService {
   ): Promise<AccountBalance> {
     return this.get<AccountBalance>(
       `/v2/aex9/${contractId}/balances/${accountId}?hash=${hash}&${this.params}`,
+    );
+  }
+
+  getMicroBlock(microBlockHash: string): Promise<MdwMicroBlock> {
+    return this.get<MdwMicroBlock>(
+      `/v2/micro-blocks/${microBlockHash}?${this.params}`,
     );
   }
 
