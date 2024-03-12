@@ -42,11 +42,11 @@ export class MdwClientService {
     );
   }
 
-  async getContractBalancesAtHashV1(
+  getContractBalancesAtHashV1(
     contractAddress: ContractAddress,
     hash: string,
   ): Promise<BalancesV1> {
-    return await this.get<BalancesV1>(
+    return this.get<BalancesV1>(
       `/aex9/balances/hash/${hash}/${contractAddress}?${this.params}`,
     );
   }
