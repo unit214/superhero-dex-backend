@@ -6,7 +6,14 @@ import { PairLiquidityInfoHistory } from '@prisma/client';
 export class PairLiquidityInfoHistoryService {
   constructor(private prisma: PrismaService) {}
 
-  getLastSyncedHeight(pairId: number) {
+  getCountByPairId(pairId: number) {
+    return this.prisma.pairLiquidityInfoHistory.count({
+      where: {
+        pairId: pairId,
+      },
+    });
+  }
+  getLastlySyncedBlockByPairId(pairId: number) {
     return this.prisma.pairLiquidityInfoHistory.findFirst({
       where: {
         pairId,
@@ -19,9 +26,7 @@ export class PairLiquidityInfoHistoryService {
     });
   }
 
-  upsertPaidLiquidityState(
-    data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt'>,
-  ) {
+  upsert(data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt'>) {
     return this.prisma.pairLiquidityInfoHistory.upsert({
       where: {
         pairIdMicroBlockHashUniqueIndex: {
