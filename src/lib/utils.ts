@@ -25,8 +25,9 @@ export type ContractAddress = Encoded.ContractAddress;
 export type WalletAddress = Encoded.AccountAddress;
 export type CallData = Encoded.ContractBytearray;
 export type Signature = Encoded.Signature;
-export type Hash = Encoded.TxHash;
-export type BlockHash = Encoded.MicroBlockHash;
+export type TxHash = Encoded.TxHash;
+export type MicroBlockHash = Encoded.MicroBlockHash;
+export type KeyBlockHash = Encoded.KeyBlockHash;
 export type Payload = Encoded.Bytearray;
 
 const parseEnv = (x) => x && JSON.parse(x);

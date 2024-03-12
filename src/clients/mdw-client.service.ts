@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import NETWORKS from '../lib/networks';
-import { AccountAddress, ContractAddress, nonNullable } from '../lib/utils';
+import {
+  AccountAddress,
+  ContractAddress,
+  MicroBlockHash,
+  nonNullable,
+} from '../lib/utils';
 import {
   AccountBalance,
   BalancesV1,
@@ -17,8 +22,10 @@ export class MdwClientService {
   private INT_AS_STRING = true;
   private params = `direction=${this.DIRECTION}&limit=${this.LIMIT}&int-as-string=${this.INT_AS_STRING}`;
 
-  getContract(contractId: string): Promise<Contract> {
-    return this.get<Contract>(`/v2/contracts/${contractId}?${this.params}`);
+  getContract(contractAddress: ContractAddress): Promise<Contract> {
+    return this.get<Contract>(
+      `/v2/contracts/${contractAddress}?${this.params}`,
+    );
   }
   getContractLogs(contractAddress: ContractAddress): Promise<ContractLog[]> {
     return this.getAllPages<ContractLog>(
@@ -26,28 +33,28 @@ export class MdwClientService {
     );
   }
 
-  getAccountBalanceForContractAtHash(
+  getAccountBalanceForContractAtMicroBlockHash(
     contractAddress: ContractAddress,
     accountAddress: AccountAddress,
-    hash: string,
+    microBlockHash: string,
   ): Promise<AccountBalance> {
     return this.get<AccountBalance>(
-      `/v2/aex9/${contractAddress}/balances/${accountAddress}?hash=${hash}&${this.params}`,
+      `/v2/aex9/${contractAddress}/balances/${accountAddress}?hash=${microBlockHash}&${this.params}`,
     );
   }
 
-  getMicroBlock(microBlockHash: string): Promise<MdwMicroBlock> {
+  getMicroBlock(microBlockHash: MicroBlockHash): Promise<MdwMicroBlock> {
     return this.get<MdwMicroBlock>(
       `/v2/micro-blocks/${microBlockHash}?${this.params}`,
     );
   }
 
-  getContractBalancesAtHashV1(
+  getContractBalancesAtMicroBlockHashV1(
     contractAddress: ContractAddress,
-    hash: string,
+    microBlockHash: MicroBlockHash,
   ): Promise<BalancesV1> {
     return this.get<BalancesV1>(
-      `/aex9/balances/hash/${hash}/${contractAddress}?${this.params}`,
+      `/aex9/balances/hash/${microBlockHash}/${contractAddress}?${this.params}`,
     );
   }
 
