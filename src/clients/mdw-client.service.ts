@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import NETWORKS from '../lib/networks';
-import { nonNullable } from '../lib/utils';
+import { AccountAddress, ContractAddress, nonNullable } from '../lib/utils';
 import {
   AccountBalance,
   BalancesV1,
@@ -12,8 +12,6 @@ import {
 
 @Injectable()
 export class MdwClientService {
-  constructor() {}
-
   private LIMIT = 100;
   private DIRECTION = 'forward';
   private INT_AS_STRING = true;
@@ -22,19 +20,19 @@ export class MdwClientService {
   getContract(contractId: string): Promise<Contract> {
     return this.get<Contract>(`/v2/contracts/${contractId}?${this.params}`);
   }
-  getContractLogs(contractId: string): Promise<ContractLog[]> {
+  getContractLogs(contractAddress: ContractAddress): Promise<ContractLog[]> {
     return this.getAllPages<ContractLog>(
-      `/v2/contracts/logs?contract_id=${contractId}&${this.params}`,
+      `/v2/contracts/logs?contract_id=${contractAddress}&${this.params}`,
     );
   }
 
-  getAccountBalance(
-    contractId: string,
-    accountId: string,
+  getAccountBalanceForContractAtHash(
+    contractAddress: ContractAddress,
+    accountAddress: AccountAddress,
     hash: string,
   ): Promise<AccountBalance> {
     return this.get<AccountBalance>(
-      `/v2/aex9/${contractId}/balances/${accountId}?hash=${hash}&${this.params}`,
+      `/v2/aex9/${contractAddress}/balances/${accountAddress}?hash=${hash}&${this.params}`,
     );
   }
 
@@ -44,9 +42,12 @@ export class MdwClientService {
     );
   }
 
-  async getBalancesV1(contractId: string, hash: string): Promise<BalancesV1> {
+  async getContractBalancesAtHashV1(
+    contractAddress: ContractAddress,
+    hash: string,
+  ): Promise<BalancesV1> {
     return await this.get<BalancesV1>(
-      `/aex9/balances/hash/${hash}/${contractId}?${this.params}`,
+      `/aex9/balances/hash/${hash}/${contractAddress}?${this.params}`,
     );
   }
 

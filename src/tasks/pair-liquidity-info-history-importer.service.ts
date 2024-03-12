@@ -3,7 +3,7 @@ import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
 import { isEqual, uniqWith, values } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
-import { contractIdToAccountId } from '../lib/utils';
+import { ContractAddress, contractAddrToAccountAddr } from '../lib/utils';
 import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
 import { getClient } from '../lib/contracts';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -31,18 +31,17 @@ export class PairLiquidityInfoHistoryImporterService {
 
   private isSyncRunning: boolean = false;
 
-  // TODO change to every 5 minutes
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async runTask() {
     try {
       if (!this.isSyncRunning) {
         this.isSyncRunning = true;
         await this.syncPairLiquidityInfoHistory();
-        this.isSyncRunning = false;
       }
     } catch (error) {
-      this.isSyncRunning = false;
       this.logger.error(`Sync failed. ${error}`);
+    } finally {
+      this.isSyncRunning = false;
     }
   }
 
@@ -76,11 +75,13 @@ export class PairLiquidityInfoHistoryImporterService {
 
         // Fetch all logs for pair contract
         const pairContractLogs = await this.mdwClientService.getContractLogs(
-          pairWithTokens.address,
+          pairWithTokens.address as ContractAddress,
         );
 
         // Get current height
-        const currentHeight = await (await getClient())[0].getHeight();
+        const currentHeight = await getClient().then(([client]) =>
+          client.getHeight(),
+        );
 
         // Get lastly synced block
         const {
@@ -223,28 +224,29 @@ export class PairLiquidityInfoHistoryImporterService {
     block: MicroBlock,
   ) {
     // Total supply is the sum of all amounts of the pair contract's balances
-    const pairBalances = await this.mdwClientService.getBalancesV1(
-      pairWithTokens.address,
-      block.hash,
-    );
+    const pairBalances =
+      await this.mdwClientService.getContractBalancesAtHashV1(
+        pairWithTokens.address as ContractAddress,
+        block.hash,
+      );
     const totalSupply = values(pairBalances.amounts)
       .map((amount) => BigInt(amount))
       .reduce((a, b) => a + b, 0n);
 
     // reserve0 is the balance of the pair contract's account of token0
     const reserve0 = (
-      await this.mdwClientService.getAccountBalance(
-        pairWithTokens.token0.address,
-        contractIdToAccountId(pairWithTokens.address),
+      await this.mdwClientService.getAccountBalanceForContractAtHash(
+        pairWithTokens.token0.address as ContractAddress,
+        contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,
       )
     ).amount;
 
     // reserve1 is the balance of the pair contract's account of token1
     const reserve1 = (
-      await this.mdwClientService.getAccountBalance(
-        pairWithTokens.token1.address,
-        contractIdToAccountId(pairWithTokens.address),
+      await this.mdwClientService.getAccountBalanceForContractAtHash(
+        pairWithTokens.token1.address as ContractAddress,
+        contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,
       )
     ).amount;

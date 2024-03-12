@@ -16,7 +16,9 @@ import { Logger } from '@nestjs/common';
 const logger = new Logger('WebSocket');
 
 const createWebSocketConnection = () =>
-  new WebSocket(NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareUrl);
+  new WebSocket(
+    NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareWebsocketUrl,
+  );
 
 export type SubscriptionEvent = {
   subscription: 'Object' | 'Transactions'; // add any other additional enum values if are used
