@@ -93,7 +93,9 @@ export class PairLiquidityInfoHistoryImporterService {
           )) || { height: 0, microBlockTime: 0n };
 
         // Insert initial liquidity if first sync / no entries present yet
-        await this.insertInitialLiquidity(pairWithTokens);
+        if (lastSyncedHeight === 0 && lastSyncedBlockTime === 0n) {
+          await this.insertInitialLiquidity(pairWithTokens);
+        }
 
         // From the logs, select the micro blocks to fetch data for
         // Strategy:
@@ -195,32 +197,27 @@ export class PairLiquidityInfoHistoryImporterService {
   }
 
   private async insertInitialLiquidity(pairWithTokens: PairWithTokens) {
-    const count = await this.pairLiquidityInfoHistoryService.getCountByPairId(
-      pairWithTokens.id,
+    const pairContract = await this.mdwClientService.getContract(
+      pairWithTokens.address as ContractAddress,
     );
-    if (count === 0) {
-      const pairContract = await this.mdwClientService.getContract(
-        pairWithTokens.address as ContractAddress,
+    const microBlock = await this.mdwClientService.getMicroBlock(
+      pairContract.block_hash,
+    );
+    await this.pairLiquidityInfoHistoryService
+      .upsert({
+        pairId: pairWithTokens.id,
+        totalSupply: '0',
+        reserve0: '0',
+        reserve1: '0',
+        height: parseInt(microBlock.height),
+        microBlockHash: microBlock.hash,
+        microBlockTime: BigInt(microBlock.time),
+      })
+      .then(() =>
+        this.logger.log(
+          `Inserted initial liquidity for pair ${pairWithTokens.address}.`,
+        ),
       );
-      const microBlock = await this.mdwClientService.getMicroBlock(
-        pairContract.block_hash,
-      );
-      await this.pairLiquidityInfoHistoryService
-        .upsert({
-          pairId: pairWithTokens.id,
-          totalSupply: '0',
-          reserve0: '0',
-          reserve1: '0',
-          height: parseInt(microBlock.height),
-          microBlockHash: microBlock.hash,
-          microBlockTime: BigInt(microBlock.time),
-        })
-        .then(() =>
-          this.logger.log(
-            `Inserted initial liquidity for pair ${pairWithTokens.address}.`,
-          ),
-        );
-    }
   }
   private async getLiquidityForPairAtBlock(
     pairWithTokens: PairWithTokens,
