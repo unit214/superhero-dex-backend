@@ -1,10 +1,10 @@
 import * as WebSocket from 'ws';
 import NETWORKS from '../lib/networks';
 import {
-  BlockHash,
+  MicroBlockHash,
   CallData,
   ContractAddress,
-  Hash,
+  TxHash,
   nonNullable,
   pluralize,
   Signature,
@@ -48,9 +48,9 @@ export type SubscriptionEvent = {
         }
     );
     signatures: Signature[];
-    hash: Hash;
+    hash: TxHash;
     block_height: number;
-    block_hash: BlockHash;
+    block_hash: MicroBlockHash;
   };
 };
 
