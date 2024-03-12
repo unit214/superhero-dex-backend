@@ -26,12 +26,15 @@ export class PairLiquidityInfoHistoryService {
     });
   }
 
-  getWithinHeight(heightLimit: number) {
+  getWithinHeightSorted(heightLimit: number) {
     return this.prisma.pairLiquidityInfoHistory.findMany({
       where: {
         height: {
           gte: heightLimit,
         },
+      },
+      orderBy: {
+        microBlockTime: 'asc',
       },
     });
   }
