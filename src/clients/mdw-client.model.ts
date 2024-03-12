@@ -21,7 +21,6 @@ export type Contract = {
   create_tx: any;
 };
 
-// TODO remove unused fields?
 export type ContractLog = {
   args: string[];
   block_hash: MicroBlockHash;
@@ -56,7 +55,6 @@ export type BalancesV1 = {
   height: string;
 };
 
-// TODO remove unused fields?
 export type MdwMicroBlock = {
   micro_block_index: string;
   transactions_count: string;
