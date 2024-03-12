@@ -73,9 +73,6 @@ export class PairLiquidityInfoHistoryImporterService {
           continue;
         }
 
-        // Insert initial liquidity if first sync / no entries present yet
-        await this.insertInitialLiquidity(pairWithTokens);
-
         // Fetch all logs for pair contract
         const pairContractLogs = await this.mdwClientService.getContractLogs(
           pairWithTokens.address as ContractAddress,
@@ -95,15 +92,18 @@ export class PairLiquidityInfoHistoryImporterService {
             pairWithTokens.id,
           )) || { height: 0, microBlockTime: 0n };
 
+        // Insert initial liquidity if first sync / no entries present yet
+        await this.insertInitialLiquidity(pairWithTokens);
+
         // From the logs, select the micro blocks to fetch data for
         // Strategy:
         // 1. Always (re-)fetch everything within the 10 most recent key blocks (currentHeight - 10).
-        // 2. If the history is outdated, fetch everything since the lastly synced micro block (and refetch the lastly fetched microblock)
+        // 2. If the history is outdated, fetch everything since the lastly synced micro block
         const microBlocksToFetch = uniqWith<MicroBlock>(
           pairContractLogs
             .filter((contractLog) =>
               lastSyncedHeight < currentHeight - 10
-                ? BigInt(contractLog.block_time) >= lastSyncedBlockTime
+                ? BigInt(contractLog.block_time) > lastSyncedBlockTime
                 : parseInt(contractLog.height) >= currentHeight - 10,
             )
             .map((contractLog) => {
@@ -118,16 +118,16 @@ export class PairLiquidityInfoHistoryImporterService {
 
         if (microBlocksToFetch.length > 0) {
           this.logger.log(
-            `Started syncing pair ${pairWithTokens.address}. Need to sync ${microBlocksToFetch.length} microBlock(s). This can take some time.`,
+            `Started syncing pair ${pairWithTokens.id} ${pairWithTokens.address}. Need to sync ${microBlocksToFetch.length} micro block(s). This can take some time.`,
           );
         } else {
           this.logger.log(
-            `Pair ${pairWithTokens.address} is already up to date.`,
+            `Pair ${pairWithTokens.id} ${pairWithTokens.address} is already up to date.`,
           );
         }
 
         let numUpserted = 0;
-        // Fetch and insert liquidity (totalSupply, reserve0, reserve1) for every microBlock
+        // Fetch and insert liquidity (totalSupply, reserve0, reserve1) for every micro block
         for (const block of microBlocksToFetch) {
           try {
             // If an error occurred for this block recently, skip block
@@ -139,7 +139,7 @@ export class PairLiquidityInfoHistoryImporterService {
               );
             if (error) {
               this.logger.log(
-                `Skipped microblock ${block.hash} due to recent error.`,
+                `Skipped micro block ${block.hash} due to recent error.`,
               );
               continue;
             }
@@ -177,7 +177,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
         if (numUpserted > 0) {
           this.logger.log(
-            `Completed sync for pair ${pairWithTokens.address}. Synced ${numUpserted} microBlock(s).`,
+            `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced ${numUpserted} micro block(s).`,
           );
         }
       } catch (error) {
@@ -194,20 +194,20 @@ export class PairLiquidityInfoHistoryImporterService {
     this.logger.log(`Finished liquidity info history sync for all pairs.`);
   }
 
-  private async insertInitialLiquidity(pairWithToken: PairWithTokens) {
+  private async insertInitialLiquidity(pairWithTokens: PairWithTokens) {
     const count = await this.pairLiquidityInfoHistoryService.getCountByPairId(
-      pairWithToken.id,
+      pairWithTokens.id,
     );
     if (count === 0) {
       const pairContract = await this.mdwClientService.getContract(
-        pairWithToken.address as ContractAddress,
+        pairWithTokens.address as ContractAddress,
       );
       const microBlock = await this.mdwClientService.getMicroBlock(
         pairContract.block_hash,
       );
       await this.pairLiquidityInfoHistoryService
         .upsert({
-          pairId: pairWithToken.id,
+          pairId: pairWithTokens.id,
           totalSupply: '0',
           reserve0: '0',
           reserve1: '0',
@@ -217,7 +217,7 @@ export class PairLiquidityInfoHistoryImporterService {
         })
         .then(() =>
           this.logger.log(
-            `Inserted initial liquidity for pair ${pairWithToken.address}.`,
+            `Inserted initial liquidity for pair ${pairWithTokens.address}.`,
           ),
         );
     }
