@@ -26,6 +26,16 @@ export class PairLiquidityInfoHistoryService {
     });
   }
 
+  getWithinHeight(heightLimit: number) {
+    return this.prisma.pairLiquidityInfoHistory.findMany({
+      where: {
+        height: {
+          gte: heightLimit,
+        },
+      },
+    });
+  }
+
   upsert(data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt'>) {
     return this.prisma.pairLiquidityInfoHistory.upsert({
       where: {
