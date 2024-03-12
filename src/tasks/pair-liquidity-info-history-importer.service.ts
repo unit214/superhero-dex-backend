@@ -44,9 +44,8 @@ export class PairLiquidityInfoHistoryImporterService {
       }
     } catch (error) {
       this.logger.error(`Sync failed. ${error}`);
-    } finally {
-      this.isSyncRunning = false;
     }
+    this.isSyncRunning = false;
   }
 
   private async syncPairLiquidityInfoHistory() {
