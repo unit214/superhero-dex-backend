@@ -71,7 +71,7 @@ export class MdwClientService {
 
   async getKeyBlockMicroBlocks(hashOrKbi: string): Promise<MdwMicroBlock[]> {
     return this.getAllPages<MdwMicroBlock>(
-      `/v2/key-blocks/${hashOrKbi}/micro-blocks?${this.params}`,
+      `/v2/key-blocks/${hashOrKbi}/micro-blocks?${this.defaultParams}`,
     );
   }
 

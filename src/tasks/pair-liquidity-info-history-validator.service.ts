@@ -4,6 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
 import { Cron } from '@nestjs/schedule';
 import { getClient } from '../lib/contracts';
+import { MicroBlockHash } from '../lib/utils';
 
 const EVERY_5_MINUTES_STARTING_AT_02_30 =
   '30 2,7,12,17,22,27,32,37,42,47,52,57 * * * *';
@@ -65,7 +66,11 @@ export class PairLiquidityInfoHistoryValidatorService {
     // If a local microBlock is not contained in the mdw, delete this block and all newer entries
     let numDeleted = 0;
     for (const liquidityEntry of liquidityEntriesWithinHeightSorted) {
-      if (!microBlockHashsOnMdw.includes(liquidityEntry.microBlockHash)) {
+      if (
+        !microBlockHashsOnMdw.includes(
+          liquidityEntry.microBlockHash as MicroBlockHash,
+        )
+      ) {
         numDeleted = (
           await this.pairLiquidityInfoHistoryService.deleteFromMicroBlockTime(
             liquidityEntry.microBlockTime,
