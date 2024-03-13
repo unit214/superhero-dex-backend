@@ -12,6 +12,7 @@ import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity
 import { getClient } from '../lib/contracts';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ContractLog } from '../clients/mdw-client.model';
+import { TasksService } from './tasks.service';
 
 type MicroBlock = {
   hash: MicroBlockHash;
@@ -22,6 +23,7 @@ type MicroBlock = {
 @Injectable()
 export class PairLiquidityInfoHistoryImporterService {
   constructor(
+    private tasksService: TasksService,
     private mdwClientService: MdwClientService,
     private pairService: PairService,
     private pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
@@ -34,19 +36,17 @@ export class PairLiquidityInfoHistoryImporterService {
 
   readonly WITHIN_HOURS_TO_SKIP_IF_ERROR = 6;
 
-  private isSyncRunning: boolean = false;
-
   @Cron(CronExpression.EVERY_5_MINUTES)
   async runTask() {
     try {
-      if (!this.isSyncRunning) {
-        this.isSyncRunning = true;
+      if (!this.tasksService.isRunning) {
+        this.tasksService.setIsRunning(true);
         await this.syncPairLiquidityInfoHistory();
-        this.isSyncRunning = false;
+        this.tasksService.setIsRunning(false);
       }
     } catch (error) {
       this.logger.error(`Sync failed. ${error}`);
-      this.isSyncRunning = false;
+      this.tasksService.setIsRunning(false);
     }
   }
 
