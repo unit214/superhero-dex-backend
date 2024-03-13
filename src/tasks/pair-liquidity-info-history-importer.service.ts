@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
-import { isEqual, uniqWith, values } from 'lodash';
+import { isEqual, orderBy, uniqWith, values } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
 import {
   ContractAddress,
@@ -11,6 +11,7 @@ import {
 import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
 import { getClient } from '../lib/contracts';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ContractLog } from '../clients/mdw-client.model';
 
 type MicroBlock = {
   hash: MicroBlockHash;
@@ -31,7 +32,7 @@ export class PairLiquidityInfoHistoryImporterService {
     PairLiquidityInfoHistoryImporterService.name,
   );
 
-  WITHIN_HOURS_TO_SKIP_IF_ERROR = 6;
+  readonly WITHIN_HOURS_TO_SKIP_IF_ERROR = 6;
 
   private isSyncRunning: boolean = false;
 
@@ -41,11 +42,12 @@ export class PairLiquidityInfoHistoryImporterService {
       if (!this.isSyncRunning) {
         this.isSyncRunning = true;
         await this.syncPairLiquidityInfoHistory();
+        this.isSyncRunning = false;
       }
     } catch (error) {
       this.logger.error(`Sync failed. ${error}`);
+      this.isSyncRunning = false;
     }
-    this.isSyncRunning = false;
   }
 
   private async syncPairLiquidityInfoHistory() {
@@ -73,11 +75,6 @@ export class PairLiquidityInfoHistoryImporterService {
           continue;
         }
 
-        // Fetch all logs for pair contract
-        const pairContractLogs = await this.mdwClientService.getContractLogs(
-          pairWithTokens.address as ContractAddress,
-        );
-
         // Get current height
         const currentHeight = await getClient().then(([client]) =>
           client.getHeight(),
@@ -92,30 +89,51 @@ export class PairLiquidityInfoHistoryImporterService {
             pairWithTokens.id,
           )) || { height: 0, microBlockTime: 0n };
 
-        // Insert initial liquidity if first sync / no entries present yet
+        // If first sync (= no entries present yet for pair), insert initial liquidity
         if (lastSyncedHeight === 0 && lastSyncedBlockTime === 0n) {
           await this.insertInitialLiquidity(pairWithTokens);
         }
 
-        // From the logs, select the micro blocks to fetch data for
+        // Determine which micro blocks to sync based on the lastly synced block
         // Strategy:
         // 1. Always (re-)fetch everything within the 10 most recent key blocks (currentHeight - 10).
         // 2. If the history is outdated, fetch everything since the lastly synced micro block
-        const microBlocksToFetch = uniqWith<MicroBlock>(
-          pairContractLogs
-            .filter((contractLog) =>
-              lastSyncedHeight < currentHeight - 10
-                ? BigInt(contractLog.block_time) > lastSyncedBlockTime
-                : parseInt(contractLog.height) >= currentHeight - 10,
-            )
-            .map((contractLog) => {
-              return {
-                hash: contractLog.block_hash,
-                timestamp: BigInt(contractLog.block_time),
-                height: parseInt(contractLog.height),
-              };
-            }),
-          isEqual,
+        const isHistoryOutdated = lastSyncedHeight < currentHeight - 10;
+
+        const microBlocksToFetchFilter = (contractLog: ContractLog) =>
+          isHistoryOutdated
+            ? BigInt(contractLog.block_time) > lastSyncedBlockTime
+            : parseInt(contractLog.height) >= currentHeight - 10;
+
+        // To make sure we get all desired micro blocks, fetch all contract log pages
+        // until the page contains a non-desired micro block
+        const fetchContractLogsFilter = (contractLog: ContractLog) =>
+          isHistoryOutdated
+            ? BigInt(contractLog.block_time) <= lastSyncedBlockTime
+            : parseInt(contractLog.height) < currentHeight - 10;
+
+        const pairContractLogs =
+          await this.mdwClientService.getContractLogsUntilCondition(
+            fetchContractLogsFilter,
+            pairWithTokens.address as ContractAddress,
+          );
+
+        // From the logs, get unique micro blocks in ascending order
+        const microBlocksToFetch = orderBy(
+          uniqWith<MicroBlock>(
+            pairContractLogs
+              .filter(microBlocksToFetchFilter)
+              .map((contractLog) => {
+                return {
+                  hash: contractLog.block_hash,
+                  timestamp: BigInt(contractLog.block_time),
+                  height: parseInt(contractLog.height),
+                };
+              }),
+            isEqual,
+          ),
+          'timestamp',
+          'asc',
         );
 
         if (microBlocksToFetch.length > 0) {
