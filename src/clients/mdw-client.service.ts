@@ -3,6 +3,7 @@ import NETWORKS from '../lib/networks';
 import {
   AccountAddress,
   ContractAddress,
+  KeyBlockHash,
   MicroBlockHash,
   nonNullable,
 } from '../lib/utils';
@@ -69,7 +70,9 @@ export class MdwClientService {
     );
   }
 
-  async getKeyBlockMicroBlocks(hashOrKbi: string): Promise<MdwMicroBlock[]> {
+  async getKeyBlockMicroBlocks(
+    hashOrKbi: KeyBlockHash | number,
+  ): Promise<MdwMicroBlock[]> {
     return this.getAllPages<MdwMicroBlock>(
       `/v2/key-blocks/${hashOrKbi}/micro-blocks?${this.defaultParams}`,
     );
