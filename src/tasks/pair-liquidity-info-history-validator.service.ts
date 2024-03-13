@@ -6,7 +6,7 @@ import { Cron } from '@nestjs/schedule';
 import { getClient } from '../lib/contracts';
 import { MicroBlockHash } from '../lib/utils';
 
-const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57 * * * *';
+const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {
