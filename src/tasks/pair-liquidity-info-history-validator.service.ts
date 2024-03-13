@@ -5,12 +5,14 @@ import { uniq } from 'lodash';
 import { Cron } from '@nestjs/schedule';
 import { getClient } from '../lib/contracts';
 import { MicroBlockHash } from '../lib/utils';
+import { TasksService } from './tasks.service';
 
 const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {
   constructor(
+    private tasksService: TasksService,
     private mdwClientService: MdwClientService,
     private pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
   ) {}
@@ -19,19 +21,17 @@ export class PairLiquidityInfoHistoryValidatorService {
     PairLiquidityInfoHistoryValidatorService.name,
   );
 
-  private isValidationRunning: boolean = false;
-
   @Cron(EVERY_5_MINUTES_STARTING_AT_02_30)
   async runTask() {
     try {
-      if (!this.isValidationRunning) {
-        this.isValidationRunning = true;
+      if (!this.tasksService.isRunning) {
+        this.tasksService.setIsRunning(true);
         await this.validatePairLiquidityInfoHistory();
-        this.isValidationRunning = false;
+        this.tasksService.setIsRunning(false);
       }
     } catch (error) {
-      this.isValidationRunning = false;
       this.logger.error(`Validation failed. ${error}`);
+      this.tasksService.setIsRunning(false);
     }
   }
 
