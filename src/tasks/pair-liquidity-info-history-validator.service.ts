@@ -6,8 +6,7 @@ import { Cron } from '@nestjs/schedule';
 import { getClient } from '../lib/contracts';
 import { MicroBlockHash } from '../lib/utils';
 
-const EVERY_5_MINUTES_STARTING_AT_02_30 =
-  '30 2,7,12,17,22,27,32,37,42,47,52,57 * * * *';
+const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57 * * * *';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {
@@ -38,8 +37,11 @@ export class PairLiquidityInfoHistoryValidatorService {
 
   async validatePairLiquidityInfoHistory() {
     this.logger.log(`Started validating pair liquidity info history.`);
+
     // Get current height
-    const currentHeight = await (await getClient())[0].getHeight();
+    const currentHeight = await getClient().then(([client]) =>
+      client.getHeight(),
+    );
 
     // Get all liquidity entries greater or equal the current height minus 20
     const liquidityEntriesWithinHeightSorted =
