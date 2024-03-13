@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.1.2](https://www.github.com/unit214/superhero-dex-backend/compare/v1.1.1...v1.1.2) (2024-03-13)
+
+
+### CI / CD
+
+* refactor prod release ([87c1de8](https://www.github.com/unit214/superhero-dex-backend/commit/87c1de89fb1e01aee5f889424d733ccc28f23f69))
+* remove if from the production deploy step ([e9a6fa9](https://www.github.com/unit214/superhero-dex-backend/commit/e9a6fa90e1d5db89921396468442dce6d98d48c1))
+
 ### [1.1.1](https://www.github.com/aeternity/dex-backend/compare/v1.1.0...v1.1.1) (2024-02-14)
 
 
