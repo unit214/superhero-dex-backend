@@ -56,7 +56,7 @@ export class PairLiquidityInfoHistoryValidatorService {
     const microBlockHashsOnMdw = (
       await Promise.all(
         uniqueHeights.map((h) =>
-          this.mdwClientService.getKeyBlockMicroBlocks(h.toString()),
+          this.mdwClientService.getKeyBlockMicroBlocks(h),
         ),
       )
     )
