@@ -149,9 +149,8 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
     @Query('only-listed') onlyListedStr: string, //false | true
   ): Promise<dto.PairWithLiquidityAndTokenAddresses[][]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
-    const pairs = await this.pairsService.getAllPairsWithLiquidityInfo(
-      !!onlyListed,
-    );
+    const pairs =
+      await this.pairsService.getAllPairsWithLiquidityInfo(!!onlyListed);
     const edges = pairs.map((data) => ({
       data,
       t0: data.token0.address,
