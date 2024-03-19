@@ -191,7 +191,7 @@ export class PairLiquidityInfoHistoryImporterService {
       }
     }
 
-    this.logger.log(`Finished liquidity info history sync for all pairs.`);
+    this.logger.log('Finished liquidity info history sync for all pairs.');
   }
 
   private async insertInitialLiquidity(pairWithTokens: PairWithTokens) {

@@ -66,9 +66,9 @@ export class PairLiquidityInfoHistoryValidatorService {
         `Found an inconsistency in pair liquidity info history. Deleted ${numDeleted} entries.`,
       );
     } else {
-      this.logger.log(`No problems in pair liquidity info history found.`);
+      this.logger.log('No problems in pair liquidity info history found.');
     }
 
-    this.logger.log(`Finished validating pair liquidity info history.`);
+    this.logger.log('Finished validating pair liquidity info history.');
   }
 }

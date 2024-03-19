@@ -4,7 +4,6 @@ import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService } from '../database/pair.service';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
 import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
-import { Logger } from '@nestjs/common';
 import { ContractAddress } from '../lib/utils';
 import { Contract } from '../clients/mdw-client.model';
 
@@ -46,7 +45,6 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
           provide: PairLiquidityInfoHistoryErrorService,
           useValue: mockPairLiquidityInfoHistoryErrorService,
         },
-        { provide: Logger, useValue: jest.fn() }, // Mock Logger if necessary
       ],
     }).compile();
     service = module.get<PairLiquidityInfoHistoryImporterService>(
@@ -55,7 +53,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
   });
 
   describe('import', () => {
-    it('should execute correctly', async () => {
+    it('should import liquidity correctly', async () => {
       // Mock data
       const pair1 = {
         id: 1,
@@ -152,7 +150,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         `Completed sync for pair ${pair1.id} ${pair1.address}. Synced 2 micro block(s).`,
       );
       expect(service.logger.log).toHaveBeenCalledWith(
-        `Finished liquidity info history sync for all pairs.`,
+        'Finished liquidity info history sync for all pairs.',
       );
     });
   });
