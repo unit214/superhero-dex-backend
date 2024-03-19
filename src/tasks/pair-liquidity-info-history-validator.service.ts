@@ -2,40 +2,19 @@ import { MdwClientService } from '../clients/mdw-client.service';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
-import { Cron } from '@nestjs/schedule';
 import { getClient } from '../lib/contracts';
 import { MicroBlockHash } from '../lib/utils';
-import { TasksService } from './tasks.service';
-
-const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {
   constructor(
-    private tasksService: TasksService,
     private mdwClientService: MdwClientService,
     private pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
   ) {}
 
-  private readonly logger = new Logger(
-    PairLiquidityInfoHistoryValidatorService.name,
-  );
+  readonly logger = new Logger(PairLiquidityInfoHistoryValidatorService.name);
 
-  @Cron(EVERY_5_MINUTES_STARTING_AT_02_30)
-  async runTask() {
-    try {
-      if (!this.tasksService.isRunning) {
-        this.tasksService.setIsRunning(true);
-        await this.validatePairLiquidityInfoHistory();
-        this.tasksService.setIsRunning(false);
-      }
-    } catch (error) {
-      this.logger.error(`Validation failed. ${error}`);
-      this.tasksService.setIsRunning(false);
-    }
-  }
-
-  async validatePairLiquidityInfoHistory() {
+  async validate() {
     this.logger.log(`Started validating pair liquidity info history.`);
 
     // Get current height
