@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { PairService } from './pair.service';
-import { PairLiquidityInfoHistoryService } from './pair-liquidity-info-history.service';
-import { PairLiquidityInfoHistoryErrorService } from './pair-liquidity-info-history-error.service';
+import { PairDbService } from './pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from './pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from './pair-liquidity-info-history-error-db.service';
 
 @Module({
   providers: [
     PrismaService,
-    PairService,
-    PairLiquidityInfoHistoryService,
-    PairLiquidityInfoHistoryErrorService,
+    PairDbService,
+    PairLiquidityInfoHistoryDbService,
+    PairLiquidityInfoHistoryErrorDbService,
   ],
   exports: [
-    PairService,
-    PairLiquidityInfoHistoryService,
-    PairLiquidityInfoHistoryErrorService,
+    PairDbService,
+    PairLiquidityInfoHistoryDbService,
+    PairLiquidityInfoHistoryErrorDbService,
   ],
 })
 export class DatabaseModule {}

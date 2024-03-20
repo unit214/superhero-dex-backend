@@ -2,6 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export const contractPattern = 'ct_([1-9a-zA-Z]){49,50}';
 export const bigNumberPattern = '[1-9]+';
+export const microBlockTimePattern = '[1-9]{13}';
+export const microBlockHashPattern = 'mh_([1-9a-zA-Z]){49,50}';
+
 export const pairAddressPropertyOptions = {
   pattern: contractPattern,
   description: 'Pair contract address',
@@ -246,4 +249,30 @@ export class GlobalState {
     example: 7,
   })
   listedPairs: number;
+}
+
+export enum OrderQueryEnum {
+  asc = 'asc',
+  desc = 'desc',
+}
+
+export class PairLiquidityInfoHistoryEntry {
+  @ApiProperty(pairAddressPropertyOptions)
+  pairAddress: string;
+  @ApiProperty({ description: 'Liquidity info of the pair' })
+  liquidityInfo: LiquidityInfo;
+  @ApiProperty({
+    description: 'Block height of the history entry',
+  })
+  height: number;
+  @ApiProperty({
+    description: 'Micro block hash of the history entry',
+    pattern: microBlockHashPattern,
+  })
+  microBlockHash: string;
+  @ApiProperty({
+    description: 'Micro block time of the history entry',
+    pattern: microBlockTimePattern,
+  })
+  microBlockTime: string;
 }

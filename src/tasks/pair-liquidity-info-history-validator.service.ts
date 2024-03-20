@@ -1,5 +1,5 @@
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
 import { getClient } from '../lib/contracts';
@@ -9,7 +9,7 @@ import { MicroBlockHash } from '../lib/utils';
 export class PairLiquidityInfoHistoryValidatorService {
   constructor(
     private mdwClientService: MdwClientService,
-    private pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
+    private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryValidatorService.name);
@@ -24,7 +24,7 @@ export class PairLiquidityInfoHistoryValidatorService {
 
     // Get all liquidity entries greater or equal the current height minus 20
     const liquidityEntriesWithinHeightSorted =
-      await this.pairLiquidityInfoHistoryService.getWithinHeightSorted(
+      await this.pairLiquidityInfoHistoryDb.getWithinHeightSorted(
         currentHeight - 20,
       );
 
@@ -53,7 +53,7 @@ export class PairLiquidityInfoHistoryValidatorService {
         )
       ) {
         numDeleted = (
-          await this.pairLiquidityInfoHistoryService.deleteFromMicroBlockTime(
+          await this.pairLiquidityInfoHistoryDb.deleteFromMicroBlockTime(
             liquidityEntry.microBlockTime,
           )
         ).count;

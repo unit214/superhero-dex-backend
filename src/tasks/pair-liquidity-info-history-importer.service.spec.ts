@@ -1,9 +1,9 @@
 import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairService } from '../database/pair.service';
-import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
-import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
+import { PairDbService } from '../database/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error-db.service';
 import { ContractAddress } from '../lib/utils';
 import { Contract } from '../clients/mdw-client.model';
 
@@ -15,16 +15,16 @@ const mockMdwClientService = {
   getAccountBalanceForContractAtMicroBlockHash: jest.fn(),
 };
 
-const mockPairService = {
+const mockPairDb = {
   getAll: jest.fn(),
 };
 
-const mockPairLiquidityInfoHistoryService = {
+const mockPairLiquidityInfoHistoryDb = {
   getLastlySyncedBlockByPairId: jest.fn(),
   upsert: jest.fn(),
 };
 
-const mockPairLiquidityInfoHistoryErrorService = {
+const mockPairLiquidityInfoHistoryErrorDb = {
   getErrorByPairIdAndMicroBlockHashWithinHours: jest.fn(),
 };
 
@@ -36,14 +36,14 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       providers: [
         PairLiquidityInfoHistoryImporterService,
         { provide: MdwClientService, useValue: mockMdwClientService },
-        { provide: PairService, useValue: mockPairService },
+        { provide: PairDbService, useValue: mockPairDb },
         {
-          provide: PairLiquidityInfoHistoryService,
-          useValue: mockPairLiquidityInfoHistoryService,
+          provide: PairLiquidityInfoHistoryDbService,
+          useValue: mockPairLiquidityInfoHistoryDb,
         },
         {
-          provide: PairLiquidityInfoHistoryErrorService,
-          useValue: mockPairLiquidityInfoHistoryErrorService,
+          provide: PairLiquidityInfoHistoryErrorDbService,
+          useValue: mockPairLiquidityInfoHistoryErrorDb,
         },
       ],
     }).compile();
@@ -86,16 +86,16 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       };
 
       // Mock functions
-      mockPairService.getAll.mockResolvedValue([pair1]);
-      mockPairLiquidityInfoHistoryErrorService.getErrorByPairIdAndMicroBlockHashWithinHours.mockResolvedValue(
+      mockPairDb.getAll.mockResolvedValue([pair1]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours.mockResolvedValue(
         undefined,
       );
-      mockPairLiquidityInfoHistoryService.getLastlySyncedBlockByPairId.mockReturnValue(
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedBlockByPairId.mockReturnValue(
         undefined,
       );
       mockMdwClientService.getContract.mockResolvedValue(pair1Contract);
       mockMdwClientService.getMicroBlock.mockResolvedValue(initialMicroBlock);
-      mockPairLiquidityInfoHistoryService.upsert.mockResolvedValue(null);
+      mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
       mockMdwClientService.getContractLogsUntilCondition.mockResolvedValue([
         pairContractLog1,
         pairContractLog2,
@@ -113,7 +113,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
 
       // Assertions
       // Insert initial liquidity
-      expect(mockPairLiquidityInfoHistoryService.upsert).toHaveBeenCalledWith({
+      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
         pairId: pair1.id,
         totalSupply: '0',
         reserve0: '0',
@@ -123,12 +123,12 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         microBlockTime: BigInt(initialMicroBlock.time),
       });
       expect(
-        mockPairLiquidityInfoHistoryErrorService.getErrorByPairIdAndMicroBlockHashWithinHours,
+        mockPairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours,
       ).toHaveBeenCalledTimes(3);
       expect(service.logger.log).toHaveBeenCalledWith(
         `Started syncing pair ${pair1.id} ${pair1.address}. Need to sync 2 micro block(s). This can take some time.`,
       );
-      expect(mockPairLiquidityInfoHistoryService.upsert).toHaveBeenCalledWith({
+      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
         pairId: pair1.id,
         totalSupply: '2',
         reserve0: '1',
@@ -137,7 +137,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         microBlockHash: pairContractLog1.block_hash,
         microBlockTime: BigInt(pairContractLog1.block_time),
       });
-      expect(mockPairLiquidityInfoHistoryService.upsert).toHaveBeenCalledWith({
+      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
         pairId: pair1.id,
         totalSupply: '2',
         reserve0: '1',
