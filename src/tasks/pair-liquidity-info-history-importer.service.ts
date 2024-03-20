@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MdwClientService } from '../clients/mdw-client.service';
 import { PairService, PairWithTokens } from '../database/pair.service';
-import { isEqual, orderBy, uniqWith, values } from 'lodash';
+import { isEqual, orderBy, uniqWith } from 'lodash';
 import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
 import {
   ContractAddress,
@@ -223,12 +223,12 @@ export class PairLiquidityInfoHistoryImporterService {
   ) {
     // Total supply is the sum of all amounts of the pair contract's balances
     const pairBalances =
-      await this.mdwClientService.getContractBalancesAtMicroBlockHashV1(
+      await this.mdwClientService.getContractBalancesAtMicroBlockHash(
         pairWithTokens.address as ContractAddress,
         block.hash,
       );
-    const totalSupply = values(pairBalances.amounts)
-      .map((amount) => BigInt(amount))
+    const totalSupply = pairBalances
+      .map((contractBalance) => BigInt(contractBalance.amount))
       .reduce((a, b) => a + b, 0n);
 
     // reserve0 is the balance of the pair contract's account of token0

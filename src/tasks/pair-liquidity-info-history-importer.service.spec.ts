@@ -11,7 +11,7 @@ const mockMdwClientService = {
   getContract: jest.fn(),
   getMicroBlock: jest.fn(),
   getContractLogsUntilCondition: jest.fn(),
-  getContractBalancesAtMicroBlockHashV1: jest.fn(),
+  getContractBalancesAtMicroBlockHash: jest.fn(),
   getAccountBalanceForContractAtMicroBlockHash: jest.fn(),
 };
 
@@ -100,8 +100,8 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         pairContractLog1,
         pairContractLog2,
       ]);
-      mockMdwClientService.getContractBalancesAtMicroBlockHashV1.mockResolvedValue(
-        { amounts: { ak_a: '1', ak_b: '1' } },
+      mockMdwClientService.getContractBalancesAtMicroBlockHash.mockResolvedValue(
+        [{ amount: '1' }, { amount: '1' }],
       );
       mockMdwClientService.getAccountBalanceForContractAtMicroBlockHash.mockResolvedValue(
         { amount: '1' },
