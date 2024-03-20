@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { mockContext, listToken, sortByAddress } from './utils';
+import { listToken, mockContext, sortByAddress } from './utils';
 import createWorkerMethods from '../src/worker';
 import * as data from './data/context-mockups';
 import * as db from './utils/db';
+import { TokensModule } from '../src/api/tokens/module';
+import { PairsModule } from '../src/api/pairs/module';
 
 type WorkerMethods = ReturnType<typeof createWorkerMethods>;
 let activeWorker: WorkerMethods;
@@ -29,7 +30,7 @@ describe('pairs fetching (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TokensModule, PairsModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

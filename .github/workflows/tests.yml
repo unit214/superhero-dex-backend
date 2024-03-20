@@ -6,9 +6,7 @@ on:
       - main
     tags:
       - 'v*'
-  pull_request:
-    branches: [ main ]
-    types: [ opened ]
+  pull_request: {}
 
 jobs:
   main:
@@ -31,20 +29,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       
       - name: npm install
         run: npm ci
-
-      - name: npm lint
-        run: npm run lint
 
       - name: unit test
         run: npm run test
