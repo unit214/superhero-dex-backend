@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
 
 import worker from '../src/worker';
 import { clean as cleanDb } from './utils/db';
@@ -9,6 +8,8 @@ import * as data from './data/context-mockups';
 import * as dto from '../src/dto';
 import * as utils from './utils';
 import { nonNullable } from '../src/lib/utils';
+import { TokensModule } from '../src/api/tokens/module';
+import { PairsModule } from '../src/api/pairs/module';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
@@ -32,7 +33,7 @@ describe('tokens fetching (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TokensModule, PairsModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -486,7 +487,7 @@ describe('listed tokens management (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TokensModule, PairsModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

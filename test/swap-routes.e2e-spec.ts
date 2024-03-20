@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
 
-import { mockContext, listToken } from './utils';
+import { listToken, mockContext } from './utils';
 import worker from '../src/worker';
 import * as db from './utils/db';
 import * as data from './data/context-mockups';
+import { TokensModule } from '../src/api/tokens/module';
+import { PairsModule } from '../src/api/pairs/module';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
@@ -28,7 +29,7 @@ const initWorker = async (dataCtx: any) => {
 
 const initApp = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [TokensModule, PairsModule],
   }).compile();
 
   app = moduleFixture.createNestApplication();
