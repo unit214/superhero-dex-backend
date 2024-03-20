@@ -5,7 +5,7 @@ import { PrismaService } from './prisma.service';
 export type PairWithTokens = { token0: Token; token1: Token } & Pair;
 
 @Injectable()
-export class PairService {
+export class PairDbService {
   constructor(private prisma: PrismaService) {}
   getAll(): Promise<PairWithTokens[]> {
     return this.prisma.pair.findMany({

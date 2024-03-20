@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service';
 import { PairLiquidityInfoHistoryError } from '@prisma/client';
 
 @Injectable()
-export class PairLiquidityInfoHistoryErrorService {
+export class PairLiquidityInfoHistoryErrorDbService {
   constructor(private prisma: PrismaService) {}
 
   getErrorByPairIdAndMicroBlockHashWithinHours(

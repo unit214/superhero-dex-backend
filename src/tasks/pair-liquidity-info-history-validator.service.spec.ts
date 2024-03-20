@@ -1,13 +1,13 @@
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
 
 const mockMdwClientService = {
   getKeyBlockMicroBlocks: jest.fn(),
 };
 
-const mockPairLiquidityInfoHistoryService = {
+const mockPairLiquidityInfoHistoryDb = {
   getWithinHeightSorted: jest.fn(),
   deleteFromMicroBlockTime: jest.fn(),
 };
@@ -21,8 +21,8 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
         PairLiquidityInfoHistoryValidatorService,
         { provide: MdwClientService, useValue: mockMdwClientService },
         {
-          provide: PairLiquidityInfoHistoryService,
-          useValue: mockPairLiquidityInfoHistoryService,
+          provide: PairLiquidityInfoHistoryDbService,
+          useValue: mockPairLiquidityInfoHistoryDb,
         },
       ],
     }).compile();
@@ -60,9 +60,12 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
         microBlockHash: 'mh_hash5',
       };
       // Mock functions
-      mockPairLiquidityInfoHistoryService.getWithinHeightSorted.mockResolvedValue(
-        [historyEntry1, historyEntry2, historyEntry3, historyEntry4],
-      );
+      mockPairLiquidityInfoHistoryDb.getWithinHeightSorted.mockResolvedValue([
+        historyEntry1,
+        historyEntry2,
+        historyEntry3,
+        historyEntry4,
+      ]);
       mockMdwClientService.getKeyBlockMicroBlocks.mockImplementation(
         (height: number) => {
           if (height === historyEntry1.height) {
@@ -78,7 +81,7 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
           }
         },
       );
-      mockPairLiquidityInfoHistoryService.deleteFromMicroBlockTime.mockResolvedValue(
+      mockPairLiquidityInfoHistoryDb.deleteFromMicroBlockTime.mockResolvedValue(
         { count: 2 },
       );
       jest.spyOn(service.logger, 'log');
@@ -100,7 +103,7 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
         mockMdwClientService.getKeyBlockMicroBlocks,
       ).not.toHaveBeenCalledWith(historyEntry5.height);
       expect(
-        mockPairLiquidityInfoHistoryService.deleteFromMicroBlockTime,
+        mockPairLiquidityInfoHistoryDb.deleteFromMicroBlockTime,
       ).toHaveBeenCalledWith(historyEntry4.microBlockTime);
       expect(service.logger.log).toHaveBeenCalledWith(
         `Found an inconsistency in pair liquidity info history. Deleted 2 entries.`,

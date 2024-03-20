@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairService, PairWithTokens } from '../database/pair.service';
+import { PairDbService, PairWithTokens } from '../database/pair-db.service';
 import { isEqual, orderBy, uniqWith } from 'lodash';
-import { PairLiquidityInfoHistoryService } from '../database/pair-liquidity-info-history.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
 import {
   ContractAddress,
   contractAddrToAccountAddr,
   MicroBlockHash,
 } from '../lib/utils';
-import { PairLiquidityInfoHistoryErrorService } from '../database/pair-liquidity-info-history-error.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error-db.service';
 import { getClient } from '../lib/contracts';
 import { ContractLog } from '../clients/mdw-client.model';
 
@@ -22,9 +22,9 @@ type MicroBlock = {
 export class PairLiquidityInfoHistoryImporterService {
   constructor(
     private mdwClientService: MdwClientService,
-    private pairService: PairService,
-    private pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
-    private pairLiquidityInfoHistoryErrorService: PairLiquidityInfoHistoryErrorService,
+    private pairDb: PairDbService,
+    private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
+    private pairLiquidityInfoHistoryErrorDb: PairLiquidityInfoHistoryErrorDbService,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryImporterService.name);
@@ -34,7 +34,7 @@ export class PairLiquidityInfoHistoryImporterService {
     this.logger.log(`Started syncing pair liquidity info history.`);
 
     // Fetch all pairs from DB
-    const pairsWithTokens = await this.pairService.getAll();
+    const pairsWithTokens = await this.pairDb.getAll();
     this.logger.log(
       `Syncing liquidity info history for ${pairsWithTokens.length} pairs.`,
     );
@@ -43,7 +43,7 @@ export class PairLiquidityInfoHistoryImporterService {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
-          await this.pairLiquidityInfoHistoryErrorService.getErrorByPairIdAndMicroBlockHashWithinHours(
+          await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
             pairWithTokens.id,
             '',
             this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
@@ -64,10 +64,9 @@ export class PairLiquidityInfoHistoryImporterService {
         const {
           height: lastSyncedHeight,
           microBlockTime: lastSyncedBlockTime,
-        } =
-          (await this.pairLiquidityInfoHistoryService.getLastlySyncedBlockByPairId(
-            pairWithTokens.id,
-          )) || { height: 0, microBlockTime: 0n };
+        } = (await this.pairLiquidityInfoHistoryDb.getLastlySyncedBlockByPairId(
+          pairWithTokens.id,
+        )) || { height: 0, microBlockTime: 0n };
 
         // If first sync (= no entries present yet for pair), insert initial liquidity
         if (lastSyncedHeight === 0 && lastSyncedBlockTime === 0n) {
@@ -132,7 +131,7 @@ export class PairLiquidityInfoHistoryImporterService {
           try {
             // If an error occurred for this block recently, skip block
             const error =
-              await this.pairLiquidityInfoHistoryErrorService.getErrorByPairIdAndMicroBlockHashWithinHours(
+              await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
                 block.hash,
                 this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
@@ -151,7 +150,7 @@ export class PairLiquidityInfoHistoryImporterService {
             );
 
             // Upsert liquidity
-            await this.pairLiquidityInfoHistoryService
+            await this.pairLiquidityInfoHistoryDb
               .upsert({
                 pairId: pairWithTokens.id,
                 totalSupply: liquidity.totalSupply.toString(),
@@ -171,7 +170,7 @@ export class PairLiquidityInfoHistoryImporterService {
             this.logger.error(
               `Skipped microBlock. ${JSON.stringify(errorData)}`,
             );
-            await this.pairLiquidityInfoHistoryErrorService.upsert(errorData);
+            await this.pairLiquidityInfoHistoryErrorDb.upsert(errorData);
           }
         }
 
@@ -187,7 +186,7 @@ export class PairLiquidityInfoHistoryImporterService {
           error: error.toString(),
         };
         this.logger.error(`Skipped pair. ${JSON.stringify(errorData)}`);
-        await this.pairLiquidityInfoHistoryErrorService.upsert(errorData);
+        await this.pairLiquidityInfoHistoryErrorDb.upsert(errorData);
       }
     }
 
@@ -201,7 +200,7 @@ export class PairLiquidityInfoHistoryImporterService {
     const microBlock = await this.mdwClientService.getMicroBlock(
       pairContract.block_hash,
     );
-    await this.pairLiquidityInfoHistoryService
+    await this.pairLiquidityInfoHistoryDb
       .upsert({
         pairId: pairWithTokens.id,
         totalSupply: '0',

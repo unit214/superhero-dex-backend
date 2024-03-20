@@ -7,6 +7,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { TokensService } from './api/tokens/service';
 import { PairsService } from './api/pairs/service';
 import { ClientsModule } from './clients/clients.module';
+import { PairLiquidityInfoHistoryModule } from './api/pair-liquidity-info-history/module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ClientsModule } from './clients/clients.module';
     ClientsModule,
     DatabaseModule,
     TasksModule,
+    PairLiquidityInfoHistoryModule,
   ],
   controllers: [AppController],
   providers: [TokensService, PairsService],
