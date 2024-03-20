@@ -9,7 +9,7 @@ import {
 } from '../lib/utils';
 import {
   AccountBalance,
-  BalancesV1,
+  ContractBalance,
   Contract,
   ContractLog,
   MdwMicroBlock,
@@ -45,6 +45,15 @@ export class MdwClientService {
     );
   }
 
+  getContractBalancesAtMicroBlockHash(
+    contractAddress: ContractAddress,
+    microBlockHash: MicroBlockHash,
+  ): Promise<ContractBalance[]> {
+    return this.getAllPages<ContractBalance>(
+      `/v2/aex9/${contractAddress}/balances/?block_hash=${microBlockHash}&${this.defaultParams}`,
+    );
+  }
+
   getAccountBalanceForContractAtMicroBlockHash(
     contractAddress: ContractAddress,
     accountAddress: AccountAddress,
@@ -58,15 +67,6 @@ export class MdwClientService {
   getMicroBlock(microBlockHash: MicroBlockHash): Promise<MdwMicroBlock> {
     return this.get<MdwMicroBlock>(
       `/v2/micro-blocks/${microBlockHash}?${this.defaultParams}`,
-    );
-  }
-
-  getContractBalancesAtMicroBlockHashV1(
-    contractAddress: ContractAddress,
-    microBlockHash: MicroBlockHash,
-  ): Promise<BalancesV1> {
-    return this.get<BalancesV1>(
-      `/aex9/balances/hash/${microBlockHash}/${contractAddress}?${this.defaultParams}`,
     );
   }
 

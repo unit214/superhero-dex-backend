@@ -48,11 +48,14 @@ export type AccountBalance = {
   contract: ContractAddress;
 };
 
-export type BalancesV1 = {
-  amounts: Record<AccountAddress, string>;
+export type ContractBalance = {
+  account_id: AccountAddress;
+  amount: string;
   block_hash: MicroBlockHash;
   contract_id: ContractAddress;
   height: string;
+  last_log_idx: string;
+  last_tx_hash: TxHash;
 };
 
 export type MdwMicroBlock = {
