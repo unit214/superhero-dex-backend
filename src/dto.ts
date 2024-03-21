@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export const contractPattern = 'ct_([1-9a-zA-Z]){49,50}';
+export const contractPattern =
+  'ct_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
 export const microBlockTimePattern = '[1-9]{13}';
-export const microBlockHashPattern = 'mh_([1-9a-zA-Z]){49,50}';
+export const microBlockHashPattern =
+  'mh_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 
 export const pairAddressPropertyOptions = {
   pattern: contractPattern,
