@@ -85,7 +85,7 @@ export class PairLiquidityInfoHistoryController {
         Number(offset),
         order,
         pairAddress,
-        Number(height),
+        height ? Number(height) : undefined,
         fromBlockTime ? BigInt(fromBlockTime) : undefined,
         toBlockTime ? BigInt(toBlockTime) : undefined,
       )
