@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.2.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.1.1...v1.2.0) (2024-03-22)
+
+
+### Features
+
+* add history tables and implement history importer task ([2b23eed](https://www.github.com/unit214/superhero-dex-backend/commit/2b23eedb96be745d655cf05817389f103d7ff9ca))
+* add init and pair liquidity info history migrations ([6be08aa](https://www.github.com/unit214/superhero-dex-backend/commit/6be08aaee184481999ac4e31144c980316658314))
+* add run task function handling isSyncRunning logic ([682ffdf](https://www.github.com/unit214/superhero-dex-backend/commit/682ffdfc19c84dcfcc00bfc125b72e1a29fa53ab))
+* add scheduling, resolve todos, cleanup & improve ([8ff29ba](https://www.github.com/unit214/superhero-dex-backend/commit/8ff29ba730bca090f99cece32a2efa211055bae0))
+* allow only running one task (importer or validator) at a time ([6695d03](https://www.github.com/unit214/superhero-dex-backend/commit/6695d03588417e3ab467f099178f3629ba57734f))
+* implemented api for pair liquidity info history ([18fc490](https://www.github.com/unit214/superhero-dex-backend/commit/18fc4901ab48cfa70c5cdcce86f178172a7c7490))
+* implemented history validation task ([5b0e651](https://www.github.com/unit214/superhero-dex-backend/commit/5b0e651b6cd0e9d73f070222566fdb842878733a))
+* **importer:** fetch only as many pages as needed ([9726428](https://www.github.com/unit214/superhero-dex-backend/commit/9726428792f7949eaedf1d7dac5cf69cd0f6f5df))
+* **importer:** skip if recent error. insert initial liquidity on first sync ([6a33906](https://www.github.com/unit214/superhero-dex-backend/commit/6a3390635de4decbc1185a702f96944748c5def2))
+* replace lossless-json with int-as-string parameter ([9f74e43](https://www.github.com/unit214/superhero-dex-backend/commit/9f74e432eddd3e327d94c39aadc039b0fc49b3bd))
+* **worker:** automatic reconnects ([632be66](https://www.github.com/unit214/superhero-dex-backend/commit/632be66eed2290f7d5e085e7f30f96a337458056))
+
+
+### Bug Fixes
+
+* error print on task lvl ([2d145b1](https://www.github.com/unit214/superhero-dex-backend/commit/2d145b1c8aa90bd681a9cbc607970b378cc23bee))
+* **importer:** fix block run, when other operation is still running ([7f9208d](https://www.github.com/unit214/superhero-dex-backend/commit/7f9208d13bab375bd31af4b8654e623c8fc78c2e))
+* readd function after rebase ([faec624](https://www.github.com/unit214/superhero-dex-backend/commit/faec6241f563be00173f74e9b03e937a14690987))
+* **validator:** adjustments after rebase ([7f036bf](https://www.github.com/unit214/superhero-dex-backend/commit/7f036bfe2c5ebc9a782f019fe68f497e13db379f))
+* **validator:** fix cronjob frequency ([35e6bc0](https://www.github.com/unit214/superhero-dex-backend/commit/35e6bc0f0a954e62cd716923f7e1b9372771b65c))
+
+
+### CI / CD
+
+* add github action to lint and prettify on PR lvl ([e84afed](https://www.github.com/unit214/superhero-dex-backend/commit/e84afed9308540c7087d0317ac1b9d0ae11af4eb))
+* refactor prod release ([87c1de8](https://www.github.com/unit214/superhero-dex-backend/commit/87c1de89fb1e01aee5f889424d733ccc28f23f69))
+* remove if from the production deploy step ([e9a6fa9](https://www.github.com/unit214/superhero-dex-backend/commit/e9a6fa90e1d5db89921396468442dce6d98d48c1))
+
+
+### Refactorings
+
+* adjust contractAddress and microBlock hash pattern ([29be71d](https://www.github.com/unit214/superhero-dex-backend/commit/29be71d6c8fb04bfd7ba65a4dd8272e9982b66e6))
+* change location of clients module + minor codestyle things ([7ee5d63](https://www.github.com/unit214/superhero-dex-backend/commit/7ee5d63005b618cdc702a559e103abc19e7a6880))
+* implement PR feedback ([8469b7e](https://www.github.com/unit214/superhero-dex-backend/commit/8469b7e7f2e27e7b431bc9ba9ac616d952eb495c))
+* **importer:** don't always refetch last microblock ([3d3c2b9](https://www.github.com/unit214/superhero-dex-backend/commit/3d3c2b907395687f4ab9ffebf4ff418f225554dd))
+* **importer:** simplify is first run check ([6ef5cf7](https://www.github.com/unit214/superhero-dex-backend/commit/6ef5cf714bff821fa12ccc1ce7108e99023e9487))
+* **importer:** thoroughly use Encoded string types everywhere ([cad05b9](https://www.github.com/unit214/superhero-dex-backend/commit/cad05b96ae86becc809705be19ad83c6f071343f))
+* migrate fetch contract balances at micro block to v2 endpoint ([167b30f](https://www.github.com/unit214/superhero-dex-backend/commit/167b30f67279f08e7a273a4a5d8726ce11297be3))
+* remove unnecessary async in function def ([a66f1cd](https://www.github.com/unit214/superhero-dex-backend/commit/a66f1cd8f54bf2e8dcda8be311c22b7f8cc982e1))
+* revert schema change ([d42a7ac](https://www.github.com/unit214/superhero-dex-backend/commit/d42a7ac0283a50e05c0b2d135d944c58e94d2278))
+* **validator:** feedback: improve cron notation, avoid double await ([8926599](https://www.github.com/unit214/superhero-dex-backend/commit/8926599b509a2f9a52f19448f782447db66af3e6))
+* **validator:** improving typing of hashOrKbi param ([73ad896](https://www.github.com/unit214/superhero-dex-backend/commit/73ad896680191adf2e555e52facdca11d1cb3f84))
+* **validator:** resolve todos, move sorting to db ([6a8a6bd](https://www.github.com/unit214/superhero-dex-backend/commit/6a8a6bdcb8dca632a133e66d8a13d1149412669e))
+
+
+### Testing
+
+* add e2e tests for PairLiquidityInfoHistoryDbService and PairLiquidityInfoHistoryErrorDbService ([081bbb0](https://www.github.com/unit214/superhero-dex-backend/commit/081bbb056ea2369a901a24bec756cee931999d2f))
+* add unit tests for PairLiquidityInfoHistoryController ([5bc2f8f](https://www.github.com/unit214/superhero-dex-backend/commit/5bc2f8f611d8e1f05ba5b9b80a878edee1a82a66))
+* adjust isRunning logic, implement unit tests for TasksService ([2de9430](https://www.github.com/unit214/superhero-dex-backend/commit/2de94303441444e672ed4900c6737477f74e0a0a))
+* implement unit tests for ImporterService ([774dfc9](https://www.github.com/unit214/superhero-dex-backend/commit/774dfc9aecfdec8bec5ca9c443e84c61e89faee9))
+* implement unit tests for ValidatorService ([eb77794](https://www.github.com/unit214/superhero-dex-backend/commit/eb777947ffbd00dccec8254aabc7b2e8c098da6c))
+* run test ci on pr lvl, fix e2e tests ([e0ee1cc](https://www.github.com/unit214/superhero-dex-backend/commit/e0ee1cce2f16148a5dac939d6f5ea0fe226f318b))
+
 ### [1.1.1](https://www.github.com/aeternity/dex-backend/compare/v1.1.0...v1.1.1) (2024-02-14)
 
 
