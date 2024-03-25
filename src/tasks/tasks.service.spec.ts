@@ -3,9 +3,9 @@ import { TasksService } from './tasks.service';
 import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer.service';
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairDbService } from '../database/pair-db.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error-db.service';
+import { PairDbService } from '../database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PrismaService } from '../database/prisma.service';
 
 describe('TasksService', () => {

@@ -1,14 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairDbService, PairWithTokens } from '../database/pair-db.service';
+import {
+  PairDbService,
+  PairWithTokens,
+} from '../database/pair/pair-db.service';
 import { isEqual, orderBy, uniqWith } from 'lodash';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import {
   ContractAddress,
   contractAddrToAccountAddr,
   MicroBlockHash,
 } from '../lib/utils';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { getClient } from '../lib/contracts';
 import { ContractLog } from '../clients/mdw-client.model';
 
