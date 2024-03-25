@@ -1,5 +1,5 @@
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
 import { getClient } from '../lib/contracts';

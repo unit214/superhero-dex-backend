@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../prisma.service';
 import { PairLiquidityInfoHistory } from '@prisma/client';
-import { OrderQueryEnum } from '../dto';
-import { ContractAddress } from '../lib/utils';
+import { OrderQueryEnum } from '../../dto';
+import { ContractAddress } from '../../lib/utils';
 
 @Injectable()
 export class PairLiquidityInfoHistoryDbService {
