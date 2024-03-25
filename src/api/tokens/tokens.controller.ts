@@ -8,7 +8,7 @@ import {
   Delete,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TokensService } from './service';
+import { TokensService } from './tokens.service';
 import * as dto from '../../dto';
 import {
   ApiResponse,
