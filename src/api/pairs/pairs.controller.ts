@@ -5,7 +5,7 @@ import {
   NotFoundException,
   Query,
 } from '@nestjs/common';
-import { PairsService } from './service';
+import { PairsService } from './pairs.service';
 import * as dto from '../../dto';
 import * as prisma from '@prisma/client';
 import { getPaths } from '../../lib/paths';
