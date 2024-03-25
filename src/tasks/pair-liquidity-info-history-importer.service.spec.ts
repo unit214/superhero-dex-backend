@@ -1,9 +1,9 @@
 import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairDbService } from '../database/pair-db.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error-db.service';
+import { PairDbService } from '../database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { ContractAddress } from '../lib/utils';
 import { Contract } from '../clients/mdw-client.model';
 

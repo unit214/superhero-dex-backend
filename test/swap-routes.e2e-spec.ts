@@ -6,8 +6,7 @@ import { listToken, mockContext } from './utils';
 import worker from '../src/worker';
 import * as db from './utils/db';
 import * as data from './data/context-mockups';
-import { TokensModule } from '../src/api/tokens/tokens.module';
-import { PairsModule } from '../src/api/pairs/pairs.module';
+import { ApiModule } from '../src/api/api.module';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
@@ -29,7 +28,7 @@ const initWorker = async (dataCtx: any) => {
 
 const initApp = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [TokensModule, PairsModule],
+    imports: [ApiModule],
   }).compile();
 
   app = moduleFixture.createNestApplication();

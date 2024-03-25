@@ -1,9 +1,9 @@
 import { PairLiquidityInfoHistoryDbService } from './pair-liquidity-info-history-db.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../prisma.service';
 import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
-import { OrderQueryEnum } from '../dto';
-import { ContractAddress } from '../lib/utils';
+import { OrderQueryEnum } from '../../dto';
+import { ContractAddress } from '../../lib/utils';
 
 const token1: Token = {
   id: 1,

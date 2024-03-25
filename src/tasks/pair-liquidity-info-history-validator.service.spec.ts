@@ -1,7 +1,7 @@
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MdwClientService } from '../clients/mdw-client.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 
 const mockMdwClientService = {
   getKeyBlockMicroBlocks: jest.fn(),
