@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import * as dal from '../../dal';
-import { Pair, Token, PairLiquidityInfo } from '@prisma/client';
+import { Pair, PairLiquidityInfo, Token } from '@prisma/client';
 import { ContractAddress, presentInvalidTokens } from '../../lib/utils';
+import { TokenDbService } from '../../database/token/token-db.service';
 
 @Injectable()
 export class TokensService {
+  constructor(private readonly tokenDbService: TokenDbService) {}
   async getCount(onlyListed?: boolean) {
-    return dal.token.count(presentInvalidTokens, onlyListed);
+    return this.tokenDbService.count(presentInvalidTokens, onlyListed);
   }
   async getAllTokens(): Promise<Token[]> {
-    return dal.token.getAll(presentInvalidTokens);
+    return this.tokenDbService.getAll(presentInvalidTokens);
   }
   async getListedTokens(): Promise<Token[]> {
-    return dal.token.getListed();
+    return this.tokenDbService.getListed();
   }
 
   async listToken(address: ContractAddress) {
-    return dal.token.updateListedValue(address, true);
+    return this.tokenDbService.updateListedValue(address, true);
   }
 
   async unlistToken(address: ContractAddress) {
-    return dal.token.updateListedValue(address, false);
+    return this.tokenDbService.updateListedValue(address, false);
   }
 
   async getToken(address: ContractAddress): Promise<
@@ -30,7 +31,7 @@ export class TokensService {
       })
     | null
   > {
-    return dal.token.getByAddressWithPairs(address);
+    return this.tokenDbService.getByAddressWithPairs(address);
   }
 
   async getTokenWithPairsInfo(address: ContractAddress): Promise<
@@ -46,6 +47,6 @@ export class TokensService {
       })
     | null
   > {
-    return dal.token.getByAddressWithPairsAndLiquidity(address);
+    return this.tokenDbService.getByAddressWithPairsAndLiquidity(address);
   }
 }

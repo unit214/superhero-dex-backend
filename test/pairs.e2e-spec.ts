@@ -5,8 +5,7 @@ import { listToken, mockContext, sortByAddress } from './utils';
 import createWorkerMethods from '../src/worker';
 import * as data from './data/context-mockups';
 import * as db from './utils/db';
-import { TokensModule } from '../src/api/tokens/tokens.module';
-import { PairsModule } from '../src/api/pairs/pairs.module';
+import { ApiModule } from '../src/api/api.module';
 
 type WorkerMethods = ReturnType<typeof createWorkerMethods>;
 let activeWorker: WorkerMethods;
@@ -30,7 +29,7 @@ describe('pairs fetching (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TokensModule, PairsModule],
+      imports: [ApiModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
