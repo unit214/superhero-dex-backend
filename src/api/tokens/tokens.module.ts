@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TokensController } from './controller';
-import { TokensService } from './service';
+import { TokensController } from './tokens.controller';
+import { TokensService } from './tokens.service';
 
 @Module({
   imports: [],

@@ -8,8 +8,8 @@ import * as data from './data/context-mockups';
 import * as dto from '../src/dto';
 import * as utils from './utils';
 import { nonNullable } from '../src/lib/utils';
-import { TokensModule } from '../src/api/tokens/module';
-import { PairsModule } from '../src/api/pairs/module';
+import { TokensModule } from '../src/api/tokens/tokens.module';
+import { PairsModule } from '../src/api/pairs/pairs.module';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
