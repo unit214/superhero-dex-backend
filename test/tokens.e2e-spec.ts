@@ -8,8 +8,7 @@ import * as data from './data/context-mockups';
 import * as dto from '../src/dto';
 import * as utils from './utils';
 import { nonNullable } from '../src/lib/utils';
-import { TokensModule } from '../src/api/tokens/tokens.module';
-import { PairsModule } from '../src/api/pairs/pairs.module';
+import { ApiModule } from '../src/api/api.module';
 
 type WorkerMethods = ReturnType<typeof worker>;
 let activeWorker: WorkerMethods;
@@ -33,7 +32,7 @@ describe('tokens fetching (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TokensModule, PairsModule],
+      imports: [ApiModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -487,7 +486,7 @@ describe('listed tokens management (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TokensModule, PairsModule],
+      imports: [ApiModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

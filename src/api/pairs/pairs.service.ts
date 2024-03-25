@@ -1,30 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import * as dal from '../../dal';
 import { presentInvalidTokens } from '../../lib/utils';
+import { PairDbService } from '../../database/pair/pair-db.service';
 
 @Injectable()
 export class PairsService {
+  constructor(private readonly pairDbService: PairDbService) {}
   async getAllPairs(onlyListed?: boolean) {
-    return dal.pair.getAll(presentInvalidTokens, onlyListed);
+    return this.pairDbService.getAllWithCondition(
+      presentInvalidTokens,
+      onlyListed,
+    );
   }
 
   async getAllPairsWithLiquidityInfo(onlyListed?: boolean) {
-    return dal.pair.getAllWithLiquidityInfo(presentInvalidTokens, onlyListed);
+    return this.pairDbService.getAllWithLiquidityInfo(
+      presentInvalidTokens,
+      onlyListed,
+    );
   }
 
   async getCountStats() {
     return {
-      all: await dal.pair.count(presentInvalidTokens),
-      synced: await dal.pair.count(presentInvalidTokens, 'synchronized'),
-      listed: await dal.pair.count(presentInvalidTokens, 'listed'),
+      all: await this.pairDbService.count(presentInvalidTokens),
+      synced: await this.pairDbService.count(
+        presentInvalidTokens,
+        'synchronized',
+      ),
+      listed: await this.pairDbService.count(presentInvalidTokens, 'listed'),
     };
   }
 
   async getPair(address: string) {
-    return dal.pair.getOne(address);
+    return this.pairDbService.getOne(address);
   }
 
   async getTopHeight() {
-    return dal.pair.getTopHeight();
+    return this.pairDbService.getTopHeight();
   }
 }

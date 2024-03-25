@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../prisma.service';
 import { Pair, PairLiquidityInfoHistoryError, Token } from '@prisma/client';
 import { PairLiquidityInfoHistoryErrorDbService } from './pair-liquidity-info-history-error-db.service';
 
