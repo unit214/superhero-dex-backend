@@ -54,7 +54,7 @@ describe('TokenController', () => {
   beforeEach(async () => {
     await cleanDb(prismaService);
     const ctx = mockContext(data.context2);
-    await pairSyncService.refreshPairs(ctx);
+    await pairSyncService['refreshPairs'](ctx);
   });
 
   afterAll(async () => {
@@ -244,8 +244,8 @@ describe('TokenController', () => {
 
     it('/tokens/by-address/ct_t0/pairs (GET) 200 with pairs only on pairs0', async () => {
       const ctx = utils.mockContext(data.context21);
-      await pairSyncService.refreshPairs(ctx);
-      await pairSyncService.refreshPairsLiquidity(ctx);
+      await pairSyncService['refreshPairs'](ctx);
+      await pairSyncService['refreshPairsLiquidity'](ctx);
 
       const response = await request(app.getHttpServer())
         .get('/tokens/by-address/ct_t0/pairs')
@@ -317,8 +317,8 @@ describe('TokenController', () => {
 
     it('/tokens/by-address/ct_t3/pairs (GET) 200 with pairs only on pairs1', async () => {
       const ctx = utils.mockContext(data.context21);
-      await pairSyncService.refreshPairs(ctx);
-      await pairSyncService.refreshPairsLiquidity(ctx);
+      await pairSyncService['refreshPairs'](ctx);
+      await pairSyncService['refreshPairsLiquidity'](ctx);
       await utils.listToken(prismaService, 'ct_t0');
       await utils.listToken(prismaService, 'ct_t3');
 
@@ -393,8 +393,8 @@ describe('TokenController', () => {
           },
         ]),
       });
-      await pairSyncService.refreshPairs(ctx);
-      await pairSyncService.refreshPairsLiquidity(ctx);
+      await pairSyncService['refreshPairs'](ctx);
+      await pairSyncService['refreshPairsLiquidity'](ctx);
       await utils.listToken(prismaService, 'ct_t0');
       await utils.listToken(prismaService, 'ct_t3');
 
