@@ -1,13 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import createWorker from './worker';
-import { getContext } from './lib/contracts';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { nonNullable } from './lib/utils';
+import { PairSyncService } from './tasks/pair-sync.service';
 
 const version = nonNullable(process.env.npm_package_version);
 async function bootstrap() {
-  createWorker(await getContext()).startWorker(true, true);
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   const config = new DocumentBuilder()
@@ -18,5 +16,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('', app, document);
   await app.listen(3000);
+  app.get(PairSyncService).startSync(true, true);
 }
 bootstrap();

@@ -14,10 +14,10 @@ import {
   ContractLog,
   MdwMicroBlock,
   MdwPaginatedResponse,
-} from './mdw-client.model';
+} from './mdw-http-client.model';
 
 @Injectable()
-export class MdwClientService {
+export class MdwHttpClientService {
   private readonly LIMIT = 100;
   private readonly DIRECTION = 'forward';
   private readonly INT_AS_STRING = true;

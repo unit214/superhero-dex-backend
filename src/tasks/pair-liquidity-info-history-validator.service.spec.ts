@@ -1,6 +1,6 @@
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { MdwClientService } from '../clients/mdw-client.service';
+import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 
 const mockMdwClientService = {
@@ -19,7 +19,7 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PairLiquidityInfoHistoryValidatorService,
-        { provide: MdwClientService, useValue: mockMdwClientService },
+        { provide: MdwHttpClientService, useValue: mockMdwClientService },
         {
           provide: PairLiquidityInfoHistoryDbService,
           useValue: mockPairLiquidityInfoHistoryDb,
