@@ -66,6 +66,44 @@ export class MdwWsClientService {
     return ws;
   };
 
+  createMessageHandler =
+    (callbacks: Callbacks, ws: WebSocket, logger: Logger) =>
+    async (msg: WebSocket.RawData) => {
+      const stringMessage = msg.toString();
+      const objMessage = JSON.parse(stringMessage);
+      const onUnknownMessage = () => {
+        ws.close();
+        throw new Error(`Unknown message received: ${stringMessage}`);
+      };
+      if (Array.isArray(objMessage)) {
+        if (objMessage.some((x) => x === 'Transactions')) {
+          logger.debug(`Subscribed to all transactions`);
+        } else {
+          logger.debug(
+            `Subscribed to ${pluralize(objMessage.length, 'contract')}`,
+          );
+        }
+        return;
+      }
+      if (typeof objMessage === 'string') {
+        // if the message doesn't represent an already existing subscription
+        if (objMessage.indexOf('already subscribed to target')) {
+          onUnknownMessage();
+        }
+        // there is nothing of interest here, let's exit
+        return;
+      } else if (
+        !['Object', 'Transactions'].some((x) => objMessage.subscription === x)
+      ) {
+        onUnknownMessage();
+        return;
+      }
+      const event: SubscriptionEvent = objMessage;
+      //if pair update subscribe to pair
+      const callback = callbacks.onEventReceived;
+      callback && (await callback(event));
+    };
+
   private createWebSocketConnection = () =>
     new WebSocket(
       NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareWebsocketUrl,
@@ -114,42 +152,4 @@ export class MdwWsClientService {
       },
     };
   };
-
-  createMessageHandler =
-    (callbacks: Callbacks, ws: WebSocket, logger: Logger) =>
-    async (msg: WebSocket.RawData) => {
-      const stringMessage = msg.toString();
-      const objMessage = JSON.parse(stringMessage);
-      const onUnknownMessage = () => {
-        ws.close();
-        throw new Error(`Unknown message received: ${stringMessage}`);
-      };
-      if (Array.isArray(objMessage)) {
-        if (objMessage.some((x) => x === 'Transactions')) {
-          logger.debug(`Subscribed to all transactions`);
-        } else {
-          logger.debug(
-            `Subscribed to ${pluralize(objMessage.length, 'contract')}`,
-          );
-        }
-        return;
-      }
-      if (typeof objMessage === 'string') {
-        // if the message doesn't represent an already existing subscription
-        if (objMessage.indexOf('already subscribed to target')) {
-          onUnknownMessage();
-        }
-        // there is nothing of interest here, let's exit
-        return;
-      } else if (
-        !['Object', 'Transactions'].some((x) => objMessage.subscription === x)
-      ) {
-        onUnknownMessage();
-        return;
-      }
-      const event: SubscriptionEvent = objMessage;
-      //if pair update subscribe to pair
-      const callback = callbacks.onEventReceived;
-      callback && (await callback(event));
-    };
 }
