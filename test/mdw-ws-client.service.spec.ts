@@ -46,7 +46,7 @@ describe('MdwWsClientService', () => {
       const callbacks = mock<Callbacks>();
       const ws = mock<WebSocket>();
       const logger = mock<Logger>();
-      const msgHandler = service.createMessageHandler(callbacks, ws, logger);
+      const msgHandler = service['createMessageHandler'](callbacks, ws, logger);
       return { callbacks, ws, logger, msgHandler };
     };
 
