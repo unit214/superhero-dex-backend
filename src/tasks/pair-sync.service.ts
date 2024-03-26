@@ -17,7 +17,7 @@ export class PairSyncService implements OnModuleInit {
   ) {}
 
   readonly logger = new Logger(PairSyncService.name);
-  private ctx: Context;
+  ctx;
 
   async onModuleInit() {
     this.ctx = await getContext();
