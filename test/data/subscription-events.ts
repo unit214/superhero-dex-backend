@@ -1,4 +1,4 @@
-import { SubscriptionEvent } from '../../src/worker/middleware';
+import { SubscriptionEvent } from '../../src/clients/mdw-ws-client.model';
 
 export const objSubEv: SubscriptionEvent = {
   subscription: 'Object',

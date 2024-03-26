@@ -59,7 +59,8 @@ const errorEntry2: PairLiquidityInfoHistoryError = {
 describe('PairLiquidityInfoHistoryErrorDbService', () => {
   let service: PairLiquidityInfoHistoryErrorDbService;
   let prismaService: PrismaService;
-  beforeEach(async () => {
+
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [PairLiquidityInfoHistoryErrorDbService, PrismaService],
     }).compile();
@@ -68,7 +69,9 @@ describe('PairLiquidityInfoHistoryErrorDbService', () => {
       PairLiquidityInfoHistoryErrorDbService,
     );
     prismaService = module.get<PrismaService>(PrismaService);
+  });
 
+  beforeEach(async () => {
     await prismaService.token.createMany({ data: [token1, token2] });
     await prismaService.pair.createMany({ data: [pair1, pair2] });
     await prismaService.pairLiquidityInfoHistoryError.createMany({
@@ -82,6 +85,10 @@ describe('PairLiquidityInfoHistoryErrorDbService', () => {
     await prismaService.pair.deleteMany();
     await prismaService.token.deleteMany();
     jest.useRealTimers();
+  });
+
+  afterAll(async () => {
+    await prismaService.$disconnect();
   });
 
   describe('getErrorByPairIdAndMicroBlockHashWithinHours', () => {
