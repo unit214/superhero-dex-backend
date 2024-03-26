@@ -25,7 +25,7 @@ const initTestContext = (service: PairSyncService) => {
   };
   const { onFactory, refreshPairsLiquidity, getAllAddresses } = mock<Ev>();
   const logger = mock<Logger>();
-  const eventHandler = service.createOnEventReceived(
+  const eventHandler = service['createOnEventReceived'](
     ctx,
     logger,
     onFactory,
