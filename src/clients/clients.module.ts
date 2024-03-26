@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { MdwClientService } from './mdw-client.service';
+import { MdwHttpClientService } from './mdw-http-client.service';
 
 @Module({
-  providers: [MdwClientService],
-  exports: [MdwClientService],
+  providers: [MdwHttpClientService, MdwHttpClientService],
+  exports: [MdwHttpClientService, MdwHttpClientService],
 })
 export class ClientsModule {}
