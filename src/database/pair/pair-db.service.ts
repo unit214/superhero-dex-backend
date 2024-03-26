@@ -7,21 +7,6 @@ import { validTokenCondition } from '../token/token-db.service';
 export type PairWithTokens = { token0: Token; token1: Token } & Pair;
 export type CountMode = 'all' | 'listed' | 'synchronized';
 
-const tokenCondition = (showInvalidTokens: boolean, onlyListed?: boolean) => ({
-  is: {
-    ...(onlyListed ? { listed: true } : {}),
-    ...(showInvalidTokens ? {} : validTokenCondition),
-  },
-});
-
-const tokensCondition = (showInvalidTokens: boolean, onlyListed?: boolean) => {
-  const condition = tokenCondition(showInvalidTokens, !!onlyListed);
-  return {
-    token0: condition,
-    token1: condition,
-  };
-};
-
 @Injectable()
 export class PairDbService {
   constructor(private prisma: PrismaService) {}
@@ -37,7 +22,7 @@ export class PairDbService {
 
   getAllWithCondition(showInvalidTokens: boolean, onlyListed?: boolean) {
     return this.prisma.pair.findMany({
-      where: tokensCondition(showInvalidTokens, onlyListed),
+      where: this.tokensCondition(showInvalidTokens, onlyListed),
       include: {
         token0: true,
         token1: true,
@@ -65,7 +50,7 @@ export class PairDbService {
 
   getAllWithLiquidityInfo(showInvalidTokens: boolean, onlyListed?: boolean) {
     return this.prisma.pair.findMany({
-      where: tokensCondition(showInvalidTokens, onlyListed),
+      where: this.tokensCondition(showInvalidTokens, onlyListed),
       include: {
         token0: true,
         token1: true,
@@ -90,7 +75,7 @@ export class PairDbService {
   count(showInvalidTokens: boolean, mode?: CountMode) {
     return this.prisma.pair.count({
       where: {
-        ...tokensCondition(showInvalidTokens, mode === 'listed'),
+        ...this.tokensCondition(showInvalidTokens, mode === 'listed'),
         ...(mode === 'synchronized' ? { synchronized: true } : {}),
       },
     });
@@ -167,4 +152,25 @@ export class PairDbService {
       data: { synchronized: false },
     });
   }
+
+  private tokenCondition = (
+    showInvalidTokens: boolean,
+    onlyListed?: boolean,
+  ) => ({
+    is: {
+      ...(onlyListed ? { listed: true } : {}),
+      ...(showInvalidTokens ? {} : validTokenCondition),
+    },
+  });
+
+  private tokensCondition = (
+    showInvalidTokens: boolean,
+    onlyListed?: boolean,
+  ) => {
+    const condition = this.tokenCondition(showInvalidTokens, !!onlyListed);
+    return {
+      token0: condition,
+      token1: condition,
+    };
+  };
 }
