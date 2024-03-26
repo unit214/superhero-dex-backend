@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MdwClientService } from '../clients/mdw-client.service';
+import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import {
   PairDbService,
   PairWithTokens,
@@ -13,7 +13,7 @@ import {
 } from '../lib/utils';
 import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { getClient } from '../lib/contracts';
-import { ContractLog } from '../clients/mdw-client.model';
+import { ContractLog } from '../clients/mdw-http-client.model';
 
 type MicroBlock = {
   hash: MicroBlockHash;
@@ -24,7 +24,7 @@ type MicroBlock = {
 @Injectable()
 export class PairLiquidityInfoHistoryImporterService {
   constructor(
-    private mdwClientService: MdwClientService,
+    private mdwClientService: MdwHttpClientService,
     private pairDb: PairDbService,
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
     private pairLiquidityInfoHistoryErrorDb: PairLiquidityInfoHistoryErrorDbService,
