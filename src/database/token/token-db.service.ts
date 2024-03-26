@@ -4,6 +4,7 @@ import { Token } from '@prisma/client';
 import { ContractAddress } from '../../lib/utils';
 
 export const validTokenCondition = { malformed: false, noContract: false };
+
 @Injectable()
 export class TokenDbService {
   constructor(private prisma: PrismaService) {}
