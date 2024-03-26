@@ -17,6 +17,7 @@ it('a path with one in the middle', () => {
 
   expect(getPaths('a', 'c', edges)).toStrictEqual([['a_b', 'b_c']]);
 });
+
 it('a path with two in the middle and a direct one', () => {
   const edges: Edge<string, string>[] = [
     { data: 'a_b', t0: 'a', t1: 'b' },

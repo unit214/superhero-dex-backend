@@ -104,7 +104,8 @@ const historyEntry4: PairLiquidityInfoHistory = {
 describe('PairLiquidityInfoHistoryDbService', () => {
   let service: PairLiquidityInfoHistoryDbService;
   let prismaService: PrismaService;
-  beforeEach(async () => {
+
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [PairLiquidityInfoHistoryDbService, PrismaService],
     }).compile();
@@ -113,7 +114,9 @@ describe('PairLiquidityInfoHistoryDbService', () => {
       PairLiquidityInfoHistoryDbService,
     );
     prismaService = module.get<PrismaService>(PrismaService);
+  });
 
+  beforeEach(async () => {
     await prismaService.token.createMany({ data: [token1, token2, token3] });
     await prismaService.pair.createMany({ data: [pair1, pair2, pair3] });
     await prismaService.pairLiquidityInfoHistory.createMany({
@@ -125,6 +128,10 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     await prismaService.pairLiquidityInfoHistory.deleteMany();
     await prismaService.pair.deleteMany();
     await prismaService.token.deleteMany();
+  });
+
+  afterAll(async () => {
+    await prismaService.$disconnect();
   });
 
   describe('getAll', () => {
