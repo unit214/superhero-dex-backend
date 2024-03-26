@@ -5,6 +5,7 @@ import { ClientsModule } from '../clients/clients.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
 import { TasksService } from './tasks.service';
+import { PairSyncService } from './pair-sync.service';
 
 @Module({
   imports: [ClientsModule, DatabaseModule, ScheduleModule.forRoot()],
@@ -12,6 +13,7 @@ import { TasksService } from './tasks.service';
     PairLiquidityInfoHistoryImporterService,
     PairLiquidityInfoHistoryValidatorService,
     TasksService,
+    PairSyncService,
   ],
 })
 export class TasksModule {}
