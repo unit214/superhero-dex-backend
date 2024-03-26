@@ -36,7 +36,7 @@ describe('PairSyncService', () => {
   beforeEach(async () => {
     await cleanDb(prismaService);
     const ctx = mockContext(data.context2);
-    await service.refreshPairs(ctx);
+    await service['refreshPairs'](ctx);
   });
 
   afterAll(async () => {
@@ -56,7 +56,7 @@ describe('PairSyncService', () => {
 
   it('refresh pairs liquidity', async () => {
     const ctx = mockContext(data.context2);
-    await service.refreshPairsLiquidity(ctx);
+    await service['refreshPairsLiquidity'](ctx);
 
     const pairs = await prismaService.pair.findMany({
       include: { liquidityInfo: true },
@@ -74,7 +74,7 @@ describe('PairSyncService', () => {
 
   it('refresh new added pairs', async () => {
     const ctx = mockContext(data.context21);
-    await service.refreshPairs(ctx);
+    await service['refreshPairs'](ctx);
     const pairs: prisma.Pair[] = await prismaService.pair.findMany({
       orderBy: { id: 'asc' },
     });
@@ -87,8 +87,8 @@ describe('PairSyncService', () => {
 
   it('refresh liquidity for new added pairs', async () => {
     const ctx = mockContext(data.context21);
-    await service.refreshPairs(ctx);
-    await service.refreshPairsLiquidity(ctx);
+    await service['refreshPairs'](ctx);
+    await service['refreshPairsLiquidity'](ctx);
     const pairs = await prismaService.pair.findMany({
       include: { liquidityInfo: true },
       orderBy: { address: 'asc' },
@@ -102,7 +102,7 @@ describe('PairSyncService', () => {
   });
 
   it('unsync all pairs', async () => {
-    await service.unsyncAllPairs();
+    await service['unsyncAllPairs']();
     const pairs = await prismaService.pair.findMany({
       where: { synchronized: true },
     });

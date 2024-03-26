@@ -55,7 +55,7 @@ describe('PairsController', () => {
   beforeEach(async () => {
     await cleanDb(prismaService);
     const ctx = mockContext(data.context2);
-    await pairSyncService.refreshPairs(ctx);
+    await pairSyncService['refreshPairs'](ctx);
   });
 
   describe('/pairs', () => {
@@ -87,7 +87,7 @@ describe('PairsController', () => {
 
     it('/pairs (GET) 200 synchronized', async () => {
       const ctx1 = mockContext(data.context2);
-      await pairSyncService.refreshPairsLiquidity(ctx1);
+      await pairSyncService['refreshPairsLiquidity'](ctx1);
       const response = await request(app.getHttpServer())
         .get('/pairs')
         .expect(200);
@@ -116,9 +116,9 @@ describe('PairsController', () => {
 
     it('/pairs (GET) 200 with new pair', async () => {
       const ctx1 = mockContext(data.context2);
-      await pairSyncService.refreshPairsLiquidity(ctx1);
+      await pairSyncService['refreshPairsLiquidity'](ctx1);
       const ctx2 = mockContext(data.context21);
-      await pairSyncService.refreshPairs(ctx2);
+      await pairSyncService['refreshPairs'](ctx2);
       const response = await request(app.getHttpServer())
         .get('/pairs')
         .expect(200);
@@ -153,9 +153,9 @@ describe('PairsController', () => {
 
     it('/pairs (GET) 200 only-listed=true', async () => {
       const ctx1 = mockContext(data.context2);
-      await pairSyncService.refreshPairsLiquidity(ctx1);
+      await pairSyncService['refreshPairsLiquidity'](ctx1);
       const ctx2 = mockContext(data.context21);
-      await pairSyncService.refreshPairs(ctx2);
+      await pairSyncService['refreshPairs'](ctx2);
 
       let response = await request(app.getHttpServer())
         .get('/pairs?only-listed=true')
@@ -215,7 +215,7 @@ describe('PairsController', () => {
 
     it('/pairs/by-address/ct_p1 (GET) 200 synchronized', async () => {
       const ctx1 = mockContext(data.context2);
-      await pairSyncService.refreshPairsLiquidity(ctx1);
+      await pairSyncService['refreshPairsLiquidity'](ctx1);
       return request(app.getHttpServer())
         .get('/pairs/by-address/ct_p1')
         .expect(200)
@@ -251,8 +251,8 @@ describe('PairsController', () => {
 
     it('/pairs/by-address/ct_p1 (GET) 200 unsynchronized with liquidity', async () => {
       const ctx1 = mockContext(data.context2);
-      await pairSyncService.refreshPairsLiquidity(ctx1);
-      await pairSyncService.unsyncAllPairs();
+      await pairSyncService['refreshPairsLiquidity'](ctx1);
+      await pairSyncService['unsyncAllPairs']();
       return request(app.getHttpServer())
         .get('/pairs/by-address/ct_p1')
         .expect(200)
@@ -318,7 +318,7 @@ describe('PairsController', () => {
           },
         }),
       });
-      await pairSyncService.refreshPairs(ctx);
+      await pairSyncService['refreshPairs'](ctx);
 
       return request(app.getHttpServer())
         .get('/pairs/swap-routes/ct_t0/ct_t5')
@@ -328,7 +328,7 @@ describe('PairsController', () => {
 
     it('/pairs/swap-routes/ct_t0/ct_t4 (GET) 200 direct path', async () => {
       const ctx = mockContext(data.context21);
-      await pairSyncService.refreshPairs(ctx);
+      await pairSyncService['refreshPairs'](ctx);
 
       return request(app.getHttpServer())
         .get('/pairs/swap-routes/ct_t0/ct_t4')
@@ -347,7 +347,7 @@ describe('PairsController', () => {
 
     it('/pairs/swap-routes/ct_t0/ct_t3 (GET) 200 synchronized', async () => {
       const ctx = mockContext(data.context21);
-      await pairSyncService.refreshPairsLiquidity(ctx);
+      await pairSyncService['refreshPairsLiquidity'](ctx);
 
       return request(app.getHttpServer())
         .get('/pairs/swap-routes/ct_t0/ct_t1')
@@ -486,7 +486,7 @@ describe('PairsController', () => {
           t1: 3,
         }),
       });
-      await pairSyncService.refreshPairs(ctx);
+      await pairSyncService['refreshPairs'](ctx);
 
       return request(app.getHttpServer())
         .get('/pairs/swap-routes/ct_t0/ct_t1')
