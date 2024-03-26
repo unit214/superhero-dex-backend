@@ -51,12 +51,12 @@ export class PairSyncService implements OnModuleInit {
     });
   };
 
-  unsyncAllPairs = async () => {
+  private unsyncAllPairs = async () => {
     const batch = await this.pairDbService.unsyncAllPairs();
     this.logger.log(`${batch.count} pairs marked as unsync`);
   };
 
-  refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
+  private refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
     this.logger.log(`Getting all pairs from Factory...`);
     const { decodedResult: allFactoryPairs } =
       await ctx.factory.get_all_pairs();
@@ -111,7 +111,7 @@ export class PairSyncService implements OnModuleInit {
     return newAddresses.concat(futurePairs);
   };
 
-  refreshPairsLiquidity = async (ctx: Context) => {
+  private refreshPairsLiquidity = async (ctx: Context) => {
     //get the all pairs
     const dbPairs = await this.pairDbService.getAllWithCondition(true);
     this.logger.log(`Refreshing pairs liquidity...`);
@@ -121,7 +121,7 @@ export class PairSyncService implements OnModuleInit {
     this.logger.log(`Pairs liquidity refresh completed`);
   };
 
-  createOnEventReceived =
+  private createOnEventReceived =
     (
       ctx: Context,
       logger: Logger,
