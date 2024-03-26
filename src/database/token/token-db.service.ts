@@ -3,20 +3,21 @@ import { PrismaService } from '../prisma.service';
 import { Token } from '@prisma/client';
 import { ContractAddress } from '../../lib/utils';
 
+export const validTokenCondition = { malformed: false, noContract: false };
 @Injectable()
 export class TokenDbService {
   constructor(private prisma: PrismaService) {}
 
   getAll(showInvalidTokens: boolean): Promise<Token[]> {
     return this.prisma.token.findMany({
-      where: showInvalidTokens ? {} : this.validTokenCondition,
+      where: showInvalidTokens ? {} : validTokenCondition,
     });
   }
 
   getListed(): Promise<Token[]> {
     //there is no reason to list invalid tokens
     return this.prisma.token.findMany({
-      where: { ...this.validTokenCondition, listed: true },
+      where: { ...validTokenCondition, listed: true },
     });
   }
 
@@ -55,7 +56,7 @@ export class TokenDbService {
     return this.prisma.token.count({
       where: {
         ...(onlyListed ? { listed: true } : {}),
-        ...(() => (showInvalidTokens ? {} : this.validTokenCondition))(),
+        ...(() => (showInvalidTokens ? {} : validTokenCondition))(),
       },
     });
   }
@@ -75,7 +76,7 @@ export class TokenDbService {
   ): Promise<ContractAddress[]> {
     return (
       await this.prisma.token.findMany({
-        where: showInvalidTokens ? {} : this.validTokenCondition,
+        where: showInvalidTokens ? {} : validTokenCondition,
         select: {
           address: true,
         },
@@ -117,6 +118,4 @@ export class TokenDbService {
       create: { address, ...common },
     });
   }
-
-  private validTokenCondition = { malformed: false, noContract: false };
 }

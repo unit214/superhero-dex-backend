@@ -115,7 +115,7 @@ export class MdwWsClientService {
     };
   };
 
-  private createMessageHandler =
+  createMessageHandler =
     (callbacks: Callbacks, ws: WebSocket, logger: Logger) =>
     async (msg: WebSocket.RawData) => {
       const stringMessage = msg.toString();

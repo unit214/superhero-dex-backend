@@ -1,5 +1,5 @@
 import { ContractAddress } from '../../src/lib/utils';
-import { ContextData } from '../utils/context.mockup';
+import { ContextData } from '../utils';
 
 const tokens = [
   {
