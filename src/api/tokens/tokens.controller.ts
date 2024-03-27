@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { TokensService } from './tokens.service';
-import * as dto from '../../dto';
+import * as dto from '../api.model';
 import {
   ApiResponse,
   ApiOperation,

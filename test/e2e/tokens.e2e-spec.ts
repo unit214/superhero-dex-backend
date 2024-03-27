@@ -4,7 +4,7 @@ import * as request from 'supertest';
 
 import { cleanDb, listToken } from '../test-utils/db-helper';
 import * as data from '../test-utils/context-mock-data';
-import * as dto from '../../src/dto';
+import * as dto from '../../src/api/api.model';
 import * as utils from '../test-utils/utils';
 import { nonNullable } from '../../src/lib/utils';
 import { PrismaService } from '../../src/database/prisma.service';

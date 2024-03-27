@@ -2,7 +2,7 @@ import { PairLiquidityInfoHistoryDbService } from '../../src/database/pair-liqui
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../src/database/prisma.service';
 import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
-import { OrderQueryEnum } from '../../src/dto';
+import { OrderQueryEnum } from '../../src/api/api.model';
 
 import { ContractAddress } from '../../src/clients/sdk-client.model';
 
