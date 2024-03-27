@@ -1,17 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { listToken, mockContext, sortByAddress } from './utils';
-import * as data from './data/context-mockups';
-import { clean as cleanDb } from './utils/db';
-import { PrismaService } from '../src/database/prisma.service';
-import { PairSyncService } from '../src/tasks/pair-sync.service';
-import { PairsController } from '../src/api/pairs/pairs.controller';
-import { PairsService } from '../src/api/pairs/pairs.service';
-import { PairDbService } from '../src/database/pair/pair-db.service';
-import { TokenDbService } from '../src/database/token/token-db.service';
-import { MdwWsClientService } from '../src/clients/mdw-ws-client.service';
-import { SdkClientService } from '../src/clients/sdk-client.service';
+import { sortByAddress } from '../test-utils/utils';
+import * as data from '../test-utils/context-mock-data';
+import { cleanDb, listToken } from '../test-utils/db-helper';
+import { PrismaService } from '../../src/database/prisma.service';
+import { PairSyncService } from '../../src/tasks/pair-sync.service';
+import { PairsController } from '../../src/api/pairs/pairs.controller';
+import { PairsService } from '../../src/api/pairs/pairs.service';
+import { PairDbService } from '../../src/database/pair/pair-db.service';
+import { TokenDbService } from '../../src/database/token/token-db.service';
+import { MdwWsClientService } from '../../src/clients/mdw-ws-client.service';
+import { SdkClientService } from '../../src/clients/sdk-client.service';
+import { mockContext } from '../test-utils/context-mock';
 
 // Testing method
 // before all

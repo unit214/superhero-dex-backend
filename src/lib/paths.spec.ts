@@ -1,4 +1,4 @@
-import { getPaths, Edge } from '../src/lib/paths';
+import { getPaths, Edge } from './paths';
 
 it('a direct path', () => {
   const edges: Edge<string, string>[] = [
