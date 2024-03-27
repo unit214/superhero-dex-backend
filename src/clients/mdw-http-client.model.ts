@@ -4,7 +4,7 @@ import {
   KeyBlockHash,
   MicroBlockHash,
   TxHash,
-} from '../lib/utils';
+} from './sdk-client.model';
 
 export type MdwPaginatedResponse<T> = {
   next?: string;

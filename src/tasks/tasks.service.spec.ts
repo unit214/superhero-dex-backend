@@ -7,6 +7,7 @@ import { PairDbService } from '../database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PrismaService } from '../database/prisma.service';
+import { SdkClientService } from '../clients/sdk-client.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
@@ -20,6 +21,7 @@ describe('TasksService', () => {
         PairLiquidityInfoHistoryImporterService,
         PairLiquidityInfoHistoryValidatorService,
         MdwHttpClientService,
+        SdkClientService,
         PairDbService,
         PairLiquidityInfoHistoryDbService,
         PairLiquidityInfoHistoryErrorDbService,
