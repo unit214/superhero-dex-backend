@@ -1,11 +1,10 @@
 import { PrismaService } from '../../src/database/prisma.service';
 
-export * from './context.mockup';
-export * from './env.mockups';
-export * from './db';
-
-export const sortByAddress = (xs: { address: string }[]) =>
-  [...xs].sort((a, b) => a.address.localeCompare(b.address));
+export const cleanDb = async (prismaService: PrismaService) => {
+  await prismaService.pairLiquidityInfo.deleteMany();
+  await prismaService.pair.deleteMany();
+  await prismaService.token.deleteMany();
+};
 
 export const listToken = (prismaService: PrismaService, address: string) =>
   prismaService.token.update({
