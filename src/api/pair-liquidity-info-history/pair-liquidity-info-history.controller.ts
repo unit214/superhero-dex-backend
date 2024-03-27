@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { PairLiquidityInfoHistoryService } from './pair-liquidity-info-history.service';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import * as dto from '../../dto';
-import { OrderQueryEnum } from '../../dto';
+import * as dto from '../api.model';
+import { OrderQueryEnum } from '../api.model';
 
 import { ContractAddress } from '../../clients/sdk-client.model';
 

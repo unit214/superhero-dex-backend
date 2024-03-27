@@ -6,7 +6,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { PairsService } from './pairs.service';
-import * as dto from '../../dto';
+import * as dto from '../api.model';
 import * as prisma from '@prisma/client';
 import { getPaths } from '../../lib/paths';
 import { ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
