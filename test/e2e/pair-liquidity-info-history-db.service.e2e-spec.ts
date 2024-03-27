@@ -1,10 +1,10 @@
-import { PairLiquidityInfoHistoryDbService } from './pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../../src/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../../src/database/prisma.service';
 import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
-import { OrderQueryEnum } from '../../dto';
+import { OrderQueryEnum } from '../../src/dto';
 
-import { ContractAddress } from '../../clients/sdk-client.model';
+import { ContractAddress } from '../../src/clients/sdk-client.model';
 
 const token1: Token = {
   id: 1,
