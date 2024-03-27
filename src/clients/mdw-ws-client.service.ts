@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import NETWORKS from '../lib/networks';
-import { ContractAddress, nonNullable, pluralize } from '../lib/utils';
+import { nonNullable, pluralize } from '../lib/utils';
 import { SubscriptionEvent } from './mdw-ws-client.model';
+import { ContractAddress } from './sdk-client.model';
 
 export type Callbacks = {
   onDisconnected?: (error?: Error) => any;

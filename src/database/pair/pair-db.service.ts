@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Pair, Token } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { ContractAddress } from '../../lib/utils';
 import { validTokenCondition } from '../token/token-db.service';
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 export type PairWithTokens = { token0: Token; token1: Token } & Pair;
 export type CountMode = 'all' | 'listed' | 'synchronized';

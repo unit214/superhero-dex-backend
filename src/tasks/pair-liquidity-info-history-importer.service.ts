@@ -6,14 +6,14 @@ import {
 } from '../database/pair/pair-db.service';
 import { isEqual, orderBy, uniqWith } from 'lodash';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+import { ContractLog } from '../clients/mdw-http-client.model';
+import { SdkClientService } from '../clients/sdk-client.service';
 import {
   ContractAddress,
   contractAddrToAccountAddr,
   MicroBlockHash,
-} from '../lib/utils';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
-import { getClient } from '../lib/contracts';
-import { ContractLog } from '../clients/mdw-http-client.model';
+} from '../clients/sdk-client.model';
 
 type MicroBlock = {
   hash: MicroBlockHash;
@@ -24,10 +24,11 @@ type MicroBlock = {
 @Injectable()
 export class PairLiquidityInfoHistoryImporterService {
   constructor(
-    private mdwClientService: MdwHttpClientService,
+    private mdwClient: MdwHttpClientService,
     private pairDb: PairDbService,
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
     private pairLiquidityInfoHistoryErrorDb: PairLiquidityInfoHistoryErrorDbService,
+    private sdkClient: SdkClientService,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryImporterService.name);
@@ -59,9 +60,7 @@ export class PairLiquidityInfoHistoryImporterService {
         }
 
         // Get current height
-        const currentHeight = await getClient().then(([client]) =>
-          client.getHeight(),
-        );
+        const currentHeight = await this.sdkClient.getHeight();
 
         // Get lastly synced block
         const {
@@ -95,7 +94,7 @@ export class PairLiquidityInfoHistoryImporterService {
             : parseInt(contractLog.height) < currentHeight - 10;
 
         const pairContractLogs =
-          await this.mdwClientService.getContractLogsUntilCondition(
+          await this.mdwClient.getContractLogsUntilCondition(
             fetchContractLogsFilter,
             pairWithTokens.address as ContractAddress,
           );
@@ -197,10 +196,10 @@ export class PairLiquidityInfoHistoryImporterService {
   }
 
   private async insertInitialLiquidity(pairWithTokens: PairWithTokens) {
-    const pairContract = await this.mdwClientService.getContract(
+    const pairContract = await this.mdwClient.getContract(
       pairWithTokens.address as ContractAddress,
     );
-    const microBlock = await this.mdwClientService.getMicroBlock(
+    const microBlock = await this.mdwClient.getMicroBlock(
       pairContract.block_hash,
     );
     await this.pairLiquidityInfoHistoryDb
@@ -225,7 +224,7 @@ export class PairLiquidityInfoHistoryImporterService {
   ) {
     // Total supply is the sum of all amounts of the pair contract's balances
     const pairBalances =
-      await this.mdwClientService.getContractBalancesAtMicroBlockHash(
+      await this.mdwClient.getContractBalancesAtMicroBlockHash(
         pairWithTokens.address as ContractAddress,
         block.hash,
       );
@@ -235,7 +234,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
     // reserve0 is the balance of the pair contract's account of token0
     const reserve0 = (
-      await this.mdwClientService.getAccountBalanceForContractAtMicroBlockHash(
+      await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token0.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,
@@ -244,7 +243,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
     // reserve1 is the balance of the pair contract's account of token1
     const reserve1 = (
-      await this.mdwClientService.getAccountBalanceForContractAtMicroBlockHash(
+      await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token1.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
         block.hash,

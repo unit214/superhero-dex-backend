@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Pair, PairLiquidityInfo, Token } from '@prisma/client';
-import { ContractAddress, presentInvalidTokens } from '../../lib/utils';
+import { presentInvalidTokens } from '../../lib/utils';
 import { TokenDbService } from '../../database/token/token-db.service';
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 @Injectable()
 export class TokensService {
