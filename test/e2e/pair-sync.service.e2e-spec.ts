@@ -1,14 +1,14 @@
-import { mockContext } from './utils';
 import prisma from '@prisma/client';
-import * as data from './data/context-mockups';
-import { PairSyncService } from '../src/tasks/pair-sync.service';
-import { PrismaService } from '../src/database/prisma.service';
+import * as data from '../test-utils/context-mock-data';
+import { PairSyncService } from '../../src/tasks/pair-sync.service';
+import { PrismaService } from '../../src/database/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TokenDbService } from '../src/database/token/token-db.service';
-import { PairDbService } from '../src/database/pair/pair-db.service';
-import { MdwWsClientService } from '../src/clients/mdw-ws-client.service';
-import { clean as cleanDb } from './utils/db';
-import { SdkClientService } from '../src/clients/sdk-client.service';
+import { TokenDbService } from '../../src/database/token/token-db.service';
+import { PairDbService } from '../../src/database/pair/pair-db.service';
+import { MdwWsClientService } from '../../src/clients/mdw-ws-client.service';
+import { cleanDb } from '../test-utils/db-helper';
+import { SdkClientService } from '../../src/clients/sdk-client.service';
+import { mockContext } from '../test-utils/context-mock';
 
 // Testing method
 // 1. before all create a common context
