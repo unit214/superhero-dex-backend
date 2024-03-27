@@ -8,6 +8,7 @@ import { TokenDbService } from '../src/database/token/token-db.service';
 import { PairDbService } from '../src/database/pair/pair-db.service';
 import { MdwWsClientService } from '../src/clients/mdw-ws-client.service';
 import { clean as cleanDb } from './utils/db';
+import { SdkClientService } from '../src/clients/sdk-client.service';
 
 // Testing method
 // 1. before all create a common context
@@ -26,17 +27,19 @@ describe('PairSyncService', () => {
         TokenDbService,
         PairDbService,
         MdwWsClientService,
+        SdkClientService,
       ],
     }).compile();
 
     service = module.get<PairSyncService>(PairSyncService);
     prismaService = module.get<PrismaService>(PrismaService);
+    await module.init();
   });
 
   beforeEach(async () => {
     await cleanDb(prismaService);
-    const ctx = mockContext(data.context2);
-    await service['refreshPairs'](ctx);
+    service.ctx = mockContext(data.context2);
+    await service['refreshPairs']();
   });
 
   afterAll(async () => {
@@ -55,8 +58,7 @@ describe('PairSyncService', () => {
   });
 
   it('refresh pairs liquidity', async () => {
-    const ctx = mockContext(data.context2);
-    await service['refreshPairsLiquidity'](ctx);
+    await service['refreshPairsLiquidity']();
 
     const pairs = await prismaService.pair.findMany({
       include: { liquidityInfo: true },
@@ -73,8 +75,8 @@ describe('PairSyncService', () => {
   });
 
   it('refresh new added pairs', async () => {
-    const ctx = mockContext(data.context21);
-    await service['refreshPairs'](ctx);
+    service.ctx = mockContext(data.context21);
+    await service['refreshPairs']();
     const pairs: prisma.Pair[] = await prismaService.pair.findMany({
       orderBy: { id: 'asc' },
     });
@@ -86,9 +88,9 @@ describe('PairSyncService', () => {
   });
 
   it('refresh liquidity for new added pairs', async () => {
-    const ctx = mockContext(data.context21);
-    await service['refreshPairs'](ctx);
-    await service['refreshPairsLiquidity'](ctx);
+    service.ctx = mockContext(data.context21);
+    await service['refreshPairs']();
+    await service['refreshPairsLiquidity']();
     const pairs = await prismaService.pair.findMany({
       include: { liquidityInfo: true },
       orderBy: { address: 'asc' },

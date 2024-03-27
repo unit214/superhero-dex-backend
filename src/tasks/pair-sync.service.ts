@@ -1,36 +1,51 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { TokenDbService } from '../database/token/token-db.service';
 import { PairDbService } from '../database/pair/pair-db.service';
-import { Context, Aex9Methods, getContext } from '../lib/contracts';
-import { Logger } from '@nestjs/common';
-import { ContractAddress } from 'src/lib/utils';
 import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 import { Pair } from '@prisma/client';
 import { MdwWsClientService } from '../clients/mdw-ws-client.service';
 import { SubscriptionEvent } from '../clients/mdw-ws-client.model';
+import * as routerInterface from 'dex-contracts-v2/build/AedexV2Router.aci.json';
+import * as factoryInterface from 'dex-contracts-v2/build/AedexV2Factory.aci.json';
+import * as pairInterface from 'dex-contracts-v2/build/AedexV2Pair.aci.json';
+import { AeSdk, ContractMethodsBase } from '@aeternity/aepp-sdk';
+import { nonNullable } from '../lib/utils';
+import {
+  Aex9Methods,
+  Context,
+  FactoryMethods,
+  PairMethods,
+  RouterMethods,
+} from './pair-sync.model';
+import { SdkClientService } from '../clients/sdk-client.service';
+import { ContractAddress } from '../clients/sdk-client.model';
 
 @Injectable()
 export class PairSyncService implements OnModuleInit {
   constructor(
-    private readonly tokenDbService: TokenDbService,
-    private readonly pairDbService: PairDbService,
-    private readonly mdwWsClientService: MdwWsClientService,
+    private readonly tokenDb: TokenDbService,
+    private readonly pairDb: PairDbService,
+    private readonly mdwWsClient: MdwWsClientService,
+    private readonly sdkClient: SdkClientService,
   ) {}
 
   readonly logger = new Logger(PairSyncService.name);
   ctx: Context;
 
   async onModuleInit() {
-    this.ctx = await getContext();
+    this.ctx = await this.getContext();
   }
 
-  startSync = async (autoStart?: boolean, crashWhenClosed?: boolean) => {
+  async startSync(
+    autoStart?: boolean,
+    crashWhenClosed?: boolean,
+  ): Promise<void> {
     this.logger.log(`Starting ${process.env.NETWORK_NAME} worker...`);
     await this.unsyncAllPairs();
-    await this.mdwWsClientService.createNewConnection({
+    await this.mdwWsClient.createNewConnection({
       onConnected: async () => {
-        await this.refreshPairs(this.ctx);
-        await this.refreshPairsLiquidity(this.ctx);
+        await this.refreshPairs();
+        await this.refreshPairsLiquidity();
       },
       onDisconnected: async (error) => {
         this.logger.warn(`Middleware disconnected: ${error}`);
@@ -42,26 +57,101 @@ export class PairSyncService implements OnModuleInit {
         }
       },
       onEventReceived: this.createOnEventReceived(
-        this.ctx,
         this.logger,
         this.onFactoryEventReceived,
         this.refreshPairLiquidityByAddress,
-        () => this.pairDbService.getAllAddresses(),
+        () => this.pairDb.getAllAddresses(),
       ),
     });
+  }
+
+  private getContext = async (): Promise<Context> => {
+    const createGetToken =
+      (
+        tokens: { [key: string]: ContractWithMethods<Aex9Methods> | undefined },
+        getInstance: Awaited<ReturnType<typeof instanceFactory>>,
+      ) =>
+      async (
+        tokenAddress: ContractAddress,
+      ): Promise<ContractWithMethods<Aex9Methods>> => {
+        const cached = tokens[tokenAddress];
+        if (cached) {
+          return cached;
+        }
+        const token = await getInstance<Aex9Methods>(
+          pairInterface,
+          tokenAddress,
+        );
+        tokens[tokenAddress] = token;
+        return token;
+      };
+
+    const createGetPair =
+      (
+        pairs: { [key: string]: ContractWithMethods<PairMethods> | undefined },
+        getInstance: Awaited<ReturnType<typeof instanceFactory>>,
+      ) =>
+      async (
+        pairAddress: ContractAddress,
+      ): Promise<ContractWithMethods<PairMethods>> => {
+        const cached = pairs[pairAddress];
+        if (cached) {
+          return cached;
+        }
+        const pair = await getInstance<PairMethods>(pairInterface, pairAddress);
+        pairs[pairAddress] = pair;
+        return pair;
+      };
+
+    const instanceFactory = async (client: AeSdk) => {
+      return <T extends ContractMethodsBase>(
+        aci: any,
+        contractAddress: ContractAddress,
+      ) => client.initializeContract<T>({ aci, address: contractAddress });
+    };
+
+    const routerAddress = process.env.ROUTER_ADDRESS;
+    if (!routerAddress) {
+      throw new Error('Router address is not set');
+    }
+    const [client, node] = await this.sdkClient.getClient();
+    const getInstance = await instanceFactory(client);
+    const router = await getInstance<RouterMethods>(
+      routerInterface,
+      nonNullable<ContractAddress>(routerAddress as ContractAddress),
+    );
+    const factory = await getInstance<FactoryMethods>(
+      factoryInterface,
+      nonNullable<ContractAddress>(
+        process.env.FACTORY_ADDRESS as ContractAddress,
+      ),
+    );
+    const pairs: {
+      [key: string]: ContractWithMethods<PairMethods> | undefined;
+    } = {};
+    const tokens: {
+      [key: string]: ContractWithMethods<Aex9Methods> | undefined;
+    } = {};
+    return {
+      router,
+      factory,
+      getPair: createGetPair(pairs, getInstance),
+      getToken: createGetToken(tokens, getInstance),
+      node,
+    };
   };
 
-  private unsyncAllPairs = async () => {
-    const batch = await this.pairDbService.unsyncAllPairs();
+  private async unsyncAllPairs(): Promise<void> {
+    const batch = await this.pairDb.unsyncAllPairs();
     this.logger.log(`${batch.count} pairs marked as unsync`);
-  };
+  }
 
-  private refreshPairs = async (ctx: Context): Promise<ContractAddress[]> => {
+  private async refreshPairs(): Promise<ContractAddress[]> {
     this.logger.log(`Getting all pairs from Factory...`);
     const { decodedResult: allFactoryPairs } =
-      await ctx.factory.get_all_pairs();
+      await this.ctx.factory.get_all_pairs();
     this.logger.log(`${allFactoryPairs.length} pairs found on DEX`);
-    const allDbPairsLen = await this.pairDbService.count(true);
+    const allDbPairsLen = await this.pairDb.count(true);
     //get new pairs, and reverse it , because allFactoryPairs is reversed by the factory contract
     const newAddresses = allFactoryPairs
       .slice(0, allFactoryPairs.length - allDbPairsLen)
@@ -81,7 +171,7 @@ export class PairSyncService implements OnModuleInit {
           pairAddress: ContractAddress,
         ): Promise<[ContractAddress, [ContractAddress, ContractAddress]]> => [
           pairAddress,
-          await this.getPairTokens(ctx, pairAddress),
+          await this.getPairTokens(pairAddress),
         ],
       ),
     );
@@ -94,7 +184,7 @@ export class PairSyncService implements OnModuleInit {
     );
 
     //ensure all new tokens will be inserted
-    await this.insertOnlyNewTokens(ctx, [...tokenSet]);
+    await this.insertOnlyNewTokens([...tokenSet]);
 
     //finally insert new pairs sequential to preserve the right order
     for (const [
@@ -107,23 +197,22 @@ export class PairSyncService implements OnModuleInit {
     // because there are new pairs let's go another round to ensure
     // no other pair was created during this time
     this.logger.debug('We go another round to see if any pair was created');
-    const futurePairs = await this.refreshPairs(ctx);
+    const futurePairs = await this.refreshPairs();
     return newAddresses.concat(futurePairs);
-  };
+  }
 
-  private refreshPairsLiquidity = async (ctx: Context) => {
+  private async refreshPairsLiquidity(): Promise<void> {
     //get the all pairs
-    const dbPairs = await this.pairDbService.getAllWithCondition(true);
+    const dbPairs = await this.pairDb.getAllWithCondition(true);
     this.logger.log(`Refreshing pairs liquidity...`);
     await Promise.all(
-      dbPairs.map((dbPair) => this.refreshPairLiquidity(ctx, dbPair)),
+      dbPairs.map((dbPair) => this.refreshPairLiquidity(dbPair)),
     );
     this.logger.log(`Pairs liquidity refresh completed`);
-  };
+  }
 
   private createOnEventReceived =
     (
-      ctx: Context,
       logger: Logger,
       onFactory: typeof this.onFactoryEventReceived,
       refreshPairLiquidity: typeof this.refreshPairLiquidityByAddress,
@@ -139,7 +228,7 @@ export class PairSyncService implements OnModuleInit {
         return;
       }
       //TODO: try to trow exception here to see if it reconnects
-      const txInfo = await ctx.node.getTransactionInfoByHash(hash);
+      const txInfo = await this.ctx.node.getTransactionInfoByHash(hash);
       if (!txInfo) {
         throw new Error(`No tx info for hash '${hash}'`);
       }
@@ -166,34 +255,30 @@ export class PairSyncService implements OnModuleInit {
       const allPromises = contracts.map((contract) => {
         // factory state was modified
         if (contract === process.env.FACTORY_ADDRESS) {
-          return onFactory(ctx, event.payload.block_height);
+          return onFactory(event.payload.block_height);
         }
         // if the pair is newly created within this transaction
         // the pair will be ignored in this loop, but that's not a problem, because
         // the factory event handler was also involved here and will take care of the
         // newly created pair
         else if (addresses[contract]) {
-          return refreshPairLiquidity(
-            ctx,
-            contract,
-            event.payload.block_height,
-          );
+          return refreshPairLiquidity(contract, event.payload.block_height);
         }
         return Promise.resolve();
       });
       return Promise.all(allPromises);
     };
 
-  private updateTokenMetadata = async (
+  private async updateTokenMetadata(
     address: ContractAddress,
     tokenMethods: ContractWithMethods<Aex9Methods>,
-  ) => {
+  ) {
     try {
       const {
         decodedResult: { name, symbol, decimals },
       } = await tokenMethods.meta_info();
 
-      const tokenFromDb = await this.tokenDbService.upsertToken(
+      const tokenFromDb = await this.tokenDb.upsertToken(
         address,
         symbol,
         name,
@@ -202,29 +287,27 @@ export class PairSyncService implements OnModuleInit {
       this.logger.debug(`Token ${symbol} [${address}] updated/inserted`);
       return tokenFromDb.id;
     } catch (error) {
-      const tokenFromDb =
-        await this.tokenDbService.upsertMalformedToken(address);
+      const tokenFromDb = await this.tokenDb.upsertMalformedToken(address);
       this.logger.warn(`Token ${address} is malformed`, error.message);
       return tokenFromDb.id;
     }
-  };
+  }
 
-  private upsertTokenInformation = async (
-    ctx: Context,
+  private async upsertTokenInformation(
     address: ContractAddress,
-  ): Promise<number> => {
-    const token = await this.tokenDbService.getByAddress(address);
+  ): Promise<number> {
+    const token = await this.tokenDb.getByAddress(address);
     if (token) {
       return token.id;
     }
     let tokenMethods: ContractWithMethods<Aex9Methods>;
     try {
-      tokenMethods = await ctx.getToken(address);
+      tokenMethods = await this.ctx.getToken(address);
     } catch (error) {
       const noContract = `v3/contracts/${address} error: Contract not found`;
       if (error.message && error.message.indexOf(noContract) > -1) {
         const tokenFromDb =
-          await this.tokenDbService.upsertNoContractForToken(address);
+          await this.tokenDb.upsertNoContractForToken(address);
         this.logger.warn(`No contract for Token ${address}`);
         return tokenFromDb.id;
       }
@@ -232,14 +315,14 @@ export class PairSyncService implements OnModuleInit {
     }
 
     return await this.updateTokenMetadata(address, tokenMethods);
-  };
+  }
 
-  private insertNewPair = async (
+  private async insertNewPair(
     address: ContractAddress,
     token0Address: ContractAddress,
     token1Address: ContractAddress,
-  ) => {
-    const ret = await this.pairDbService.insertByTokenAddresses(
+  ) {
+    const ret = await this.pairDb.insertByTokenAddresses(
       address,
       token0Address,
       token1Address,
@@ -248,54 +331,41 @@ export class PairSyncService implements OnModuleInit {
       `Pair ${ret.token0.symbol}/${ret.token1.symbol} [${address}] inserted`,
     );
     return ret;
-  };
+  }
 
-  private getPairTokens = async (
-    ctx: Context,
+  private async getPairTokens(
     address: ContractAddress,
-  ): Promise<[ContractAddress, ContractAddress]> => {
-    const instance = await ctx.getPair(address);
+  ): Promise<[ContractAddress, ContractAddress]> {
+    const instance = await this.ctx.getPair(address);
     return [
       (await instance.token0()).decodedResult,
       (await instance.token1()).decodedResult,
     ];
-  };
+  }
 
-  private insertOnlyNewTokens = async (
-    ctx: Context,
-    tokenAddresses: ContractAddress[],
-  ) => {
-    const allAddresses = new Set(
-      await this.tokenDbService.getAllAddresses(true),
-    );
+  private async insertOnlyNewTokens(tokenAddresses: ContractAddress[]) {
+    const allAddresses = new Set(await this.tokenDb.getAllAddresses(true));
     const newOnes = tokenAddresses.filter(
       (tokenAddress) => !allAddresses.has(tokenAddress),
     );
     return Promise.all(
-      newOnes.map((tokenAddress) =>
-        this.upsertTokenInformation(ctx, tokenAddress),
-      ),
+      newOnes.map((tokenAddress) => this.upsertTokenInformation(tokenAddress)),
     );
-  };
+  }
 
-  private refreshPairLiquidityByAddress = async (
-    ctx: Context,
+  private async refreshPairLiquidityByAddress(
     address: ContractAddress,
     height?: number,
-  ) => {
-    const found = await this.pairDbService.getOneLite(address);
+  ) {
+    const found = await this.pairDb.getOneLite(address);
     if (!found) {
       throw new Error(`Pair not found ${address}`);
     }
-    await this.refreshPairLiquidity(ctx, found, height);
-  };
+    await this.refreshPairLiquidity(found, height);
+  }
 
-  private refreshPairLiquidity = async (
-    ctx: Context,
-    dbPair: Pair,
-    height?: number,
-  ) => {
-    const pair = await ctx.getPair(dbPair.address as ContractAddress);
+  private async refreshPairLiquidity(dbPair: Pair, height?: number) {
+    const pair = await this.ctx.getPair(dbPair.address as ContractAddress);
     const { decodedResult: totalSupply } = await pair.total_supply();
     const {
       decodedResult: { reserve0, reserve1 },
@@ -306,7 +376,7 @@ export class PairSyncService implements OnModuleInit {
       console.error('Could not get height');
       return;
     }
-    const ret = await this.pairDbService.synchronise(
+    const ret = await this.pairDb.synchronise(
       dbPair.id,
       totalSupply,
       reserve0,
@@ -323,14 +393,14 @@ export class PairSyncService implements OnModuleInit {
       })}`,
     );
     return ret;
-  };
+  }
 
-  private onFactoryEventReceived = async (ctx: Context, height: number) => {
-    const newAddresses = await this.refreshPairs(ctx);
+  private async onFactoryEventReceived(height: number) {
+    const newAddresses = await this.refreshPairs();
     await Promise.all(
       newAddresses.map((address) =>
-        this.refreshPairLiquidityByAddress(ctx, address, height),
+        this.refreshPairLiquidityByAddress(address, height),
       ),
     );
-  };
+  }
 }

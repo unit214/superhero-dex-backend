@@ -4,8 +4,9 @@ import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import { PairDbService } from '../database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
-import { ContractAddress } from '../lib/utils';
 import { Contract } from '../clients/mdw-http-client.model';
+import { SdkClientService } from '../clients/sdk-client.service';
+import { ContractAddress } from '../clients/sdk-client.model';
 
 const mockMdwClientService = {
   getContract: jest.fn(),
@@ -35,6 +36,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PairLiquidityInfoHistoryImporterService,
+        SdkClientService,
         { provide: MdwHttpClientService, useValue: mockMdwClientService },
         { provide: PairDbService, useValue: mockPairDb },
         {
