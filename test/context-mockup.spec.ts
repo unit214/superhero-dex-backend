@@ -1,8 +1,8 @@
-import { Context, PairMethods } from '../src/lib/contracts';
 import { mockDeep } from 'jest-mock-extended';
 import { mockContext, ContextData, mockupContractMethod } from './utils';
 import * as data from './data/context-mockups';
 import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
+import { Context, PairMethods } from '../src/tasks/pair-sync.model';
 
 describe('Context', () => {
   it('sample mockup', async () => {

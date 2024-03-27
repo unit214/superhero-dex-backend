@@ -3,7 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma.service';
 import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
 import { OrderQueryEnum } from '../../dto';
-import { ContractAddress } from '../../lib/utils';
+
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 const token1: Token = {
   id: 1,

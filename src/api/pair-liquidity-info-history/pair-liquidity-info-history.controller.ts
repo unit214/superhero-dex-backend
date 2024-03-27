@@ -9,7 +9,8 @@ import { PairLiquidityInfoHistoryService } from './pair-liquidity-info-history.s
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import * as dto from '../../dto';
 import { OrderQueryEnum } from '../../dto';
-import { ContractAddress } from '../../lib/utils';
+
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 @Controller('history/liquidity')
 export class PairLiquidityInfoHistoryController {

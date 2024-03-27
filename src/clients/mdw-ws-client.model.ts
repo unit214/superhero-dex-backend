@@ -6,7 +6,7 @@ import {
   Signature,
   TxHash,
   WalletAddress,
-} from '../lib/utils';
+} from './sdk-client.model';
 
 export type SubscriptionEvent = {
   subscription: 'Object' | 'Transactions'; // add any other additional enum values if are used

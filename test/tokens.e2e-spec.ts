@@ -15,6 +15,7 @@ import { MdwWsClientService } from '../src/clients/mdw-ws-client.service';
 import { TokensController } from '../src/api/tokens/tokens.controller';
 import { TokensService } from '../src/api/tokens/tokens.service';
 import { mockContext } from './utils';
+import { SdkClientService } from '../src/clients/sdk-client.service';
 
 // Testing method
 // before all
@@ -36,6 +37,7 @@ describe('TokenController', () => {
       controllers: [TokensController],
       providers: [
         MdwWsClientService,
+        SdkClientService,
         PairDbService,
         PairSyncService,
         PrismaService,
@@ -53,8 +55,8 @@ describe('TokenController', () => {
 
   beforeEach(async () => {
     await cleanDb(prismaService);
-    const ctx = mockContext(data.context2);
-    await pairSyncService['refreshPairs'](ctx);
+    pairSyncService.ctx = mockContext(data.context2);
+    await pairSyncService['refreshPairs']();
   });
 
   afterAll(async () => {
@@ -243,9 +245,9 @@ describe('TokenController', () => {
     });
 
     it('/tokens/by-address/ct_t0/pairs (GET) 200 with pairs only on pairs0', async () => {
-      const ctx = utils.mockContext(data.context21);
-      await pairSyncService['refreshPairs'](ctx);
-      await pairSyncService['refreshPairsLiquidity'](ctx);
+      pairSyncService.ctx = utils.mockContext(data.context21);
+      await pairSyncService['refreshPairs']();
+      await pairSyncService['refreshPairsLiquidity']();
 
       const response = await request(app.getHttpServer())
         .get('/tokens/by-address/ct_t0/pairs')
@@ -316,9 +318,9 @@ describe('TokenController', () => {
     });
 
     it('/tokens/by-address/ct_t3/pairs (GET) 200 with pairs only on pairs1', async () => {
-      const ctx = utils.mockContext(data.context21);
-      await pairSyncService['refreshPairs'](ctx);
-      await pairSyncService['refreshPairsLiquidity'](ctx);
+      pairSyncService.ctx = utils.mockContext(data.context21);
+      await pairSyncService['refreshPairs']();
+      await pairSyncService['refreshPairsLiquidity']();
       await utils.listToken(prismaService, 'ct_t0');
       await utils.listToken(prismaService, 'ct_t3');
 
@@ -372,7 +374,7 @@ describe('TokenController', () => {
     });
 
     it('/tokens/by-address/ct_t3/pairs (GET) 200 with pairs on pairs0 and pairs1', async () => {
-      const ctx = utils.mockContext({
+      pairSyncService.ctx = utils.mockContext({
         ...data.context21,
         pairs: data.context21.pairs.concat([
           {
@@ -393,8 +395,8 @@ describe('TokenController', () => {
           },
         ]),
       });
-      await pairSyncService['refreshPairs'](ctx);
-      await pairSyncService['refreshPairsLiquidity'](ctx);
+      await pairSyncService['refreshPairs']();
+      await pairSyncService['refreshPairsLiquidity']();
       await utils.listToken(prismaService, 'ct_t0');
       await utils.listToken(prismaService, 'ct_t3');
 
