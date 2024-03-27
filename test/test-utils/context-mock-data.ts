@@ -1,5 +1,5 @@
-import { ContextData } from '../utils';
 import { ContractAddress } from '../../src/clients/sdk-client.model';
+import { ContextData } from './context-mock';
 
 const tokens = [
   {
