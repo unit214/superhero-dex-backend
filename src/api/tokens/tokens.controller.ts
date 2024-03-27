@@ -16,8 +16,9 @@ import {
   ApiParam,
   ApiHeaders,
 } from '@nestjs/swagger';
-import { removeId, ContractAddress } from '../../lib/utils';
+import { removeId } from '../../lib/utils';
 import * as prisma from '@prisma/client';
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 const withTokenAuthorization = async <T>(
   auth: string,

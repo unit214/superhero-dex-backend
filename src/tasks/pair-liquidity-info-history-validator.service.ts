@@ -2,14 +2,15 @@ import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
-import { getClient } from '../lib/contracts';
-import { MicroBlockHash } from '../lib/utils';
+import { SdkClientService } from '../clients/sdk-client.service';
+import { MicroBlockHash } from '../clients/sdk-client.model';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {
   constructor(
-    private mdwClientService: MdwHttpClientService,
+    private mdwClient: MdwHttpClientService,
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
+    private sdkClient: SdkClientService,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryValidatorService.name);
@@ -18,9 +19,7 @@ export class PairLiquidityInfoHistoryValidatorService {
     this.logger.log(`Started validating pair liquidity info history.`);
 
     // Get current height
-    const currentHeight = await getClient().then(([client]) =>
-      client.getHeight(),
-    );
+    const currentHeight = await this.sdkClient.getHeight();
 
     // Get all liquidity entries greater or equal the current height minus 20
     const liquidityEntriesWithinHeightSorted =
@@ -36,9 +35,7 @@ export class PairLiquidityInfoHistoryValidatorService {
     // Fetch microBlocks for these unique keyBlocks from mdw
     const microBlockHashsOnMdw = (
       await Promise.all(
-        uniqueHeights.map((h) =>
-          this.mdwClientService.getKeyBlockMicroBlocks(h),
-        ),
+        uniqueHeights.map((h) => this.mdwClient.getKeyBlockMicroBlocks(h)),
       )
     )
       .flat()

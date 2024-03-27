@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Token } from '@prisma/client';
-import { ContractAddress } from '../../lib/utils';
+
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 export const validTokenCondition = { malformed: false, noContract: false };
 
