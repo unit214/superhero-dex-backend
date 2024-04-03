@@ -25,16 +25,18 @@ model Token {
 }
 
 model Pair {
-  id                        Int                             @id @default(autoincrement())
-  address                   String                          @unique
-  token0                    Token                           @relation("Pair_Token0", fields: [t0], references: [id])
-  t0                        Int
-  token1                    Token                           @relation("Pair_Token1", fields: [t1], references: [id])
-  t1                        Int
-  liquidityInfo             PairLiquidityInfo?              @relation("Pair_Info")
-  synchronized              Boolean
-  liquidityInfoHistory      PairLiquidityInfoHistory[]
-  liquidityInfoHistoryError PairLiquidityInfoHistoryError[]
+  id                          Int                               @id @default(autoincrement())
+  address                     String                            @unique
+  token0                      Token                             @relation("Pair_Token0", fields: [t0], references: [id])
+  t0                          Int
+  token1                      Token                             @relation("Pair_Token1", fields: [t1], references: [id])
+  t1                          Int
+  liquidityInfo               PairLiquidityInfo?                @relation("Pair_Info")
+  synchronized                Boolean
+  liquidityInfoHistory        PairLiquidityInfoHistory[]
+  liquidityInfoHistoryV2      PairLiquidityInfoHistoryV2[]
+  liquidityInfoHistoryError   PairLiquidityInfoHistoryError[]
+  liquidityInfoHistoryV2Error PairLiquidityInfoHistoryV2Error[]
 }
 
 model PairLiquidityInfo {
@@ -72,4 +74,40 @@ model PairLiquidityInfoHistoryError {
   updatedAt      DateTime @default(now()) @updatedAt
 
   @@unique(name: "pairIdMicroBlockHashErrorUniqueIndex", [pairId, microBlockHash, error])
+}
+
+model PairLiquidityInfoHistoryV2 {
+  id              Int      @id @default(autoincrement())
+  pair            Pair     @relation(fields: [pairId], references: [id])
+  pairId          Int
+  eventType       String
+  logIndex        Int
+  height          Int
+  microBlockHash  String
+  microBlockTime  BigInt
+  transactionHash String
+  totalSupply     String
+  reserve0        String
+  reserve1        String
+  deltaReserve0   String
+  deltaReserve1   String
+  fiatPrice       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@unique(name: "pairIdMicroBlockHashUniqueIndex", [pairId, microBlockHash])
+}
+
+model PairLiquidityInfoHistoryV2Error {
+  id             Int      @id @default(autoincrement())
+  pair           Pair     @relation(fields: [pairId], references: [id])
+  pairId         Int
+  microBlockHash String
+  logIndex       String
+  error          String
+  timesOccurred  Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+
+  @@unique(name: "pairIdMicroBlockHashLogIndexUniqueIndex", [pairId, microBlockHash, logIndex, error])
 }

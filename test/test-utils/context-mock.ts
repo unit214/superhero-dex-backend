@@ -6,7 +6,7 @@ import {
   Context,
   MetaInfo,
   PairMethods,
-} from '../../src/tasks/pair-sync.model';
+} from '../../src/tasks/pair-sync/pair-sync.model';
 import { CallData, ContractAddress } from '../../src/clients/sdk-client.model';
 const mockupResult = () =>
   mockDeep<{

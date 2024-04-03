@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer.service';
-import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
+import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import { PairDbService } from '../database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
