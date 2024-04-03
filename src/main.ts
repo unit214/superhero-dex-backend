@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { nonNullable } from './lib/utils';
-import { PairSyncService } from './tasks/pair-sync.service';
+import { PairSyncService } from './tasks/pair-sync/pair-sync.service';
 
 const version = nonNullable(process.env.npm_package_version);
 async function bootstrap() {

@@ -1,15 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { TokenDbService } from '../database/token/token-db.service';
-import { PairDbService } from '../database/pair/pair-db.service';
+import { TokenDbService } from '../../database/token/token-db.service';
+import { PairDbService } from '../../database/pair/pair-db.service';
 import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 import { Pair } from '@prisma/client';
-import { MdwWsClientService } from '../clients/mdw-ws-client.service';
-import { SubscriptionEvent } from '../clients/mdw-ws-client.model';
+import { MdwWsClientService } from '../../clients/mdw-ws-client.service';
+import { SubscriptionEvent } from '../../clients/mdw-ws-client.model';
 import * as routerInterface from 'dex-contracts-v2/build/AedexV2Router.aci.json';
 import * as factoryInterface from 'dex-contracts-v2/build/AedexV2Factory.aci.json';
 import * as pairInterface from 'dex-contracts-v2/build/AedexV2Pair.aci.json';
 import { AeSdk, ContractMethodsBase } from '@aeternity/aepp-sdk';
-import { nonNullable } from '../lib/utils';
+import { nonNullable } from '../../lib/utils';
 import {
   Aex9Methods,
   Context,
@@ -17,8 +17,8 @@ import {
   PairMethods,
   RouterMethods,
 } from './pair-sync.model';
-import { SdkClientService } from '../clients/sdk-client.service';
-import { ContractAddress } from '../clients/sdk-client.model';
+import { SdkClientService } from '../../clients/sdk-client.service';
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 @Injectable()
 export class PairSyncService implements OnModuleInit {

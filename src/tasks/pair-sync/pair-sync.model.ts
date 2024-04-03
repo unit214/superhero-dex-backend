@@ -1,6 +1,6 @@
 import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
 import { Node } from '@aeternity/aepp-sdk';
-import { ContractAddress } from '../clients/sdk-client.model';
+import { ContractAddress } from '../../clients/sdk-client.model';
 
 export type MetaInfo = {
   name: string;

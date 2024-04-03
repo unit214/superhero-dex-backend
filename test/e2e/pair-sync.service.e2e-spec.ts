@@ -1,6 +1,6 @@
 import prisma from '@prisma/client';
 import * as data from '../test-utils/context-mock-data';
-import { PairSyncService } from '../../src/tasks/pair-sync.service';
+import { PairSyncService } from '../../src/tasks/pair-sync/pair-sync.service';
 import { PrismaService } from '../../src/database/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TokenDbService } from '../../src/database/token/token-db.service';
