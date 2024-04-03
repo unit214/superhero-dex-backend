@@ -8,7 +8,7 @@ import * as dto from '../../src/api/api.model';
 import * as utils from '../test-utils/utils';
 import { nonNullable } from '../../src/lib/utils';
 import { PrismaService } from '../../src/database/prisma.service';
-import { PairSyncService } from '../../src/tasks/pair-sync.service';
+import { PairSyncService } from '../../src/tasks/pair-sync/pair-sync.service';
 import { PairDbService } from '../../src/database/pair/pair-db.service';
 import { TokenDbService } from '../../src/database/token/token-db.service';
 import { MdwWsClientService } from '../../src/clients/mdw-ws-client.service';

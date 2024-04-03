@@ -5,7 +5,7 @@ import { sortByAddress } from '../test-utils/utils';
 import * as data from '../test-utils/context-mock-data';
 import { cleanDb, listToken } from '../test-utils/db-helper';
 import { PrismaService } from '../../src/database/prisma.service';
-import { PairSyncService } from '../../src/tasks/pair-sync.service';
+import { PairSyncService } from '../../src/tasks/pair-sync/pair-sync.service';
 import { PairsController } from '../../src/api/pairs/pairs.controller';
 import { PairsService } from '../../src/api/pairs/pairs.service';
 import { PairDbService } from '../../src/database/pair/pair-db.service';
