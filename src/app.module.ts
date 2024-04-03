@@ -5,7 +5,7 @@ import { TokensService } from './api/tokens/tokens.service';
 import { PairsService } from './api/pairs/pairs.service';
 import { ClientsModule } from './clients/clients.module';
 import { ApiModule } from './api/api.module';
-import { PairSyncService } from './tasks/pair-sync.service';
+import { PairSyncService } from './tasks/pair-sync/pair-sync.service';
 import { MdwWsClientService } from './clients/mdw-ws-client.service';
 
 @Module({

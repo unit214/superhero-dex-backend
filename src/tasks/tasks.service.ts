@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer.service';
-import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator.service';
+import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 
 const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
 
