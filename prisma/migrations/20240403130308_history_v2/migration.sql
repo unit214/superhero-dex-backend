@@ -25,7 +25,7 @@ CREATE TABLE "PairLiquidityInfoHistoryV2Error" (
     "id" SERIAL NOT NULL,
     "pairId" INTEGER NOT NULL,
     "microBlockHash" TEXT NOT NULL,
-    "logIndex" TEXT NOT NULL,
+    "logIndex" INTEGER NOT NULL,
     "error" TEXT NOT NULL,
     "timesOccurred" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,7 +35,7 @@ CREATE TABLE "PairLiquidityInfoHistoryV2Error" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2_pairId_microBlockHash_key" ON "PairLiquidityInfoHistoryV2"("pairId", "microBlockHash");
+CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2_pairId_microBlockHash_logIndex_key" ON "PairLiquidityInfoHistoryV2"("pairId", "microBlockHash", "logIndex");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2Error_pairId_microBlockHash_logIn_key" ON "PairLiquidityInfoHistoryV2Error"("pairId", "microBlockHash", "logIndex", "error");
