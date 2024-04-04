@@ -1,38 +1,40 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 import { MdwHttpClientService } from '../clients/mdw-http-client.service';
 import { PairDbService } from '../database/pair/pair-db.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PrismaService } from '../database/prisma.service';
 import { SdkClientService } from '../clients/sdk-client.service';
+import { PairLiquidityInfoHistoryImporterV2Service } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
+import { PairLiquidityInfoHistoryV2ErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
+import { PairLiquidityInfoHistoryV2DbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
+import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
-  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterService;
+  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterV2Service;
   let pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
-        PairLiquidityInfoHistoryImporterService,
+        PairLiquidityInfoHistoryImporterV2Service,
         PairLiquidityInfoHistoryValidatorService,
         MdwHttpClientService,
         SdkClientService,
         PairDbService,
         PairLiquidityInfoHistoryDbService,
-        PairLiquidityInfoHistoryErrorDbService,
+        PairLiquidityInfoHistoryV2DbService,
+        PairLiquidityInfoHistoryV2ErrorDbService,
         PrismaService,
       ],
     }).compile();
 
     tasksService = module.get<TasksService>(TasksService);
     pairLiquidityInfoHistoryImporterService =
-      module.get<PairLiquidityInfoHistoryImporterService>(
-        PairLiquidityInfoHistoryImporterService,
+      module.get<PairLiquidityInfoHistoryImporterV2Service>(
+        PairLiquidityInfoHistoryImporterV2Service,
       );
     pairLiquidityInfoHistoryValidatorService =
       module.get<PairLiquidityInfoHistoryValidatorService>(
