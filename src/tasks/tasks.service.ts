@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 import { PairLiquidityInfoHistoryImporterV2Service } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
+import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 
 const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterV2Service,
+    private pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterService,
+    private pairLiquidityInfoHistoryImporterV2Service: PairLiquidityInfoHistoryImporterV2Service,
     private pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorService,
   ) {}
 
@@ -32,6 +34,23 @@ export class TasksService {
       }
     } catch (error) {
       this.pairLiquidityInfoHistoryImporterService.logger.error(
+        `Import failed. ${error}`,
+      );
+      this.setIsRunning(false);
+    }
+  }
+
+  // TODO set correct frequency
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async runPairLiquidityInfoHistoryImporterV2() {
+    try {
+      if (!this.isRunning) {
+        this.setIsRunning(true);
+        await this.pairLiquidityInfoHistoryImporterV2Service.import();
+        this.setIsRunning(false);
+      }
+    } catch (error) {
+      this.pairLiquidityInfoHistoryImporterV2Service.logger.error(
         `Import failed. ${error}`,
       );
       this.setIsRunning(false);

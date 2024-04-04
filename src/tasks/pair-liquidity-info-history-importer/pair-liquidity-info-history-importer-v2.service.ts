@@ -26,6 +26,15 @@ export class PairLiquidityInfoHistoryImporterV2Service {
   readonly WITHIN_HOURS_TO_SKIP_IF_ERROR = 6;
   readonly SLIDING_WINDOW_BLOCKS = 10;
 
+  private readonly SYNC_EVENT_HASH =
+    '6O232NLB36RGK54HEJPVDFJVCSIVFV29KPORC07CSSDARM7LV4L0====';
+  private readonly SWAP_TOKENS_EVENT_HASH =
+    'K39AB2I57LEUOUQ04LTEOMSJPJC3G9VGFRKVNJ5QLRMVCMDOPIMG====';
+  private readonly PAIR_BURN_EVENT_HASH =
+    'OIS2ALGSJ03MTP2BR5RBFL1GOUGESRVPGE58LGM0MVG9K3VAFKUG====';
+  private readonly PAIR_MINT_EVENT_HASH =
+    'L2BEDU7I5T8OSEUPB61900P8FJR637OE4MC4A9875C390RMQHSN0====';
+
   async import() {
     this.logger.log(`Started syncing pair liquidity info history.`);
 
@@ -124,18 +133,23 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               continue;
             }
 
-            // TODO continue for non relevant events
-            // TODO Parse event
-            // TODO insert event with correct data
+            // Parse event
+            const event = this.parseEvent(log);
+
+            // If event could not be parsed (event is a non-relevant event), continue
+            if (!event) {
+              continue;
+            }
+
             // Upsert liquidity
             await this.pairLiquidityInfoHistoryDb
               .upsert({
                 pairId: pairWithTokens.id,
-                eventType: 'parsedEventType', // TODO change
-                reserve0: 0n,
-                reserve1: 0n,
-                deltaReserve0: 0n,
-                deltaReserve1: 0n,
+                eventType: event.eventType,
+                reserve0: event.reserve0,
+                reserve1: event.reserve0,
+                deltaReserve0: event.deltaReserve0,
+                deltaReserve1: event.deltaReserve1,
                 fiatPrice: 0n,
                 height: parseInt(log.height),
                 microBlockTime: BigInt(log.block_time),
@@ -203,5 +217,58 @@ export class PairLiquidityInfoHistoryImporterV2Service {
           `Inserted initial liquidity for pair ${pairWithTokens.id} ${pairWithTokens.address}.`,
         ),
       );
+  }
+
+  private parseEvent(log: ContractLog) {
+    const parseEventData = (data: string): bigint[] => {
+      return data.split('|').map((d) => BigInt(d));
+    };
+
+    switch (log.event_hash) {
+      case this.SYNC_EVENT_HASH:
+        // Sync
+        // args: [balance0, balance1], data: empty
+        return {
+          eventType: 'Sync',
+          reserve0: BigInt(log.args[0]),
+          reserve1: BigInt(log.args[1]),
+          deltaReserve0: null,
+          deltaReserve1: null,
+        };
+      case this.SWAP_TOKENS_EVENT_HASH:
+        // SwapTokens
+        // args: [_, _], data: [amount0In, amount1In, amount0Out, amount1Out]
+        const swapTokensData = parseEventData(log.data);
+        return {
+          eventType: 'SwapTokens',
+          reserve0: null,
+          reserve1: null,
+          deltaReserve0: swapTokensData[0] - swapTokensData[2],
+          deltaReserve1: swapTokensData[1] - swapTokensData[3],
+        };
+      case this.PAIR_MINT_EVENT_HASH:
+        // PairMint
+        // args: [_, _, amount0, amount1], data: empty
+        return {
+          eventType: 'PairMint',
+          reserve0: null,
+          reserve1: null,
+          deltaReserve0: BigInt(log.args[2]),
+          deltaReserve1: BigInt(log.args[3]),
+        };
+      case this.PAIR_BURN_EVENT_HASH:
+        // PairBurn
+        // args: [_, _], data: [amount0, amount1]
+        const pairBurnData = parseEventData(log.data);
+        return {
+          eventType: 'PairBurn',
+          reserve0: null,
+          reserve1: null,
+          deltaReserve0: 0n - pairBurnData[0],
+          deltaReserve1: 0n - pairBurnData[1],
+        };
+      default:
+        return null;
+    }
   }
 }
