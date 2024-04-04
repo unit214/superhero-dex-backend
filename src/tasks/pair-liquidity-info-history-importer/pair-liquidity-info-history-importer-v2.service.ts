@@ -248,13 +248,13 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         };
       case this.PAIR_MINT_EVENT_HASH:
         // PairMint
-        // args: [_, _, amount0, amount1], data: empty
+        // args: [_, amount0, amount1], data: empty
         return {
           eventType: 'PairMint',
           reserve0: null,
           reserve1: null,
-          deltaReserve0: BigInt(log.args[2]),
-          deltaReserve1: BigInt(log.args[3]),
+          deltaReserve0: BigInt(log.args[1]),
+          deltaReserve1: BigInt(log.args[2]),
         };
       case this.PAIR_BURN_EVENT_HASH:
         // PairBurn
