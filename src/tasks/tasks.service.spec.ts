@@ -9,16 +9,19 @@ import { PairLiquidityInfoHistoryImporterV2Service } from './pair-liquidity-info
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
 import { PairLiquidityInfoHistoryV2DbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
-  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterV2Service;
+  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterService;
   let pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
+        PairLiquidityInfoHistoryImporterService,
         PairLiquidityInfoHistoryImporterV2Service,
         PairLiquidityInfoHistoryValidatorService,
         MdwHttpClientService,
@@ -26,6 +29,7 @@ describe('TasksService', () => {
         PairDbService,
         PairLiquidityInfoHistoryDbService,
         PairLiquidityInfoHistoryV2DbService,
+        PairLiquidityInfoHistoryErrorDbService,
         PairLiquidityInfoHistoryV2ErrorDbService,
         PrismaService,
       ],
@@ -33,8 +37,8 @@ describe('TasksService', () => {
 
     tasksService = module.get<TasksService>(TasksService);
     pairLiquidityInfoHistoryImporterService =
-      module.get<PairLiquidityInfoHistoryImporterV2Service>(
-        PairLiquidityInfoHistoryImporterV2Service,
+      module.get<PairLiquidityInfoHistoryImporterService>(
+        PairLiquidityInfoHistoryImporterService,
       );
     pairLiquidityInfoHistoryValidatorService =
       module.get<PairLiquidityInfoHistoryValidatorService>(
