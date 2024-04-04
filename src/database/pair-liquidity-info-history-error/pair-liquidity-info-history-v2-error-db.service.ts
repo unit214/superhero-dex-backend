@@ -9,7 +9,7 @@ export class PairLiquidityInfoHistoryV2ErrorDbService {
   getErrorByPairIdAndMicroBlockHashWithinHours(
     pairId: number,
     microBlockHash: string,
-    logIndex: string,
+    logIndex: number,
     withinHours: number,
   ): Promise<PairLiquidityInfoHistoryV2Error | null> {
     return this.prisma.pairLiquidityInfoHistoryV2Error.findFirst({

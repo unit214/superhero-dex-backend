@@ -7,9 +7,10 @@ import { ClientsModule } from './clients/clients.module';
 import { ApiModule } from './api/api.module';
 import { PairSyncService } from './tasks/pair-sync/pair-sync.service';
 import { MdwWsClientService } from './clients/mdw-ws-client.service';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
-  imports: [ApiModule, ClientsModule, DatabaseModule],
+  imports: [ApiModule, ClientsModule, DatabaseModule, TasksModule],
   controllers: [AppController],
   providers: [MdwWsClientService, PairsService, TokensService, PairSyncService],
 })
