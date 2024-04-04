@@ -41,7 +41,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
           await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
             pairWithTokens.id,
             '',
-            '',
+            -1,
             this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
           );
         if (error) {
@@ -66,6 +66,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         }
         const lastSyncedHeight = lastSyncedLog?.height || 0;
         const lastSyncedBlockTime = lastSyncedLog?.microBlockTime || 0n;
+        const lastSyncedLogIndex = lastSyncedLog?.logIndex || -1;
 
         // Determine which micro blocks to sync based on the lastly synced block
         // Strategy:
@@ -75,31 +76,39 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
         // To make sure we get all desired micro blocks, fetch all contract log pages
         // until the page contains a non-desired micro block
-        const fetchContractLogsFilter = (contractLog: ContractLog) =>
+        const fetchContractLogsLimit = (contractLog: ContractLog) =>
           isHistoryOutdated
-            ? BigInt(contractLog.block_time) <= lastSyncedBlockTime
+            ? BigInt(contractLog.block_time) < lastSyncedBlockTime
             : parseInt(contractLog.height) < currentHeight - 10;
+
+        const contractLogsToInsertFilter = (contractLog: ContractLog) =>
+          isHistoryOutdated
+            ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
+                parseInt(contractLog.log_idx) > lastSyncedLogIndex) ||
+              BigInt(contractLog.block_time) > lastSyncedBlockTime
+            : parseInt(contractLog.height) >= currentHeight - 10;
 
         const pairContractLogs =
           await this.mdwClient.getContractLogsUntilCondition(
-            fetchContractLogsFilter,
+            fetchContractLogsLimit,
             pairWithTokens.address as ContractAddress,
           );
+        const logsToInsert = orderBy(
+          pairContractLogs.filter(contractLogsToInsertFilter),
+          ['block_time', 'log_idx'],
+          ['asc', 'asc'],
+        );
 
         let numUpserted = 0;
         // Fetch and insert liquidity (totalSupply, reserve0, reserve1) for every micro block
-        for (const log of orderBy(
-          pairContractLogs,
-          ['microBlockTime', 'logIndex'],
-          ['asc', 'asc'],
-        )) {
+        for (const log of logsToInsert) {
           try {
             // If an error occurred for this block recently, skip block
             const error =
               await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
                 log.block_hash,
-                log.log_idx,
+                parseInt(log.log_idx),
                 this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
               );
             if (error) {
@@ -121,7 +130,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               .upsert({
                 pairId: pairWithTokens.id,
                 eventType: 'parsedEventType', // TODO change
-                logIndex: 0,
+                logIndex: parseInt(log.log_idx),
                 height: parseInt(log.height),
                 microBlockHash: log.block_hash,
                 microBlockTime: BigInt(log.block_time),
@@ -140,7 +149,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
             const errorData = {
               pairId: pairWithTokens.id,
               microBlockHash: log.block_hash,
-              logIndex: log.log_idx,
+              logIndex: parseInt(log.log_idx),
               error: error.toString(),
             };
             this.logger.error(`Skipped log. ${JSON.stringify(errorData)}`);
@@ -150,14 +159,14 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
         if (numUpserted > 0) {
           this.logger.log(
-            `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced ${numUpserted} micro block(s).`,
+            `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced ${numUpserted} log(s).`,
           );
         }
       } catch (error) {
         const errorData = {
           pairId: pairWithTokens.id,
           microBlockHash: '',
-          logIndex: '',
+          logIndex: -1,
           error: error.toString(),
         };
         this.logger.error(`Skipped pair. ${JSON.stringify(errorData)}`);
@@ -193,7 +202,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       })
       .then(() =>
         this.logger.log(
-          `Inserted initial liquidity for pair ${pairWithTokens.address}.`,
+          `Inserted initial liquidity for pair ${pairWithTokens.id} ${pairWithTokens.address}.`,
         ),
       );
   }

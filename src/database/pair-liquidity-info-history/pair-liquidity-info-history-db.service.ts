@@ -80,7 +80,7 @@ export class PairLiquidityInfoHistoryDbService {
           microBlockHash: data.microBlockHash,
         },
       },
-      update: {},
+      update: data,
       create: data,
     });
   }
