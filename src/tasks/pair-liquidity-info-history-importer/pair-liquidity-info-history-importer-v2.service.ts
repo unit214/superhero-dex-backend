@@ -68,42 +68,44 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         const lastSyncedBlockTime = lastSyncedLog?.microBlockTime || 0n;
         const lastSyncedLogIndex = lastSyncedLog?.logIndex || -1;
 
-        // Determine which micro blocks to sync based on the lastly synced block
+        // Determine which logs to sync based on the lastly synced log
         // Strategy:
         // 1. Always (re-)fetch everything within the 10 most recent key blocks (currentHeight - 10).
-        // 2. If the history is outdated, fetch everything since the lastly synced micro block
+        // 2. If the history is outdated, fetch everything since the lastly synced log
         const isHistoryOutdated = lastSyncedHeight < currentHeight - 10;
 
-        // To make sure we get all desired micro blocks, fetch all contract log pages
-        // until the page contains a non-desired micro block
+        // To make sure we get all desired logs, fetch all contract log pages
+        // until the page contains a non-desired entry
         const fetchContractLogsLimit = (contractLog: ContractLog) =>
           isHistoryOutdated
             ? BigInt(contractLog.block_time) < lastSyncedBlockTime
             : parseInt(contractLog.height) < currentHeight - 10;
-
-        const contractLogsToInsertFilter = (contractLog: ContractLog) =>
-          isHistoryOutdated
-            ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
-                parseInt(contractLog.log_idx) > lastSyncedLogIndex) ||
-              BigInt(contractLog.block_time) > lastSyncedBlockTime
-            : parseInt(contractLog.height) >= currentHeight - 10;
 
         const pairContractLogs =
           await this.mdwClient.getContractLogsUntilCondition(
             fetchContractLogsLimit,
             pairWithTokens.address as ContractAddress,
           );
+
+        // Filter out all logs we don't want to insert (based on the strategy above) and sort the logs
+        // in ascending order
         const logsToInsert = orderBy(
-          pairContractLogs.filter(contractLogsToInsertFilter),
+          pairContractLogs.filter((contractLog: ContractLog) =>
+            isHistoryOutdated
+              ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
+                  parseInt(contractLog.log_idx) > lastSyncedLogIndex) ||
+                BigInt(contractLog.block_time) > lastSyncedBlockTime
+              : parseInt(contractLog.height) >= currentHeight - 10,
+          ),
           ['block_time', 'log_idx'],
           ['asc', 'asc'],
         );
 
         let numUpserted = 0;
-        // Fetch and insert liquidity (totalSupply, reserve0, reserve1) for every micro block
+
         for (const log of logsToInsert) {
           try {
-            // If an error occurred for this block recently, skip block
+            // If an error occurred for this log recently, skip block
             const error =
               await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
@@ -118,13 +120,9 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               continue;
             }
 
+            // TODO continue for non relevant events
             // TODO Parse event
-            // TODO Calculate liquidity
-            const previousLiquidity =
-              await this.pairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId(
-                pairWithTokens.id,
-              );
-
+            // TODO insert event with correct data
             // Upsert liquidity
             await this.pairLiquidityInfoHistoryDb
               .upsert({
@@ -135,10 +133,8 @@ export class PairLiquidityInfoHistoryImporterV2Service {
                 microBlockHash: log.block_hash,
                 microBlockTime: BigInt(log.block_time),
                 transactionHash: log.call_tx_hash,
-                reserve0: (parseInt(previousLiquidity?.reserve0 || '0') + 1) // TODO change
-                  .toString(),
-                reserve1: (parseInt(previousLiquidity?.reserve1 || '0') + 1) // TODO change
-                  .toString(),
+                reserve0: '0',
+                reserve1: '0',
                 totalSupply: '0',
                 deltaReserve0: '0',
                 deltaReserve1: '0',
@@ -187,7 +183,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
     await this.pairLiquidityInfoHistoryDb
       .upsert({
         pairId: pairWithTokens.id,
-        eventType: 'TBD', // TODO which event type to use here?
+        eventType: 'CreatePair',
         logIndex: 0,
         height: parseInt(microBlock.height),
         microBlockHash: microBlock.hash,
