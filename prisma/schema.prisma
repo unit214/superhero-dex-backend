@@ -81,17 +81,16 @@ model PairLiquidityInfoHistoryV2 {
   pair            Pair     @relation(fields: [pairId], references: [id])
   pairId          Int
   eventType       String
+  reserve0        BigInt?
+  reserve1        BigInt?
+  deltaReserve0   BigInt?
+  deltaReserve1   BigInt?
+  fiatPrice       BigInt?
   height          Int
   microBlockTime  BigInt
   logIndex        Int
   microBlockHash  String
   transactionHash String
-  totalSupply     String?
-  reserve0        String?
-  reserve1        String?
-  deltaReserve0   String?
-  deltaReserve1   String?
-  fiatPrice       String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
