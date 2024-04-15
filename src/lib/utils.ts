@@ -1,3 +1,5 @@
+import { Decimal } from '@prisma/client/runtime/library';
+
 export const nonNullable = <T>(t: T | null | undefined, label?: string): T => {
   if (t == null) {
     throw new Error(
@@ -20,3 +22,6 @@ export const pluralize = (count: number, noun: string, suffix = 's') =>
 
 const parseEnv = (x) => x && JSON.parse(x);
 export const presentInvalidTokens = parseEnv(process.env.SHOW_INVALID_TOKENS);
+
+export const bigIntToDecimal = (bigInt: bigint | null): Decimal | null =>
+  bigInt ? new Decimal(bigInt.toString()) : null;

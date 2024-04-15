@@ -10,6 +10,7 @@ import { ContractAddress } from '../../clients/sdk-client.model';
 import { orderBy } from 'lodash';
 import { PairLiquidityInfoHistoryV2DbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '../../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
+import { bigIntToDecimal } from '../../lib/utils';
 
 @Injectable()
 export class PairLiquidityInfoHistoryImporterV2Service {
@@ -146,11 +147,11 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               .upsert({
                 pairId: pairWithTokens.id,
                 eventType: event.eventType,
-                reserve0: event.reserve0,
-                reserve1: event.reserve0,
-                deltaReserve0: event.deltaReserve0,
-                deltaReserve1: event.deltaReserve1,
-                fiatPrice: 0n,
+                reserve0: bigIntToDecimal(event.reserve0),
+                reserve1: bigIntToDecimal(event.reserve1),
+                deltaReserve0: bigIntToDecimal(event.deltaReserve0),
+                deltaReserve1: bigIntToDecimal(event.deltaReserve1),
+                fiatPrice: bigIntToDecimal(0n),
                 height: parseInt(log.height),
                 microBlockTime: BigInt(log.block_time),
                 logIndex: parseInt(log.log_idx),
@@ -201,11 +202,11 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       .upsert({
         pairId: pairWithTokens.id,
         eventType: 'CreatePair',
-        reserve0: 0n,
-        reserve1: 0n,
-        deltaReserve0: 0n,
-        deltaReserve1: 0n,
-        fiatPrice: 0n,
+        reserve0: bigIntToDecimal(0n),
+        reserve1: bigIntToDecimal(0n),
+        deltaReserve0: bigIntToDecimal(0n),
+        deltaReserve1: bigIntToDecimal(0n),
+        fiatPrice: bigIntToDecimal(0n),
         height: parseInt(microBlock.height),
         microBlockTime: BigInt(microBlock.time),
         logIndex: 0,
