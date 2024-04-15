@@ -12,6 +12,21 @@ import { PairLiquidityInfoHistoryV2DbService } from '../../database/pair-liquidi
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '../../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
 import { bigIntToDecimal } from '../../lib/utils';
 
+enum EventType {
+  Sync = 'Sync',
+  SwapTokens = 'SwapTokens',
+  PairMint = 'PairMint',
+  PairBurn = 'PairBurn',
+}
+
+type Event = {
+  eventType: EventType;
+  reserve0?: bigint;
+  reserve1?: bigint;
+  deltaReserve0?: bigint;
+  deltaReserve1?: bigint;
+};
+
 @Injectable()
 export class PairLiquidityInfoHistoryImporterV2Service {
   constructor(
@@ -45,7 +60,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       `Syncing liquidity info history for ${pairsWithTokens.length} pairs.`,
     );
 
-    for (const pairWithTokens of pairsWithTokens) {
+    for (const pairWithTokens of pairsWithTokens.slice(3, 4)) {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
@@ -102,7 +117,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
         // Filter out all logs we don't want to insert (based on the strategy above) and sort the logs
         // in ascending order
-        const logsToInsert = orderBy(
+        const relevantContractLogs = orderBy(
           pairContractLogs.filter((contractLog: ContractLog) =>
             isHistoryOutdated
               ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
@@ -111,59 +126,105 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               : parseInt(contractLog.height) >=
                 currentHeight - this.SLIDING_WINDOW_BLOCKS,
           ),
-          ['block_time', 'log_idx'],
-          ['asc', 'asc'],
+          ['block_time', 'call_txi', 'log_idx'],
+          ['asc', 'asc', 'asc'],
         );
 
+        // Parse events from logs
+        const logsAndEvents = relevantContractLogs
+          .map((log) => {
+            const event = this.parseEvent(log);
+            if (event) {
+              return {
+                log,
+                event,
+              };
+            }
+          })
+          .filter(
+            (logAndEvent): logAndEvent is { log: ContractLog; event: Event } =>
+              !!logAndEvent,
+          );
+
+        // Insert liquidity info for events
         let numUpserted = 0;
 
-        for (const log of logsToInsert) {
+        for (const logAndEvent of logsAndEvents) {
           try {
+            const nextLogAndEvent =
+              logsAndEvents[logsAndEvents.indexOf(logAndEvent) + 1];
+
+            let liquidityInfo;
+            // If current event is a Sync event and the next event is not a Sync event, insert merged liquidity info
+            if (
+              logAndEvent.event.eventType === EventType.Sync &&
+              nextLogAndEvent.event.eventType !== EventType.Sync
+            ) {
+              liquidityInfo = {
+                pairId: pairWithTokens.id,
+                eventType: nextLogAndEvent.event.eventType,
+                reserve0: bigIntToDecimal(logAndEvent.event.reserve0),
+                reserve1: bigIntToDecimal(logAndEvent.event.reserve1),
+                deltaReserve0: bigIntToDecimal(
+                  nextLogAndEvent.event.deltaReserve0,
+                ),
+                deltaReserve1: bigIntToDecimal(
+                  nextLogAndEvent.event.deltaReserve1,
+                ),
+                fiatPrice: bigIntToDecimal(0n),
+                height: parseInt(nextLogAndEvent.log.height),
+                microBlockHash: nextLogAndEvent.log.block_hash,
+                microBlockTime: BigInt(nextLogAndEvent.log.block_time),
+                transactionHash: nextLogAndEvent.log.call_tx_hash,
+                transactionIndex: nextLogAndEvent.log.call_txi,
+                logIndex: parseInt(nextLogAndEvent.log.log_idx),
+              };
+              // Else if current event is a Sync event and the next event is also a Sync event, insert sync event
+            } else if (logAndEvent.event.eventType === EventType.Sync) {
+              liquidityInfo = {
+                pairId: pairWithTokens.id,
+                eventType: logAndEvent.event.eventType,
+                reserve0: bigIntToDecimal(logAndEvent.event.reserve0),
+                reserve1: bigIntToDecimal(logAndEvent.event.reserve1),
+                deltaReserve0: bigIntToDecimal(logAndEvent.event.deltaReserve0),
+                deltaReserve1: bigIntToDecimal(logAndEvent.event.deltaReserve1),
+                fiatPrice: bigIntToDecimal(0n),
+                height: parseInt(logAndEvent.log.height),
+                microBlockHash: logAndEvent.log.block_hash,
+                microBlockTime: BigInt(logAndEvent.log.block_time),
+                transactionHash: logAndEvent.log.call_tx_hash,
+                transactionIndex: logAndEvent.log.call_txi,
+                logIndex: parseInt(logAndEvent.log.log_idx),
+              };
+              // Else continue, as every non-Sync event is preceded by a Sync event and thus already inserted previously
+            } else {
+              continue;
+            }
+
             // If an error occurred for this log recently, skip block
             const error =
               await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
-                log.block_hash,
-                parseInt(log.log_idx),
+                logAndEvent.log.block_hash,
+                parseInt(logAndEvent.log.log_idx),
                 this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
               );
             if (error) {
               this.logger.log(
-                `Skipped log with block hash ${log.block_hash} and log index ${log.log_idx} due to recent error.`,
+                `Skipped log with block hash ${logAndEvent.log.block_hash} and log index ${logAndEvent.log.log_idx} due to recent error.`,
               );
-              continue;
-            }
-
-            // Parse event
-            const event = this.parseEvent(log);
-
-            // If event could not be parsed (event is a non-relevant event), continue
-            if (!event) {
               continue;
             }
 
             // Upsert liquidity
             await this.pairLiquidityInfoHistoryDb
-              .upsert({
-                pairId: pairWithTokens.id,
-                eventType: event.eventType,
-                reserve0: bigIntToDecimal(event.reserve0),
-                reserve1: bigIntToDecimal(event.reserve1),
-                deltaReserve0: bigIntToDecimal(event.deltaReserve0),
-                deltaReserve1: bigIntToDecimal(event.deltaReserve1),
-                fiatPrice: bigIntToDecimal(0n),
-                height: parseInt(log.height),
-                microBlockTime: BigInt(log.block_time),
-                logIndex: parseInt(log.log_idx),
-                microBlockHash: log.block_hash,
-                transactionHash: log.call_tx_hash,
-              })
+              .upsert(liquidityInfo)
               .then(() => numUpserted++);
           } catch (error) {
             const errorData = {
               pairId: pairWithTokens.id,
-              microBlockHash: log.block_hash,
-              logIndex: parseInt(log.log_idx),
+              microBlockHash: logAndEvent.log.block_hash,
+              logIndex: parseInt(logAndEvent.log.log_idx),
               error: error.toString(),
             };
             this.logger.error(`Skipped log. ${JSON.stringify(errorData)}`);
@@ -208,10 +269,11 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         deltaReserve1: bigIntToDecimal(0n),
         fiatPrice: bigIntToDecimal(0n),
         height: parseInt(microBlock.height),
-        microBlockTime: BigInt(microBlock.time),
-        logIndex: 0,
         microBlockHash: microBlock.hash,
+        microBlockTime: BigInt(microBlock.time),
         transactionHash: pairContract.source_tx_hash,
+        transactionIndex: 0n,
+        logIndex: 0,
       })
       .then(() =>
         this.logger.log(
@@ -220,7 +282,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       );
   }
 
-  private parseEvent(log: ContractLog) {
+  private parseEvent(log: ContractLog): Event | undefined {
     const parseEventData = (data: string): bigint[] => {
       return data.split('|').map((d) => BigInt(d));
     };
@@ -230,20 +292,20 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         // Sync
         // args: [balance0, balance1], data: empty
         return {
-          eventType: 'Sync',
+          eventType: EventType.Sync,
           reserve0: BigInt(log.args[0]),
           reserve1: BigInt(log.args[1]),
-          deltaReserve0: null,
-          deltaReserve1: null,
+          deltaReserve0: undefined,
+          deltaReserve1: undefined,
         };
       case this.SWAP_TOKENS_EVENT_HASH:
         // SwapTokens
         // args: [_, _], data: [amount0In, amount1In, amount0Out, amount1Out]
         const swapTokensData = parseEventData(log.data);
         return {
-          eventType: 'SwapTokens',
-          reserve0: null,
-          reserve1: null,
+          eventType: EventType.SwapTokens,
+          reserve0: undefined,
+          reserve1: undefined,
           deltaReserve0: swapTokensData[0] - swapTokensData[2],
           deltaReserve1: swapTokensData[1] - swapTokensData[3],
         };
@@ -251,9 +313,9 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         // PairMint
         // args: [_, amount0, amount1], data: empty
         return {
-          eventType: 'PairMint',
-          reserve0: null,
-          reserve1: null,
+          eventType: EventType.PairMint,
+          reserve0: undefined,
+          reserve1: undefined,
           deltaReserve0: BigInt(log.args[1]),
           deltaReserve1: BigInt(log.args[2]),
         };
@@ -262,14 +324,14 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         // args: [_, _], data: [amount0, amount1]
         const pairBurnData = parseEventData(log.data);
         return {
-          eventType: 'PairBurn',
-          reserve0: null,
-          reserve1: null,
+          eventType: EventType.PairBurn,
+          reserve0: undefined,
+          reserve1: undefined,
           deltaReserve0: 0n - pairBurnData[0],
           deltaReserve1: 0n - pairBurnData[1],
         };
       default:
-        return null;
+        return undefined;
     }
   }
 }

@@ -11,9 +11,10 @@ export class PairLiquidityInfoHistoryV2DbService {
   ) {
     return this.prisma.pairLiquidityInfoHistoryV2.upsert({
       where: {
-        pairIdMicroBlockHashLogIndexUniqueIndex: {
+        pairIdMBHashTxHashLogIndexUniqueIndex: {
           pairId: data.pairId,
           microBlockHash: data.microBlockHash,
+          transactionHash: data.transactionHash,
           logIndex: data.logIndex,
         },
       },
@@ -27,7 +28,11 @@ export class PairLiquidityInfoHistoryV2DbService {
       where: {
         pairId,
       },
-      orderBy: [{ microBlockTime: 'desc' }, { logIndex: 'desc' }],
+      orderBy: [
+        { microBlockTime: 'desc' },
+        { transactionIndex: 'desc' },
+        { logIndex: 'desc' },
+      ],
     });
   }
 }
