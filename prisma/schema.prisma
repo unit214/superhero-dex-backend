@@ -81,11 +81,11 @@ model PairLiquidityInfoHistoryV2 {
   pair            Pair     @relation(fields: [pairId], references: [id])
   pairId          Int
   eventType       String
-  reserve0        BigInt?
-  reserve1        BigInt?
-  deltaReserve0   BigInt?
-  deltaReserve1   BigInt?
-  fiatPrice       BigInt?
+  reserve0        Decimal? @db.Decimal(100, 0)
+  reserve1        Decimal? @db.Decimal(100, 0)
+  deltaReserve0   Decimal? @db.Decimal(100, 0)
+  deltaReserve1   Decimal? @db.Decimal(100, 0)
+  fiatPrice       Decimal? @db.Decimal(100, 0)
   height          Int
   microBlockTime  BigInt
   logIndex        Int
