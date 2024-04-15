@@ -77,24 +77,25 @@ model PairLiquidityInfoHistoryError {
 }
 
 model PairLiquidityInfoHistoryV2 {
-  id              Int      @id @default(autoincrement())
-  pair            Pair     @relation(fields: [pairId], references: [id])
-  pairId          Int
-  eventType       String
-  reserve0        Decimal? @db.Decimal(100, 0)
-  reserve1        Decimal? @db.Decimal(100, 0)
-  deltaReserve0   Decimal? @db.Decimal(100, 0)
-  deltaReserve1   Decimal? @db.Decimal(100, 0)
-  fiatPrice       Decimal? @db.Decimal(100, 0)
-  height          Int
-  microBlockTime  BigInt
-  logIndex        Int
-  microBlockHash  String
-  transactionHash String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id               Int      @id @default(autoincrement())
+  pair             Pair     @relation(fields: [pairId], references: [id])
+  pairId           Int
+  eventType        String
+  reserve0         Decimal? @db.Decimal(100, 0)
+  reserve1         Decimal? @db.Decimal(100, 0)
+  deltaReserve0    Decimal? @db.Decimal(100, 0)
+  deltaReserve1    Decimal? @db.Decimal(100, 0)
+  fiatPrice        Decimal? @db.Decimal(100, 0)
+  height           Int
+  microBlockHash   String
+  microBlockTime   BigInt
+  transactionHash  String
+  transactionIndex BigInt
+  logIndex         Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
 
-  @@unique(name: "pairIdMicroBlockHashLogIndexUniqueIndex", [pairId, microBlockHash, logIndex])
+  @@unique(name: "pairIdMBHashTxHashLogIndexUniqueIndex", [pairId, microBlockHash, transactionHash, logIndex])
 }
 
 model PairLiquidityInfoHistoryV2Error {
