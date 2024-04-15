@@ -24,6 +24,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
   readonly logger = new Logger(PairLiquidityInfoHistoryImporterV2Service.name);
 
   readonly WITHIN_HOURS_TO_SKIP_IF_ERROR = 6;
+  readonly SLIDING_WINDOW_BLOCKS = 10;
 
   async import() {
     this.logger.log(`Started syncing pair liquidity info history.`);
@@ -72,14 +73,16 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         // Strategy:
         // 1. Always (re-)fetch everything within the 10 most recent key blocks (currentHeight - 10).
         // 2. If the history is outdated, fetch everything since the lastly synced log
-        const isHistoryOutdated = lastSyncedHeight < currentHeight - 10;
+        const isHistoryOutdated =
+          lastSyncedHeight < currentHeight - this.SLIDING_WINDOW_BLOCKS;
 
         // To make sure we get all desired logs, fetch all contract log pages
         // until the page contains a non-desired entry
         const fetchContractLogsLimit = (contractLog: ContractLog) =>
           isHistoryOutdated
             ? BigInt(contractLog.block_time) < lastSyncedBlockTime
-            : parseInt(contractLog.height) < currentHeight - 10;
+            : parseInt(contractLog.height) <
+              currentHeight - this.SLIDING_WINDOW_BLOCKS;
 
         const pairContractLogs =
           await this.mdwClient.getContractLogsUntilCondition(
@@ -95,7 +98,8 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
                   parseInt(contractLog.log_idx) > lastSyncedLogIndex) ||
                 BigInt(contractLog.block_time) > lastSyncedBlockTime
-              : parseInt(contractLog.height) >= currentHeight - 10,
+              : parseInt(contractLog.height) >=
+                currentHeight - this.SLIDING_WINDOW_BLOCKS,
           ),
           ['block_time', 'log_idx'],
           ['asc', 'asc'],
@@ -128,17 +132,16 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               .upsert({
                 pairId: pairWithTokens.id,
                 eventType: 'parsedEventType', // TODO change
-                logIndex: parseInt(log.log_idx),
+                reserve0: 0n,
+                reserve1: 0n,
+                deltaReserve0: 0n,
+                deltaReserve1: 0n,
+                fiatPrice: 0n,
                 height: parseInt(log.height),
-                microBlockHash: log.block_hash,
                 microBlockTime: BigInt(log.block_time),
+                logIndex: parseInt(log.log_idx),
+                microBlockHash: log.block_hash,
                 transactionHash: log.call_tx_hash,
-                reserve0: '0',
-                reserve1: '0',
-                totalSupply: '0',
-                deltaReserve0: '0',
-                deltaReserve1: '0',
-                fiatPrice: '0',
               })
               .then(() => numUpserted++);
           } catch (error) {
@@ -184,17 +187,16 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       .upsert({
         pairId: pairWithTokens.id,
         eventType: 'CreatePair',
-        logIndex: 0,
+        reserve0: 0n,
+        reserve1: 0n,
+        deltaReserve0: 0n,
+        deltaReserve1: 0n,
+        fiatPrice: 0n,
         height: parseInt(microBlock.height),
-        microBlockHash: microBlock.hash,
         microBlockTime: BigInt(microBlock.time),
+        logIndex: 0,
+        microBlockHash: microBlock.hash,
         transactionHash: pairContract.source_tx_hash,
-        reserve0: '0',
-        reserve1: '0',
-        totalSupply: '0',
-        deltaReserve0: '0',
-        deltaReserve1: '0',
-        fiatPrice: '0',
       })
       .then(() =>
         this.logger.log(
