@@ -9,10 +9,11 @@ CREATE TABLE "PairLiquidityInfoHistoryV2" (
     "deltaReserve1" DECIMAL(100,0),
     "fiatPrice" DECIMAL(100,0),
     "height" INTEGER NOT NULL,
-    "microBlockTime" BIGINT NOT NULL,
-    "logIndex" INTEGER NOT NULL,
     "microBlockHash" TEXT NOT NULL,
+    "microBlockTime" BIGINT NOT NULL,
     "transactionHash" TEXT NOT NULL,
+    "transactionIndex" BIGINT NOT NULL,
+    "logIndex" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -34,7 +35,7 @@ CREATE TABLE "PairLiquidityInfoHistoryV2Error" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2_pairId_microBlockHash_logIndex_key" ON "PairLiquidityInfoHistoryV2"("pairId", "microBlockHash", "logIndex");
+CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2_pairId_microBlockHash_transactio_key" ON "PairLiquidityInfoHistoryV2"("pairId", "microBlockHash", "transactionHash", "logIndex");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PairLiquidityInfoHistoryV2Error_pairId_microBlockHash_logIn_key" ON "PairLiquidityInfoHistoryV2Error"("pairId", "microBlockHash", "logIndex", "error");
