@@ -67,6 +67,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
           await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
             pairWithTokens.id,
             '',
+            '',
             -1,
             this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
           );
@@ -206,6 +207,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
                 current.log.block_hash,
+                current.log.call_tx_hash,
                 parseInt(current.log.log_idx),
                 this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
               );
@@ -224,6 +226,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
             const errorData = {
               pairId: pairWithTokens.id,
               microBlockHash: current.log.block_hash,
+              transactionHash: current.log.call_tx_hash,
               logIndex: parseInt(current.log.log_idx),
               error: error.toString(),
             };
@@ -241,6 +244,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         const errorData = {
           pairId: pairWithTokens.id,
           microBlockHash: '',
+          transactionHash: '',
           logIndex: -1,
           error: error.toString(),
         };
