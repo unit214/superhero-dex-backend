@@ -1,17 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MdwHttpClientService } from '../../clients/mdw-http-client.service';
-import {
-  PairDbService,
-  PairWithTokens,
-} from '../../database/pair/pair-db.service';
-import { SdkClientService } from '../../clients/sdk-client.service';
-import { ContractLog } from '../../clients/mdw-http-client.model';
-import { ContractAddress } from '../../clients/sdk-client.model';
-import { orderBy } from 'lodash';
-import { PairLiquidityInfoHistoryV2DbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
-import { PairLiquidityInfoHistoryV2ErrorDbService } from '../../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
-import { bigIntToDecimal, decimalToBigInt } from '../../lib/utils';
 import { PairLiquidityInfoHistoryV2 } from '@prisma/client';
+import { orderBy } from 'lodash';
+
+import { ContractLog } from '@/clients/mdw-http-client.model';
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
+import { ContractAddress } from '@/clients/sdk-client.model';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairDbService, PairWithTokens } from '@/database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
+import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
+import { bigIntToDecimal, decimalToBigInt } from '@/lib/utils';
 
 enum EventType {
   Sync = 'Sync',

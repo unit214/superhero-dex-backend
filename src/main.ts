@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+import { AppModule } from './app.module';
 import { nonNullable } from './lib/utils';
 import { PairSyncService } from './tasks/pair-sync/pair-sync.service';
 

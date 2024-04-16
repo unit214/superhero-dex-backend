@@ -1,13 +1,13 @@
-import * as WebSocket from 'ws';
 import { Logger } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import * as WebSocket from 'ws';
+
+import { Callbacks, MdwWsClientService } from '@/clients/mdw-ws-client.service';
 import {
   objSubEv,
   txSubEv,
-} from '../../test/test-utils/subscription-event-mock-data';
-
-import { Test, TestingModule } from '@nestjs/testing';
-import { Callbacks, MdwWsClientService } from './mdw-ws-client.service';
+} from '@/test/test-utils/subscription-event-mock-data';
 
 describe('MdwWsClientService', () => {
   let service: MdwWsClientService;

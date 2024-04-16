@@ -5,12 +5,12 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { PairLiquidityInfoHistoryService } from './pair-liquidity-info-history.service';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import * as dto from '../api.model';
-import { OrderQueryEnum } from '../api.model';
 
-import { ContractAddress } from '../../clients/sdk-client.model';
+import * as dto from '@/api/api.model';
+import { OrderQueryEnum } from '@/api/api.model';
+import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
+import { ContractAddress } from '@/clients/sdk-client.model';
 
 @Controller('history/liquidity')
 export class PairLiquidityInfoHistoryController {

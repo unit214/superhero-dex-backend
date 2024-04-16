@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PairLiquidityInfoHistoryDbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { Pair, PairLiquidityInfoHistory } from '@prisma/client';
-import { OrderQueryEnum } from '../api.model';
 
-import { ContractAddress } from '../../clients/sdk-client.model';
+import { OrderQueryEnum } from '@/api/api.model';
+import { ContractAddress } from '@/clients/sdk-client.model';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 
 @Injectable()
 export class PairLiquidityInfoHistoryService {

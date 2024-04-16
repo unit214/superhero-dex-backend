@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
 import { AeSdk, Node } from '@aeternity/aepp-sdk';
-import { nonNullable } from '../lib/utils';
-import NETWORKS from '../lib/network-config';
+import { Injectable } from '@nestjs/common';
+
+import NETWORKS from '@/lib/network-config';
+import { nonNullable } from '@/lib/utils';
 
 @Injectable()
 export class SdkClientService {

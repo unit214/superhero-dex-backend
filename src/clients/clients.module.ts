@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { MdwHttpClientService } from './mdw-http-client.service';
-import { SdkClientService } from './sdk-client.service';
-import { MdwWsClientService } from './mdw-ws-client.service';
+
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
+import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
+import { SdkClientService } from '@/clients/sdk-client.service';
 
 @Module({
   providers: [MdwHttpClientService, MdwWsClientService, SdkClientService],

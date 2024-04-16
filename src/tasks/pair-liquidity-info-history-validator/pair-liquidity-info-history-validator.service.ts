@@ -1,9 +1,10 @@
-import { MdwHttpClientService } from '../../clients/mdw-http-client.service';
-import { PairLiquidityInfoHistoryDbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { uniq } from 'lodash';
-import { SdkClientService } from '../../clients/sdk-client.service';
-import { MicroBlockHash } from '../../clients/sdk-client.model';
+
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
+import { MicroBlockHash } from '@/clients/sdk-client.model';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 
 @Injectable()
 export class PairLiquidityInfoHistoryValidatorService {

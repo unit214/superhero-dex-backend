@@ -1,26 +1,22 @@
 import { Logger } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 
-import * as data from '../../../test/test-utils/context-mock-data';
-
+import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
+import { ContractAddress } from '@/clients/sdk-client.model';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairDbService } from '@/database/pair/pair-db.service';
+import { TokenDbService } from '@/database/token/token-db.service';
+import { Context } from '@/tasks/pair-sync/pair-sync.model';
+import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
+import { mockContext } from '@/test/test-utils/context-mock';
+import * as data from '@/test/test-utils/context-mock-data';
+import { mockupEnvVars, TEST_NET_VARS } from '@/test/test-utils/env-mock';
 import {
   objSubEv,
   swapEvent,
   swapTxInfo,
-} from '../../../test/test-utils/subscription-event-mock-data';
-import { PairSyncService } from './pair-sync.service';
-import { Test, TestingModule } from '@nestjs/testing';
-import { PairDbService } from '../../database/pair/pair-db.service';
-import { TokenDbService } from '../../database/token/token-db.service';
-import { MdwWsClientService } from '../../clients/mdw-ws-client.service';
-import { Context } from './pair-sync.model';
-import { SdkClientService } from '../../clients/sdk-client.service';
-import { ContractAddress } from '../../clients/sdk-client.model';
-import { mockContext } from '../../../test/test-utils/context-mock';
-import {
-  mockupEnvVars,
-  TEST_NET_VARS,
-} from '../../../test/test-utils/env-mock';
+} from '@/test/test-utils/subscription-event-mock-data';
 
 describe('PairSyncService', () => {
   let service: PairSyncService;
