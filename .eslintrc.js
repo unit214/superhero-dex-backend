@@ -4,7 +4,7 @@ module.exports = {
     project: 'tsconfig.json',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'simple-import-sort'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -36,5 +36,7 @@ module.exports = {
       },
     ],
     eqeqeq: ['error', 'always', { null: 'ignore' }],
+    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'warn',
   },
 };

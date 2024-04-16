@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import NETWORKS from '../lib/network-config';
-import { nonNullable } from '../lib/utils';
+
 import {
   AccountBalance,
-  ContractBalance,
   Contract,
+  ContractBalance,
   ContractLog,
   MdwMicroBlock,
   MdwPaginatedResponse,
-} from './mdw-http-client.model';
+} from '@/clients/mdw-http-client.model';
 import {
   AccountAddress,
   ContractAddress,
   KeyBlockHash,
   MicroBlockHash,
-} from './sdk-client.model';
+} from '@/clients/sdk-client.model';
+import NETWORKS from '@/lib/network-config';
+import { nonNullable } from '@/lib/utils';
 
 @Injectable()
 export class MdwHttpClientService {

@@ -1,13 +1,15 @@
-import { nonNullable } from '../../src/lib/utils';
-import { mockDeep } from 'jest-mock-extended';
 import ContractWithMethods from '@aeternity/aepp-sdk/es/contract/Contract';
+import { mockDeep } from 'jest-mock-extended';
+
+import { CallData, ContractAddress } from '@/clients/sdk-client.model';
+import { nonNullable } from '@/lib/utils';
 import {
   Aex9Methods,
   Context,
   MetaInfo,
   PairMethods,
-} from '../../src/tasks/pair-sync/pair-sync.model';
-import { CallData, ContractAddress } from '../../src/clients/sdk-client.model';
+} from '@/tasks/pair-sync/pair-sync.model';
+
 const mockupResult = () =>
   mockDeep<{
     callerId: string;

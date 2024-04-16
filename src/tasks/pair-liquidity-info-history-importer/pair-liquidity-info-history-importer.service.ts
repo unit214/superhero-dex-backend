@@ -1,19 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MdwHttpClientService } from '../../clients/mdw-http-client.service';
-import {
-  PairDbService,
-  PairWithTokens,
-} from '../../database/pair/pair-db.service';
 import { isEqual, orderBy, uniqWith } from 'lodash';
-import { PairLiquidityInfoHistoryDbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '../../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
-import { ContractLog } from '../../clients/mdw-http-client.model';
-import { SdkClientService } from '../../clients/sdk-client.service';
+
+import { ContractLog } from '@/clients/mdw-http-client.model';
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
 import {
   ContractAddress,
   contractAddrToAccountAddr,
   MicroBlockHash,
-} from '../../clients/sdk-client.model';
+} from '@/clients/sdk-client.model';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairDbService, PairWithTokens } from '@/database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 
 type MicroBlock = {
   hash: MicroBlockHash;
