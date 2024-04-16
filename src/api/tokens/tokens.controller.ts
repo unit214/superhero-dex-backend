@@ -1,24 +1,25 @@
 import {
   Controller,
+  Delete,
   Get,
-  Param,
   Headers,
   NotFoundException,
+  Param,
   Post,
-  Delete,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TokensService } from './tokens.service';
-import * as dto from '../api.model';
 import {
-  ApiResponse,
+  ApiHeaders,
   ApiOperation,
   ApiParam,
-  ApiHeaders,
+  ApiResponse,
 } from '@nestjs/swagger';
-import { removeId } from '../../lib/utils';
 import * as prisma from '@prisma/client';
-import { ContractAddress } from '../../clients/sdk-client.model';
+
+import * as dto from '@/api/api.model';
+import { TokensService } from '@/api/tokens/tokens.service';
+import { ContractAddress } from '@/clients/sdk-client.model';
+import { removeId } from '@/lib/utils';
 
 const withTokenAuthorization = async <T>(
   auth: string,

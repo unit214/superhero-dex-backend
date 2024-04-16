@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../../src/database/prisma.service';
 import { Pair, PairLiquidityInfoHistoryError, Token } from '@prisma/client';
-import { PairLiquidityInfoHistoryErrorDbService } from '../../src/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+
+import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+import { PrismaService } from '@/database/prisma.service';
 
 const token1: Token = {
   id: 1,

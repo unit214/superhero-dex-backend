@@ -1,16 +1,17 @@
 import {
   Controller,
   Get,
-  Param,
   NotFoundException,
+  Param,
   Query,
 } from '@nestjs/common';
-import { PairsService } from './pairs.service';
-import * as dto from '../api.model';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import * as prisma from '@prisma/client';
-import { getPaths } from '../../lib/paths';
-import { ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { removeId } from '../../lib/utils';
+
+import * as dto from '@/api/api.model';
+import { PairsService } from '@/api/pairs/pairs.service';
+import { getPaths } from '@/lib/paths';
+import { removeId } from '@/lib/utils';
 
 const toPair = (
   pair: prisma.Pair & {

@@ -1,22 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
-import { cleanDb, listToken } from '../test-utils/db-helper';
-import * as data from '../test-utils/context-mock-data';
-import * as dto from '../../src/api/api.model';
-import * as utils from '../test-utils/utils';
-import { nonNullable } from '../../src/lib/utils';
-import { PrismaService } from '../../src/database/prisma.service';
-import { PairSyncService } from '../../src/tasks/pair-sync/pair-sync.service';
-import { PairDbService } from '../../src/database/pair/pair-db.service';
-import { TokenDbService } from '../../src/database/token/token-db.service';
-import { MdwWsClientService } from '../../src/clients/mdw-ws-client.service';
-import { TokensController } from '../../src/api/tokens/tokens.controller';
-import { TokensService } from '../../src/api/tokens/tokens.service';
-import { SdkClientService } from '../../src/clients/sdk-client.service';
-import { sortByAddress } from '../test-utils/utils';
-import { mockContext } from '../test-utils/context-mock';
+import * as dto from '@/api/api.model';
+import { TokensController } from '@/api/tokens/tokens.controller';
+import { TokensService } from '@/api/tokens/tokens.service';
+import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairDbService } from '@/database/pair/pair-db.service';
+import { PrismaService } from '@/database/prisma.service';
+import { TokenDbService } from '@/database/token/token-db.service';
+import { nonNullable } from '@/lib/utils';
+import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
+import { mockContext } from '@/test/test-utils/context-mock';
+import * as data from '@/test/test-utils/context-mock-data';
+import { cleanDb, listToken } from '@/test/test-utils/db-helper';
+import { sortByAddress } from '@/test/test-utils/utils';
 
 // Testing method
 // before all
@@ -72,7 +71,7 @@ describe('TokenController', () => {
         .expect(200);
       const value: dto.TokenWithListed[] = JSON.parse(response.text);
 
-      expect(utils.sortByAddress(value)).toEqual([
+      expect(sortByAddress(value)).toEqual([
         {
           address: 'ct_t0',
           symbol: 'A',
@@ -215,7 +214,7 @@ describe('TokenController', () => {
 
       const value: dto.TokenPairs = JSON.parse(response.text);
 
-      expect(utils.sortByAddress(value.pairs0)).toEqual([
+      expect(sortByAddress(value.pairs0)).toEqual([
         {
           address: 'ct_p1',
           synchronized: false,
@@ -257,7 +256,7 @@ describe('TokenController', () => {
       const value: dto.TokenPairs = JSON.parse(response.text);
 
       expect(value.pairs1).toEqual([]);
-      expect(utils.sortByAddress(value.pairs0)).toEqual([
+      expect(sortByAddress(value.pairs0)).toEqual([
         {
           address: 'ct_p1',
           synchronized: true,
@@ -332,7 +331,7 @@ describe('TokenController', () => {
       const value: dto.TokenPairs = JSON.parse(response.text);
 
       expect(value.pairs0).toEqual([]);
-      expect(utils.sortByAddress(value.pairs1)).toEqual([
+      expect(sortByAddress(value.pairs1)).toEqual([
         {
           address: 'ct_p2',
           synchronized: true,
@@ -407,7 +406,7 @@ describe('TokenController', () => {
 
       const value: dto.TokenPairs = JSON.parse(response.text);
 
-      expect(utils.sortByAddress(value.pairs0)).toEqual([
+      expect(sortByAddress(value.pairs0)).toEqual([
         {
           address: 'ct_p5',
           synchronized: true,
@@ -447,7 +446,7 @@ describe('TokenController', () => {
           },
         },
       ]);
-      expect(utils.sortByAddress(value.pairs1)).toEqual([
+      expect(sortByAddress(value.pairs1)).toEqual([
         {
           address: 'ct_p2',
           synchronized: true,
