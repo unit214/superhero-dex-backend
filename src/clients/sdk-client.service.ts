@@ -10,7 +10,7 @@ export class SdkClientService {
 
   async getClient(): Promise<[AeSdk, Node]> {
     const NETWORK_NAME = nonNullable(process.env.NETWORK_NAME);
-    if (!this.client) {
+    if (this.client == null) {
       this.node = new Node(NETWORKS[NETWORK_NAME].nodeUrl, {
         ignoreVersion: true,
       });

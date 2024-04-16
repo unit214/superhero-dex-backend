@@ -41,7 +41,7 @@ const toPairWithLiquidityInfo = (
 const toLiquidityInfoDto = (
   liquidityInfo: prisma.PairLiquidityInfo | null | undefined,
 ): dto.LiquidityInfo | undefined =>
-  (liquidityInfo && removeId(liquidityInfo)) || undefined;
+  liquidityInfo ? removeId(liquidityInfo) : undefined;
 
 @Controller('pairs')
 export class PairsController {

@@ -135,8 +135,7 @@ the given token represents the token1`,
           address,
           synchronized,
           oppositeToken: removeId(token1),
-          liquidityInfo:
-            (liquidityInfo && removeId(liquidityInfo)) || undefined,
+          liquidityInfo: liquidityInfo ? removeId(liquidityInfo) : undefined,
         }),
       ),
       pairs1: token.pairs1.map(
@@ -144,8 +143,7 @@ the given token represents the token1`,
           address,
           synchronized,
           oppositeToken: removeId(token0),
-          liquidityInfo:
-            (liquidityInfo && removeId(liquidityInfo)) || undefined,
+          liquidityInfo: liquidityInfo ? removeId(liquidityInfo) : undefined,
         }),
       ),
     };

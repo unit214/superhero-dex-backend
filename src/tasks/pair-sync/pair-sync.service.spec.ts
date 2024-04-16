@@ -228,7 +228,7 @@ describe('PairSyncService', () => {
         'ct_efYtiwDg4YZxDWE3iLPzvrjb92CJPvzGwriv4ZRuvuTDMNMb9',
       );
       const pairMethods = await ctx().getPair(pairAddress);
-      if (!pairMethods) {
+      if (pairMethods == null) {
         fail('pairMethods is null');
       }
       expect((await pairMethods.token0()).decodedResult).toBe(
