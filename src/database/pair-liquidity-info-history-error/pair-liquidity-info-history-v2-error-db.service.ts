@@ -9,6 +9,7 @@ export class PairLiquidityInfoHistoryV2ErrorDbService {
   getErrorByPairIdAndMicroBlockHashWithinHours(
     pairId: number,
     microBlockHash: string,
+    transactionHash: string,
     logIndex: number,
     withinHours: number,
   ): Promise<PairLiquidityInfoHistoryV2Error | null> {
@@ -16,6 +17,7 @@ export class PairLiquidityInfoHistoryV2ErrorDbService {
       where: {
         pairId: pairId,
         microBlockHash: microBlockHash,
+        transactionHash: transactionHash,
         logIndex: logIndex,
         updatedAt: {
           gt: new Date(Date.now() - withinHours * 60 * 60 * 1000),
@@ -32,9 +34,10 @@ export class PairLiquidityInfoHistoryV2ErrorDbService {
   ) {
     return this.prisma.pairLiquidityInfoHistoryV2Error.upsert({
       where: {
-        pairIdMicroBlockHashLogIndexUniqueIndex: {
+        pairIdMicroBlockHashTxHashLogIndexErrorUniqueIndex: {
           pairId: data.pairId,
           microBlockHash: data.microBlockHash,
+          transactionHash: data.transactionHash,
           logIndex: data.logIndex,
           error: data.error,
         },
@@ -43,6 +46,7 @@ export class PairLiquidityInfoHistoryV2ErrorDbService {
       create: {
         pairId: data.pairId,
         microBlockHash: data.microBlockHash,
+        transactionHash: data.transactionHash,
         logIndex: data.logIndex,
         error: data.error,
       },
