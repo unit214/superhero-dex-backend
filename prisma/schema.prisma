@@ -95,19 +95,20 @@ model PairLiquidityInfoHistoryV2 {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
 
-  @@unique(name: "pairIdMBHashTxHashLogIndexUniqueIndex", [pairId, microBlockHash, transactionHash, logIndex])
+  @@unique(name: "pairIdMicroBlockHashTxHashLogIndexUniqueIndex", [pairId, microBlockHash, transactionHash, logIndex])
 }
 
 model PairLiquidityInfoHistoryV2Error {
-  id             Int      @id @default(autoincrement())
-  pair           Pair     @relation(fields: [pairId], references: [id])
-  pairId         Int
-  microBlockHash String
-  logIndex       Int
-  error          String
-  timesOccurred  Int      @default(1)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now()) @updatedAt
+  id              Int      @id @default(autoincrement())
+  pair            Pair     @relation(fields: [pairId], references: [id])
+  pairId          Int
+  microBlockHash  String
+  transactionHash String
+  logIndex        Int
+  error           String
+  timesOccurred   Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 
-  @@unique(name: "pairIdMicroBlockHashLogIndexUniqueIndex", [pairId, microBlockHash, logIndex, error])
+  @@unique(name: "pairIdMicroBlockHashTxHashLogIndexErrorUniqueIndex", [pairId, microBlockHash, transactionHash, logIndex, error])
 }
