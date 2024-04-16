@@ -11,7 +11,7 @@ import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-i
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
 import { bigIntToDecimal, decimalToBigInt } from '@/lib/utils';
 
-enum EventType {
+export enum EventType {
   Sync = 'Sync',
   SwapTokens = 'SwapTokens',
   PairMint = 'PairMint',
@@ -69,7 +69,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
-          await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
+          await this.pairLiquidityInfoHistoryErrorDb.getErrorWithinHours(
             pairWithTokens.id,
             '',
             '',
@@ -219,7 +219,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
             // If an error occurred for this log recently, skip block
             const error =
-              await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
+              await this.pairLiquidityInfoHistoryErrorDb.getErrorWithinHours(
                 pairWithTokens.id,
                 current.log.block_hash,
                 current.log.call_tx_hash,
