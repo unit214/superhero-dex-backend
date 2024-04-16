@@ -21,7 +21,20 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/strict-boolean-expressions': 'error',
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowString: true,
+        allowNumber: true,
+        allowNullableObject: true,
+        allowNullableBoolean: true,
+        allowNullableString: true,
+        allowNullableNumber: false,
+        allowNullableEnum: true,
+        allowAny: true,
+        allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: true,
+      },
+    ],
     eqeqeq: ['error', 'always', { null: 'ignore' }],
   },
 };

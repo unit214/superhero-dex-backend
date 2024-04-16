@@ -59,6 +59,6 @@ export const getPaths = <E, N extends string | number | symbol>(
     }
     const middleEdge = graph[middleNode];
     const endData: E | undefined = middleEdge?.[end];
-    return !endData ? acc : acc.concat([[data, endData]]);
+    return endData == null ? acc : acc.concat([[data, endData]]);
   }, []);
 };

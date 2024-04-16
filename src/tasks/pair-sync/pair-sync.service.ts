@@ -229,7 +229,7 @@ export class PairSyncService implements OnModuleInit {
       }
       //TODO: try to trow exception here to see if it reconnects
       const txInfo = await this.ctx.node.getTransactionInfoByHash(hash);
-      if (!txInfo) {
+      if (txInfo == null) {
         throw new Error(`No tx info for hash '${hash}'`);
       }
       if (!txInfo.callInfo) {
@@ -371,8 +371,8 @@ export class PairSyncService implements OnModuleInit {
       decodedResult: { reserve0, reserve1 },
       result,
     } = await pair.get_reserves();
-    const syncHeight = height || result?.height;
-    if (!syncHeight) {
+    const syncHeight = height ?? result?.height;
+    if (syncHeight == null) {
       console.error('Could not get height');
       return;
     }
