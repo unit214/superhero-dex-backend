@@ -1,16 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TasksService } from './tasks.service';
-import { PairLiquidityInfoHistoryValidatorService } from './pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
-import { MdwHttpClientService } from '../clients/mdw-http-client.service';
-import { PairDbService } from '../database/pair/pair-db.service';
-import { PrismaService } from '../database/prisma.service';
-import { SdkClientService } from '../clients/sdk-client.service';
-import { PairLiquidityInfoHistoryImporterV2Service } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
-import { PairLiquidityInfoHistoryV2ErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
-import { PairLiquidityInfoHistoryV2DbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
-import { PairLiquidityInfoHistoryDbService } from '../database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryImporterService } from './pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
+import { SdkClientService } from '@/clients/sdk-client.service';
+import { PairDbService } from '@/database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
+import { PrismaService } from '@/database/prisma.service';
+import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
+import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
+import { TasksService } from '@/tasks/tasks.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
