@@ -21,6 +21,7 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    'eqeqeq': ['error', 'always', {'null': 'ignore'}],
+    '@typescript-eslint/strict-boolean-expressions': 'error',
+    eqeqeq: ['error', 'always', { null: 'ignore' }],
   },
 };

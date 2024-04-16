@@ -60,7 +60,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       `Syncing liquidity info history for ${pairsWithTokens.length} pairs.`,
     );
 
-    for (const pairWithTokens of pairsWithTokens.slice(3, 4)) {
+    for (const pairWithTokens of pairsWithTokens) {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
@@ -90,9 +90,10 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         if (!lastSyncedLog) {
           await this.insertInitialLiquidity(pairWithTokens);
         }
-        const lastSyncedHeight = lastSyncedLog?.height || 0;
-        const lastSyncedBlockTime = lastSyncedLog?.microBlockTime || 0n;
-        const lastSyncedLogIndex = lastSyncedLog?.logIndex || -1;
+        const lastSyncedHeight = lastSyncedLog?.height ?? 0;
+        const lastSyncedBlockTime = lastSyncedLog?.microBlockTime ?? 0n;
+        const lastSyncedTxIndex = lastSyncedLog?.transactionIndex ?? 0n;
+        const lastSyncedLogIndex = lastSyncedLog?.logIndex ?? -1;
 
         // Determine which logs to sync based on the lastly synced log
         // Strategy:
@@ -120,9 +121,9 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         const relevantContractLogs = orderBy(
           pairContractLogs.filter((contractLog: ContractLog) =>
             isHistoryOutdated
-              ? (BigInt(contractLog.block_time) === lastSyncedBlockTime &&
+              ? (BigInt(contractLog.call_txi) === lastSyncedTxIndex &&
                   parseInt(contractLog.log_idx) > lastSyncedLogIndex) ||
-                BigInt(contractLog.block_time) > lastSyncedBlockTime
+                BigInt(contractLog.call_txi) > lastSyncedTxIndex
               : parseInt(contractLog.height) >=
                 currentHeight - this.SLIDING_WINDOW_BLOCKS,
           ),
@@ -148,53 +149,52 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
         // Insert liquidity info for events
         let numUpserted = 0;
-
-        for (const logAndEvent of logsAndEvents) {
+        for (const current of logsAndEvents) {
           try {
-            const nextLogAndEvent =
-              logsAndEvents[logsAndEvents.indexOf(logAndEvent) + 1];
+            const succeeding =
+              logsAndEvents[logsAndEvents.indexOf(current) + 1];
 
             let liquidityInfo;
             // If current event is a Sync event and the next event is not a Sync event, insert merged liquidity info
             if (
-              logAndEvent.event.eventType === EventType.Sync &&
-              nextLogAndEvent.event.eventType !== EventType.Sync
+              current.event.eventType === EventType.Sync &&
+              succeeding.event.eventType !== EventType.Sync
             ) {
               liquidityInfo = {
                 pairId: pairWithTokens.id,
-                eventType: nextLogAndEvent.event.eventType,
-                reserve0: bigIntToDecimal(logAndEvent.event.reserve0),
-                reserve1: bigIntToDecimal(logAndEvent.event.reserve1),
+                eventType: succeeding.event.eventType,
+                reserve0: bigIntToDecimal(current.event.reserve0!),
+                reserve1: bigIntToDecimal(current.event.reserve1!),
                 deltaReserve0: bigIntToDecimal(
-                  nextLogAndEvent.event.deltaReserve0,
-                ),
+                  succeeding.event.deltaReserve0!,
+                )!,
                 deltaReserve1: bigIntToDecimal(
-                  nextLogAndEvent.event.deltaReserve1,
-                ),
+                  succeeding.event.deltaReserve1!,
+                )!,
                 fiatPrice: bigIntToDecimal(0n),
-                height: parseInt(nextLogAndEvent.log.height),
-                microBlockHash: nextLogAndEvent.log.block_hash,
-                microBlockTime: BigInt(nextLogAndEvent.log.block_time),
-                transactionHash: nextLogAndEvent.log.call_tx_hash,
-                transactionIndex: nextLogAndEvent.log.call_txi,
-                logIndex: parseInt(nextLogAndEvent.log.log_idx),
+                height: parseInt(succeeding.log.height),
+                microBlockHash: succeeding.log.block_hash,
+                microBlockTime: BigInt(succeeding.log.block_time),
+                transactionHash: succeeding.log.call_tx_hash,
+                transactionIndex: succeeding.log.call_txi,
+                logIndex: parseInt(succeeding.log.log_idx),
               };
               // Else if current event is a Sync event and the next event is also a Sync event, insert sync event
-            } else if (logAndEvent.event.eventType === EventType.Sync) {
+            } else if (current.event.eventType === EventType.Sync) {
               liquidityInfo = {
                 pairId: pairWithTokens.id,
-                eventType: logAndEvent.event.eventType,
-                reserve0: bigIntToDecimal(logAndEvent.event.reserve0),
-                reserve1: bigIntToDecimal(logAndEvent.event.reserve1),
-                deltaReserve0: bigIntToDecimal(logAndEvent.event.deltaReserve0),
-                deltaReserve1: bigIntToDecimal(logAndEvent.event.deltaReserve1),
+                eventType: current.event.eventType,
+                reserve0: bigIntToDecimal(current.event.reserve0!),
+                reserve1: bigIntToDecimal(current.event.reserve1!),
+                deltaReserve0: null,
+                deltaReserve1: null,
                 fiatPrice: bigIntToDecimal(0n),
-                height: parseInt(logAndEvent.log.height),
-                microBlockHash: logAndEvent.log.block_hash,
-                microBlockTime: BigInt(logAndEvent.log.block_time),
-                transactionHash: logAndEvent.log.call_tx_hash,
-                transactionIndex: logAndEvent.log.call_txi,
-                logIndex: parseInt(logAndEvent.log.log_idx),
+                height: parseInt(current.log.height),
+                microBlockHash: current.log.block_hash,
+                microBlockTime: BigInt(current.log.block_time),
+                transactionHash: current.log.call_tx_hash,
+                transactionIndex: current.log.call_txi,
+                logIndex: parseInt(current.log.log_idx),
               };
               // Else continue, as every non-Sync event is preceded by a Sync event and thus already inserted previously
             } else {
@@ -205,13 +205,13 @@ export class PairLiquidityInfoHistoryImporterV2Service {
             const error =
               await this.pairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours(
                 pairWithTokens.id,
-                logAndEvent.log.block_hash,
-                parseInt(logAndEvent.log.log_idx),
+                current.log.block_hash,
+                parseInt(current.log.log_idx),
                 this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
               );
             if (error) {
               this.logger.log(
-                `Skipped log with block hash ${logAndEvent.log.block_hash} and log index ${logAndEvent.log.log_idx} due to recent error.`,
+                `Skipped log with block hash ${current.log.block_hash} and log index ${current.log.log_idx} due to recent error.`,
               );
               continue;
             }
@@ -223,8 +223,8 @@ export class PairLiquidityInfoHistoryImporterV2Service {
           } catch (error) {
             const errorData = {
               pairId: pairWithTokens.id,
-              microBlockHash: logAndEvent.log.block_hash,
-              logIndex: parseInt(logAndEvent.log.log_idx),
+              microBlockHash: current.log.block_hash,
+              logIndex: parseInt(current.log.log_idx),
               error: error.toString(),
             };
             this.logger.error(`Skipped log. ${JSON.stringify(errorData)}`);
