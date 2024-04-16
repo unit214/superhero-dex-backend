@@ -12,7 +12,7 @@ export class PairLiquidityInfoHistoryDbService {
   getAll = (
     limit: number,
     offset: number,
-    order: OrderQueryEnum,
+    order?: OrderQueryEnum,
     pairAddress?: ContractAddress,
     height?: number,
     fromBlockTime?: bigint,
@@ -21,7 +21,7 @@ export class PairLiquidityInfoHistoryDbService {
     this.prisma.pairLiquidityInfoHistory.findMany({
       where: {
         pair: pairAddress ? { address: { equals: pairAddress } } : {},
-        height: height ? { equals: height } : {},
+        height: height != null ? { equals: height } : {},
         microBlockTime: {
           gte: fromBlockTime,
           lte: toBlockTime,
@@ -30,11 +30,12 @@ export class PairLiquidityInfoHistoryDbService {
       include: {
         pair: true,
       },
-      orderBy: order
-        ? {
-            microBlockTime: order,
-          }
-        : {},
+      orderBy:
+        order != null
+          ? {
+              microBlockTime: order,
+            }
+          : {},
       take: limit,
       skip: offset,
     });
