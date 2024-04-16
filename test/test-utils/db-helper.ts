@@ -1,4 +1,4 @@
-import { PrismaService } from '../../src/database/prisma.service';
+import { PrismaService } from '@/database/prisma.service';
 
 export const cleanDb = async (prismaService: PrismaService) => {
   await prismaService.pairLiquidityInfo.deleteMany();

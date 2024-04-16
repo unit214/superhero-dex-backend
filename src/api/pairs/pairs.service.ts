@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { presentInvalidTokens } from '../../lib/utils';
-import { PairDbService } from '../../database/pair/pair-db.service';
+
+import { PairDbService } from '@/database/pair/pair-db.service';
+import { presentInvalidTokens } from '@/lib/utils';
 
 @Injectable()
 export class PairsService {

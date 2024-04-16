@@ -1,10 +1,11 @@
-import { PairLiquidityInfoHistoryController } from './pair-liquidity-info-history.controller';
-import { Test, TestingModule } from '@nestjs/testing';
-import { PairLiquidityInfoHistoryService } from './pair-liquidity-info-history.service';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Pair, PairLiquidityInfoHistory } from '@prisma/client';
-import { OrderQueryEnum } from '../api.model';
+import * as request from 'supertest';
+
+import { OrderQueryEnum } from '@/api/api.model';
+import { PairLiquidityInfoHistoryController } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.controller';
+import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 
 const mockPairLiquidityInfoHistoryService = {
   getAllHistoryEntries: jest.fn(),
