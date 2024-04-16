@@ -7,7 +7,7 @@ import { PrismaService } from '@/database/prisma.service';
 export class PairLiquidityInfoHistoryV2ErrorDbService {
   constructor(private prisma: PrismaService) {}
 
-  getErrorByPairIdAndMicroBlockHashWithinHours(
+  getErrorWithinHours(
     pairId: number,
     microBlockHash: string,
     transactionHash: string,
