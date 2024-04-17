@@ -14,7 +14,7 @@ import { PairLiquidityInfoHistoryErrorDbService } from '../database/pair-liquidi
 
 describe('TasksService', () => {
   let tasksService: TasksService;
-  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterService;
+  let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterV2Service;
   let pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorService;
 
   beforeEach(async () => {
@@ -37,8 +37,8 @@ describe('TasksService', () => {
 
     tasksService = module.get<TasksService>(TasksService);
     pairLiquidityInfoHistoryImporterService =
-      module.get<PairLiquidityInfoHistoryImporterService>(
-        PairLiquidityInfoHistoryImporterService,
+      module.get<PairLiquidityInfoHistoryImporterV2Service>(
+        PairLiquidityInfoHistoryImporterV2Service,
       );
     pairLiquidityInfoHistoryValidatorService =
       module.get<PairLiquidityInfoHistoryValidatorService>(
@@ -52,7 +52,7 @@ describe('TasksService', () => {
         .spyOn(pairLiquidityInfoHistoryImporterService, 'import')
         .mockResolvedValue();
 
-      await tasksService.runPairLiquidityInfoHistoryImporter();
+      await tasksService.runPairLiquidityInfoHistoryImporterV2();
       expect(pairLiquidityInfoHistoryImporterService.import).toHaveBeenCalled();
       expect(tasksService.isRunning).toBe(false);
     });
@@ -60,7 +60,7 @@ describe('TasksService', () => {
     it('should not run if a task is running already', async () => {
       tasksService.setIsRunning(true);
       jest.spyOn(pairLiquidityInfoHistoryImporterService, 'import');
-      await tasksService.runPairLiquidityInfoHistoryImporter();
+      await tasksService.runPairLiquidityInfoHistoryImporterV2();
       expect(
         pairLiquidityInfoHistoryImporterService.import,
       ).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('TasksService', () => {
         .mockRejectedValue(error);
       jest.spyOn(pairLiquidityInfoHistoryImporterService.logger, 'error');
 
-      await tasksService.runPairLiquidityInfoHistoryImporter();
+      await tasksService.runPairLiquidityInfoHistoryImporterV2();
       expect(
         pairLiquidityInfoHistoryImporterService.logger.error,
       ).toHaveBeenCalledWith(`Import failed. ${error}`);
