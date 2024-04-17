@@ -24,24 +24,23 @@ export class TasksService {
     this._isRunning = isRunning;
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  async runPairLiquidityInfoHistoryImporter() {
-    try {
-      if (!this.isRunning) {
-        this.setIsRunning(true);
-        await this.pairLiquidityInfoHistoryImporterService.import();
-        this.setIsRunning(false);
-      }
-    } catch (error) {
-      this.pairLiquidityInfoHistoryImporterService.logger.error(
-        `Import failed. ${error}`,
-      );
-      this.setIsRunning(false);
-    }
-  }
+  // @Cron(CronExpression.EVERY_5_MINUTES)
+  // async runPairLiquidityInfoHistoryImporter() {
+  //   try {
+  //     if (!this.isRunning) {
+  //       this.setIsRunning(true);
+  //       await this.pairLiquidityInfoHistoryImporterService.import();
+  //       this.setIsRunning(false);
+  //     }
+  //   } catch (error) {
+  //     this.pairLiquidityInfoHistoryImporterService.logger.error(
+  //       `Import failed. ${error}`,
+  //     );
+  //     this.setIsRunning(false);
+  //   }
+  // }
 
-  // TODO set correct frequency
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async runPairLiquidityInfoHistoryImporterV2() {
     try {
       if (!this.isRunning) {
