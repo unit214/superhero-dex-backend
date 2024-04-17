@@ -58,7 +58,7 @@ const pair3: Pair = {
   synchronized: true,
 };
 const historyEntry1: PairLiquidityInfoHistoryV2 = {
-  id: 1,
+  id: 111,
   pairId: 1,
   eventType: EventType.PairMint,
   reserve0: new Decimal(1000),
@@ -76,7 +76,7 @@ const historyEntry1: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 const historyEntry2: PairLiquidityInfoHistoryV2 = {
-  id: 2,
+  id: 222,
   pairId: 1,
   eventType: EventType.SwapTokens,
   reserve0: new Decimal(1050),
@@ -94,7 +94,7 @@ const historyEntry2: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 const historyEntry3: PairLiquidityInfoHistoryV2 = {
-  id: 3,
+  id: 333,
   pairId: 2,
   eventType: EventType.PairMint,
   reserve0: new Decimal(1000),
@@ -112,7 +112,7 @@ const historyEntry3: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 const historyEntry4: PairLiquidityInfoHistoryV2 = {
-  id: 4,
+  id: 444,
   pairId: 2,
   eventType: EventType.SwapTokens,
   reserve0: new Decimal(1050),
@@ -166,7 +166,7 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
   describe('upsert', () => {
     it('should correctly upsert an existing entry', async () => {
       const updatedEntry = {
-        pairId: 1,
+        pairId: historyEntry2.pairId,
         eventType: EventType.PairBurn,
         reserve0: new Decimal(500),
         reserve1: new Decimal(500),
@@ -174,15 +174,15 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
         deltaReserve1: new Decimal(-500),
         fiatPrice: new Decimal(0),
         height: 200002,
-        microBlockHash: 'mh_entry2',
+        microBlockHash: historyEntry2.microBlockHash,
         microBlockTime: 2000000000002n,
-        transactionHash: 'th_entry2',
+        transactionHash: historyEntry2.transactionHash,
         transactionIndex: 200002n,
-        logIndex: 1,
+        logIndex: historyEntry2.logIndex,
       };
       await service.upsert(updatedEntry);
       const entry = await prismaService.pairLiquidityInfoHistoryV2.findFirst({
-        where: { id: 2 },
+        where: { id: historyEntry2.id },
       });
       expect(entry?.reserve0).toEqual(new Decimal(500));
     });
@@ -213,8 +213,8 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
     it('should correctly return the last synced log for a given pairId', async () => {
       const result1 = await service.getLastlySyncedLogByPairId(1);
       const result2 = await service.getLastlySyncedLogByPairId(2);
-      expect(result1?.id).toEqual(2);
-      expect(result2?.id).toEqual(4);
+      expect(result1?.id).toEqual(historyEntry2.id);
+      expect(result2?.id).toEqual(historyEntry4.id);
     });
   });
 });
