@@ -57,7 +57,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
     'L2BEDU7I5T8OSEUPB61900P8FJR637OE4MC4A9875C390RMQHSN0====';
 
   async import() {
-    this.logger.log(`Started syncing pair liquidity info history.`);
+    this.logger.log('Started syncing pair liquidity info history.');
 
     // Fetch all pairs from DB
     const pairsWithTokens = await this.pairDb.getAll();
@@ -228,7 +228,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               );
             if (error) {
               this.logger.log(
-                `Skipped log with block hash ${current.log.block_hash} and log index ${current.log.log_idx} due to recent error.`,
+                `Skipped log with block hash ${current.log.block_hash} tx hash ${current.log.call_tx_hash} and log index ${current.log.log_idx} due to recent error.`,
               );
               continue;
             }
