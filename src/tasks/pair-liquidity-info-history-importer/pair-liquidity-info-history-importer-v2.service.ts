@@ -10,7 +10,8 @@ import { ContractAddress } from '../../clients/sdk-client.model';
 import { orderBy } from 'lodash';
 import { PairLiquidityInfoHistoryV2DbService } from '../../database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '../../database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
-import { bigIntToDecimal } from '../../lib/utils';
+import { bigIntToDecimal, decimalToBigInt } from '../../lib/utils';
+import { PairLiquidityInfoHistoryV2 } from '@prisma/client';
 
 enum EventType {
   Sync = 'Sync',
@@ -19,12 +20,18 @@ enum EventType {
   PairBurn = 'PairBurn',
 }
 
-type Event = {
-  eventType: EventType;
-  reserve0?: bigint;
-  reserve1?: bigint;
-  deltaReserve0?: bigint;
-  deltaReserve1?: bigint;
+type Event = SyncEvent | DeltaReserveEvent;
+
+type SyncEvent = {
+  eventType: EventType.Sync;
+  reserve0: bigint;
+  reserve1: bigint;
+};
+
+type DeltaReserveEvent = {
+  eventType: EventType.SwapTokens | EventType.PairMint | EventType.PairBurn;
+  deltaReserve0: bigint;
+  deltaReserve1: bigint;
 };
 
 @Injectable()
@@ -134,18 +141,13 @@ export class PairLiquidityInfoHistoryImporterV2Service {
 
         // Parse events from logs
         const logsAndEvents = relevantContractLogs
-          .map((log) => {
-            const event = this.parseEvent(log);
-            if (event) {
-              return {
-                log,
-                event,
-              };
-            }
-          })
+          .map((log) => ({
+            log: log,
+            event: this.parseEvent(log),
+          }))
           .filter(
             (logAndEvent): logAndEvent is { log: ContractLog; event: Event } =>
-              !!logAndEvent,
+              !!logAndEvent.event,
           );
 
         // Insert liquidity info for events
@@ -155,7 +157,10 @@ export class PairLiquidityInfoHistoryImporterV2Service {
             const succeeding =
               logsAndEvents[logsAndEvents.indexOf(current) + 1];
 
-            let liquidityInfo;
+            let liquidityInfo: Omit<
+              PairLiquidityInfoHistoryV2,
+              'id' | 'updatedAt' | 'createdAt'
+            >;
             // If current event is a Sync event and the next event is not a Sync event, insert merged liquidity info
             if (
               current.event.eventType === EventType.Sync &&
@@ -164,37 +169,49 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               liquidityInfo = {
                 pairId: pairWithTokens.id,
                 eventType: succeeding.event.eventType,
-                reserve0: bigIntToDecimal(current.event.reserve0!),
-                reserve1: bigIntToDecimal(current.event.reserve1!),
-                deltaReserve0: bigIntToDecimal(
-                  succeeding.event.deltaReserve0!,
-                )!,
-                deltaReserve1: bigIntToDecimal(
-                  succeeding.event.deltaReserve1!,
-                )!,
+                reserve0: bigIntToDecimal(current.event.reserve0),
+                reserve1: bigIntToDecimal(current.event.reserve1),
+                deltaReserve0: bigIntToDecimal(succeeding.event.deltaReserve0),
+                deltaReserve1: bigIntToDecimal(succeeding.event.deltaReserve1),
                 fiatPrice: bigIntToDecimal(0n),
                 height: parseInt(succeeding.log.height),
                 microBlockHash: succeeding.log.block_hash,
                 microBlockTime: BigInt(succeeding.log.block_time),
                 transactionHash: succeeding.log.call_tx_hash,
-                transactionIndex: succeeding.log.call_txi,
+                transactionIndex: BigInt(succeeding.log.call_txi),
                 logIndex: parseInt(succeeding.log.log_idx),
               };
-              // Else if current event is a Sync event and the next event is also a Sync event, insert sync event
+              // Else if current event is a Sync event and the next event is also a Sync event, insert Sync event
             } else if (current.event.eventType === EventType.Sync) {
+              const lastSyncedLog =
+                await this.pairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId(
+                  pairWithTokens.id,
+                );
               liquidityInfo = {
                 pairId: pairWithTokens.id,
                 eventType: current.event.eventType,
-                reserve0: bigIntToDecimal(current.event.reserve0!),
-                reserve1: bigIntToDecimal(current.event.reserve1!),
-                deltaReserve0: null,
-                deltaReserve1: null,
+                reserve0: bigIntToDecimal(current.event.reserve0),
+                reserve1: bigIntToDecimal(current.event.reserve1),
+                // Calculated by the delta from lastly synced log's reserve0
+                deltaReserve0: lastSyncedLog
+                  ? bigIntToDecimal(
+                      current.event.reserve0 -
+                        decimalToBigInt(lastSyncedLog.reserve0),
+                    )
+                  : bigIntToDecimal(0n),
+                // Calculated by the delta from lastly synced log's reserve1
+                deltaReserve1: lastSyncedLog
+                  ? bigIntToDecimal(
+                      current.event.reserve1 -
+                        decimalToBigInt(lastSyncedLog.reserve1),
+                    )
+                  : bigIntToDecimal(0n),
                 fiatPrice: bigIntToDecimal(0n),
                 height: parseInt(current.log.height),
                 microBlockHash: current.log.block_hash,
                 microBlockTime: BigInt(current.log.block_time),
                 transactionHash: current.log.call_tx_hash,
-                transactionIndex: current.log.call_txi,
+                transactionIndex: BigInt(current.log.call_txi),
                 logIndex: parseInt(current.log.log_idx),
               };
               // Else continue, as every non-Sync event is preceded by a Sync event and thus already inserted previously
@@ -299,8 +316,6 @@ export class PairLiquidityInfoHistoryImporterV2Service {
           eventType: EventType.Sync,
           reserve0: BigInt(log.args[0]),
           reserve1: BigInt(log.args[1]),
-          deltaReserve0: undefined,
-          deltaReserve1: undefined,
         };
       case this.SWAP_TOKENS_EVENT_HASH:
         // SwapTokens
@@ -308,8 +323,6 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         const swapTokensData = parseEventData(log.data);
         return {
           eventType: EventType.SwapTokens,
-          reserve0: undefined,
-          reserve1: undefined,
           deltaReserve0: swapTokensData[0] - swapTokensData[2],
           deltaReserve1: swapTokensData[1] - swapTokensData[3],
         };
@@ -318,8 +331,6 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         // args: [_, amount0, amount1], data: empty
         return {
           eventType: EventType.PairMint,
-          reserve0: undefined,
-          reserve1: undefined,
           deltaReserve0: BigInt(log.args[1]),
           deltaReserve1: BigInt(log.args[2]),
         };
@@ -329,8 +340,6 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         const pairBurnData = parseEventData(log.data);
         return {
           eventType: EventType.PairBurn,
-          reserve0: undefined,
-          reserve1: undefined,
           deltaReserve0: 0n - pairBurnData[0],
           deltaReserve1: 0n - pairBurnData[1],
         };

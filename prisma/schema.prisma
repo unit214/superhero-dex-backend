@@ -83,8 +83,8 @@ model PairLiquidityInfoHistoryV2 {
   eventType        String
   reserve0         Decimal  @db.Decimal(100, 0)
   reserve1         Decimal  @db.Decimal(100, 0)
-  deltaReserve0    Decimal? @db.Decimal(100, 0) // Null if event is a manually triggered Sync event
-  deltaReserve1    Decimal? @db.Decimal(100, 0) // Null if event is a manually triggered Sync event
+  deltaReserve0    Decimal  @db.Decimal(100, 0)
+  deltaReserve1    Decimal  @db.Decimal(100, 0)
   fiatPrice        Decimal  @db.Decimal(100, 0)
   height           Int
   microBlockHash   String
