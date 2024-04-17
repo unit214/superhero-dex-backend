@@ -25,3 +25,6 @@ export const presentInvalidTokens = parseEnv(process.env.SHOW_INVALID_TOKENS);
 
 export const bigIntToDecimal = (bigInt: bigint): Decimal =>
   new Decimal(bigInt.toString());
+
+export const decimalToBigInt = (decimal: Decimal): bigint =>
+  BigInt(decimal.toString());
