@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Decimal } from '@prisma/client/runtime/library';
+import { omit } from 'lodash';
 
 import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PrismaService } from '@/database/prisma.service';
@@ -16,7 +17,6 @@ import {
   token2,
   token3,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
-import { omit } from 'lodash';
 
 describe('PairLiquidityInfoHistoryV2DbService', () => {
   let service: PairLiquidityInfoHistoryV2DbService;
