@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PairLiquidityInfoHistoryV2DbService upsert should correctly upsert an existing entry 1`] = `
+{
+  "deltaReserve0": "-500",
+  "deltaReserve1": "-500",
+  "eventType": "PairBurn",
+  "fiatPrice": "0",
+  "height": 200002,
+  "id": 222,
+  "logIndex": 1,
+  "microBlockHash": "mh_entry2",
+  "microBlockTime": 2000000000002n,
+  "pairId": 1,
+  "reserve0": "500",
+  "reserve1": "500",
+  "transactionHash": "th_entry2",
+  "transactionIndex": 200002n,
+}
+`;

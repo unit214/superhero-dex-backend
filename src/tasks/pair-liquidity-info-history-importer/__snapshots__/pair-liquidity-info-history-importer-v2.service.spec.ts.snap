@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PairLiquidityInfoHistoryImporterV2Service import should import liquidity correctly 1`] = `
+[
+  [
+    {
+      "deltaReserve0": "0",
+      "deltaReserve1": "0",
+      "eventType": "CreatePair",
+      "fiatPrice": "0",
+      "height": 10000,
+      "logIndex": 0,
+      "microBlockHash": "mh_hash0",
+      "microBlockTime": 1000000000000n,
+      "pairId": 1,
+      "reserve0": "0",
+      "reserve1": "0",
+      "transactionHash": "th_",
+      "transactionIndex": 0n,
+    },
+  ],
+  [
+    {
+      "deltaReserve0": "100",
+      "deltaReserve1": "100",
+      "eventType": "PairMint",
+      "fiatPrice": "0",
+      "height": 10001,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash1",
+      "microBlockTime": 1000000000001n,
+      "pairId": 1,
+      "reserve0": "100",
+      "reserve1": "100",
+      "transactionHash": "th_hash1",
+      "transactionIndex": 10000001n,
+    },
+  ],
+  [
+    {
+      "deltaReserve0": "100",
+      "deltaReserve1": "100",
+      "eventType": "Sync",
+      "fiatPrice": "0",
+      "height": 20002,
+      "logIndex": 1,
+      "microBlockHash": "mh_hash2",
+      "microBlockTime": 2000000000002n,
+      "pairId": 1,
+      "reserve0": "200",
+      "reserve1": "200",
+      "transactionHash": "th_hash2",
+      "transactionIndex": 20000002n,
+    },
+  ],
+  [
+    {
+      "deltaReserve0": "1",
+      "deltaReserve1": "-1",
+      "eventType": "SwapTokens",
+      "fiatPrice": "0",
+      "height": 30003,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash3",
+      "microBlockTime": 3000000000003n,
+      "pairId": 1,
+      "reserve0": "201",
+      "reserve1": "199",
+      "transactionHash": "th_hash3",
+      "transactionIndex": 30000003n,
+    },
+  ],
+  [
+    {
+      "deltaReserve0": "-101",
+      "deltaReserve1": "-99",
+      "eventType": "PairBurn",
+      "fiatPrice": "0",
+      "height": 30003,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash3",
+      "microBlockTime": 3000000000003n,
+      "pairId": 1,
+      "reserve0": "100",
+      "reserve1": "100",
+      "transactionHash": "th_hash4",
+      "transactionIndex": 40000004n,
+    },
+  ],
+]
+`;
+
+exports[`PairLiquidityInfoHistoryImporterV2Service import should skip a log if there was a recent error 1`] = `
+[
+  [
+    {
+      "deltaReserve0": "1",
+      "deltaReserve1": "-1",
+      "eventType": "SwapTokens",
+      "fiatPrice": "0",
+      "height": 30003,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash3",
+      "microBlockTime": 3000000000003n,
+      "pairId": 1,
+      "reserve0": "201",
+      "reserve1": "199",
+      "transactionHash": "th_hash3",
+      "transactionIndex": 30000003n,
+    },
+  ],
+]
+`;
+
+exports[`PairLiquidityInfoHistoryImporterV2Service import should catch and insert an error on log level 1`] = `
+[
+  [
+    {
+      "deltaReserve0": "1",
+      "deltaReserve1": "-1",
+      "eventType": "SwapTokens",
+      "fiatPrice": "0",
+      "height": 30003,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash3",
+      "microBlockTime": 3000000000003n,
+      "pairId": 1,
+      "reserve0": "201",
+      "reserve1": "199",
+      "transactionHash": "th_hash3",
+      "transactionIndex": 30000003n,
+    },
+  ],
+]
+`;
