@@ -11,8 +11,8 @@ import { PrismaService } from '@/database/prisma.service';
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
 import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
-import { TasksService } from '@/tasks/tasks.service';
 import { PairLiquidityInfoHistoryValidatorV2Service } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator-v2.service';
+import { TasksService } from '@/tasks/tasks.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
