@@ -9,7 +9,7 @@ import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-inf
 import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 
-const mockMdwClientService = {
+const mockMdwClient = {
   getContract: jest.fn(),
   getMicroBlock: jest.fn(),
   getContractLogsUntilCondition: jest.fn(),
@@ -38,7 +38,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       providers: [
         PairLiquidityInfoHistoryImporterService,
         SdkClientService,
-        { provide: MdwHttpClientService, useValue: mockMdwClientService },
+        { provide: MdwHttpClientService, useValue: mockMdwClient },
         { provide: PairDbService, useValue: mockPairDb },
         {
           provide: PairLiquidityInfoHistoryDbService,
@@ -96,17 +96,18 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       mockPairLiquidityInfoHistoryDb.getLastlySyncedBlockByPairId.mockReturnValue(
         undefined,
       );
-      mockMdwClientService.getContract.mockResolvedValue(pair1Contract);
-      mockMdwClientService.getMicroBlock.mockResolvedValue(initialMicroBlock);
+      mockMdwClient.getContract.mockResolvedValue(pair1Contract);
+      mockMdwClient.getMicroBlock.mockResolvedValue(initialMicroBlock);
       mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
-      mockMdwClientService.getContractLogsUntilCondition.mockResolvedValue([
+      mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
         pairContractLog1,
         pairContractLog2,
       ]);
-      mockMdwClientService.getContractBalancesAtMicroBlockHash.mockResolvedValue(
-        [{ amount: '1' }, { amount: '1' }],
-      );
-      mockMdwClientService.getAccountBalanceForContractAtMicroBlockHash.mockResolvedValue(
+      mockMdwClient.getContractBalancesAtMicroBlockHash.mockResolvedValue([
+        { amount: '1' },
+        { amount: '1' },
+      ]);
+      mockMdwClient.getAccountBalanceForContractAtMicroBlockHash.mockResolvedValue(
         { amount: '1' },
       );
       jest.spyOn(service.logger, 'log');

@@ -12,10 +12,10 @@ import { PrismaService } from '@/database/prisma.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { nonNullable } from '@/lib/utils';
 import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
-import { mockContext } from '@/test/test-utils/context-mock';
-import * as data from '@/test/test-utils/context-mock-data';
-import { cleanDb, listToken } from '@/test/test-utils/db-helper';
-import { sortByAddress } from '@/test/test-utils/utils';
+import { mockContext } from '@/test/utils/context-mock';
+import * as data from '@/test/mock-data/context-mock-data';
+import { cleanDb, listToken } from '@/test/utils/db-helper';
+import { sortByAddress } from '@/test/utils/utils';
 
 // Testing method
 // before all
