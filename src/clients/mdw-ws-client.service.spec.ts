@@ -7,7 +7,7 @@ import { Callbacks, MdwWsClientService } from '@/clients/mdw-ws-client.service';
 import {
   objSubEv,
   txSubEv,
-} from '@/test/test-utils/subscription-event-mock-data';
+} from '@/test/mock-data/subscription-event-mock-data';
 
 describe('MdwWsClientService', () => {
   let service: MdwWsClientService;
