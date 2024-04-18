@@ -27,4 +27,4 @@ export const bigIntToDecimal = (bigInt: bigint): Decimal =>
   new Decimal(bigInt.toString());
 
 export const decimalToBigInt = (decimal: Decimal): bigint =>
-  BigInt(decimal.toString());
+  BigInt(decimal.toFixed().toString());
