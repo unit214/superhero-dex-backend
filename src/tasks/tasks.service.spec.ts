@@ -12,11 +12,12 @@ import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-
 import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
 import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 import { TasksService } from '@/tasks/tasks.service';
+import { PairLiquidityInfoHistoryValidatorV2Service } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator-v2.service';
 
 describe('TasksService', () => {
   let tasksService: TasksService;
   let pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterV2Service;
-  let pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorService;
+  let pairLiquidityInfoHistoryValidatorService: PairLiquidityInfoHistoryValidatorV2Service;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,6 +26,7 @@ describe('TasksService', () => {
         PairLiquidityInfoHistoryImporterService,
         PairLiquidityInfoHistoryImporterV2Service,
         PairLiquidityInfoHistoryValidatorService,
+        PairLiquidityInfoHistoryValidatorV2Service,
         MdwHttpClientService,
         SdkClientService,
         PairDbService,
@@ -42,8 +44,8 @@ describe('TasksService', () => {
         PairLiquidityInfoHistoryImporterV2Service,
       );
     pairLiquidityInfoHistoryValidatorService =
-      module.get<PairLiquidityInfoHistoryValidatorService>(
-        PairLiquidityInfoHistoryValidatorService,
+      module.get<PairLiquidityInfoHistoryValidatorV2Service>(
+        PairLiquidityInfoHistoryValidatorV2Service,
       );
   });
 
@@ -88,7 +90,7 @@ describe('TasksService', () => {
         .spyOn(pairLiquidityInfoHistoryValidatorService, 'validate')
         .mockResolvedValue();
 
-      await tasksService.runPairLiquidityInfoHistoryValidator();
+      await tasksService.runPairLiquidityInfoHistoryValidatorV2();
       expect(
         pairLiquidityInfoHistoryValidatorService.validate,
       ).toHaveBeenCalled();
@@ -99,7 +101,7 @@ describe('TasksService', () => {
 
       jest.spyOn(pairLiquidityInfoHistoryValidatorService, 'validate');
 
-      await tasksService.runPairLiquidityInfoHistoryValidator();
+      await tasksService.runPairLiquidityInfoHistoryValidatorV2();
       expect(
         pairLiquidityInfoHistoryValidatorService.validate,
       ).not.toHaveBeenCalled();
@@ -112,7 +114,7 @@ describe('TasksService', () => {
         .mockRejectedValue(error);
       jest.spyOn(pairLiquidityInfoHistoryValidatorService.logger, 'error');
 
-      await tasksService.runPairLiquidityInfoHistoryValidator();
+      await tasksService.runPairLiquidityInfoHistoryValidatorV2();
       expect(
         pairLiquidityInfoHistoryValidatorService.logger.error,
       ).toHaveBeenCalledWith(`Validation failed. ${error}`);
