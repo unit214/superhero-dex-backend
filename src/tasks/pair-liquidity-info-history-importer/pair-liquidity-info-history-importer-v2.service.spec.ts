@@ -6,10 +6,7 @@ import { PairDbService } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
 import { bigIntToDecimal } from '@/lib/utils';
-import {
-  EventType,
-  PairLiquidityInfoHistoryImporterV2Service,
-} from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
+import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
 import resetAllMocks = jest.resetAllMocks;
 import {
   contractLog1,
@@ -45,6 +42,8 @@ const mockPairLiquidityInfoHistoryV2ErrorDb = {
 
 describe('PairLiquidityInfoHistoryImporterV2Service', () => {
   let service: PairLiquidityInfoHistoryImporterV2Service;
+  let logSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -66,6 +65,8 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
     service = module.get<PairLiquidityInfoHistoryImporterV2Service>(
       PairLiquidityInfoHistoryImporterV2Service,
     );
+    logSpy = jest.spyOn(service.logger, 'log');
+    errorSpy = jest.spyOn(service.logger, 'error');
     resetAllMocks();
   });
 
@@ -96,9 +97,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         contractLog8,
       ]);
 
-      // Spies
-      const logSpy = jest.spyOn(service.logger, 'log');
-
       // Start import
       await service.import();
 
@@ -120,93 +118,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       ]);
 
       expect(mockPairLiquidityInfoHistoryV2Db.upsert).toHaveBeenCalledTimes(5);
-      expect(mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls).toEqual([
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: 'CreatePair',
-            reserve0: bigIntToDecimal(0n),
-            reserve1: bigIntToDecimal(0n),
-            deltaReserve0: bigIntToDecimal(0n),
-            deltaReserve1: bigIntToDecimal(0n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(initialMicroBlock.height),
-            microBlockHash: initialMicroBlock.hash,
-            microBlockTime: BigInt(initialMicroBlock.time),
-            transactionHash: pairContract.source_tx_hash,
-            transactionIndex: 0n,
-            logIndex: 0,
-          },
-        ],
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.PairMint,
-            reserve0: bigIntToDecimal(100n),
-            reserve1: bigIntToDecimal(100n),
-            deltaReserve0: bigIntToDecimal(100n),
-            deltaReserve1: bigIntToDecimal(100n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog2.height),
-            microBlockHash: contractLog2.block_hash,
-            microBlockTime: BigInt(contractLog2.block_time),
-            transactionHash: contractLog2.call_tx_hash,
-            transactionIndex: BigInt(contractLog2.call_txi),
-            logIndex: parseInt(contractLog2.log_idx),
-          },
-        ],
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.Sync,
-            reserve0: bigIntToDecimal(200n),
-            reserve1: bigIntToDecimal(200n),
-            deltaReserve0: bigIntToDecimal(100n),
-            deltaReserve1: bigIntToDecimal(100n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog3.height),
-            microBlockHash: contractLog3.block_hash,
-            microBlockTime: BigInt(contractLog3.block_time),
-            transactionHash: contractLog3.call_tx_hash,
-            transactionIndex: BigInt(contractLog3.call_txi),
-            logIndex: parseInt(contractLog3.log_idx),
-          },
-        ],
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.SwapTokens,
-            reserve0: bigIntToDecimal(201n),
-            reserve1: bigIntToDecimal(199n),
-            deltaReserve0: bigIntToDecimal(1n),
-            deltaReserve1: bigIntToDecimal(-1n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog5.height),
-            microBlockHash: contractLog5.block_hash,
-            microBlockTime: BigInt(contractLog5.block_time),
-            transactionHash: contractLog5.call_tx_hash,
-            transactionIndex: BigInt(contractLog5.call_txi),
-            logIndex: parseInt(contractLog5.log_idx),
-          },
-        ],
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.PairBurn,
-            reserve0: bigIntToDecimal(100n),
-            reserve1: bigIntToDecimal(100n),
-            deltaReserve0: bigIntToDecimal(-101n),
-            deltaReserve1: bigIntToDecimal(-99n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog7.height),
-            microBlockHash: contractLog7.block_hash,
-            microBlockTime: BigInt(contractLog7.block_time),
-            transactionHash: contractLog7.call_tx_hash,
-            transactionIndex: BigInt(contractLog7.call_txi),
-            logIndex: parseInt(contractLog5.log_idx),
-          },
-        ],
-      ]);
+      expect(
+        mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls,
+      ).toMatchSnapshot();
     });
 
     it('should skip a pair if there was a recent error', async () => {
@@ -225,9 +139,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
           updatedAt: Date.now(),
         },
       );
-
-      // Spies
-      const logSpy = jest.spyOn(service.logger, 'log');
 
       // Start import
       await service.import();
@@ -269,9 +180,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         contractLog5,
       ]);
 
-      // Spies
-      const logSpy = jest.spyOn(service.logger, 'log');
-
       // Start import
       await service.import();
 
@@ -292,25 +200,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         ['Finished liquidity info history sync for all pairs.'],
       ]);
 
-      expect(mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls).toEqual([
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.SwapTokens,
-            reserve0: bigIntToDecimal(201n),
-            reserve1: bigIntToDecimal(199n),
-            deltaReserve0: bigIntToDecimal(1n),
-            deltaReserve1: bigIntToDecimal(-1n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog5.height),
-            microBlockHash: contractLog5.block_hash,
-            microBlockTime: BigInt(contractLog5.block_time),
-            transactionHash: contractLog5.call_tx_hash,
-            transactionIndex: BigInt(contractLog5.call_txi),
-            logIndex: parseInt(contractLog5.log_idx),
-          },
-        ],
-      ]);
+      expect(
+        mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls,
+      ).toMatchSnapshot();
     });
 
     it('should catch and insert an error on pair level', async () => {
@@ -334,10 +226,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         new Error('error'),
       );
       mockPairLiquidityInfoHistoryV2ErrorDb.upsert.mockResolvedValue(null);
-
-      // Spies
-      const logSpy = jest.spyOn(service.logger, 'log');
-      const errorSpy = jest.spyOn(service.logger, 'error');
 
       // Start import
       await service.import();
@@ -383,8 +271,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       ]);
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockPairLiquidityInfoHistoryV2ErrorDb.upsert.mockResolvedValue(null);
-      const logSpy = jest.spyOn(service.logger, 'log');
-      const errorSpy = jest.spyOn(service.logger, 'error');
 
       // Start import
       await service.import();
@@ -407,25 +293,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         [`Skipped log. ${JSON.stringify(error)}`],
       ]);
 
-      expect(mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls).toEqual([
-        [
-          {
-            pairId: pairWithTokens.id,
-            eventType: EventType.SwapTokens,
-            reserve0: bigIntToDecimal(201n),
-            reserve1: bigIntToDecimal(199n),
-            deltaReserve0: bigIntToDecimal(1n),
-            deltaReserve1: bigIntToDecimal(-1n),
-            fiatPrice: bigIntToDecimal(0n),
-            height: parseInt(contractLog5.height),
-            microBlockHash: contractLog5.block_hash,
-            microBlockTime: BigInt(contractLog5.block_time),
-            transactionHash: contractLog5.call_tx_hash,
-            transactionIndex: BigInt(contractLog5.call_txi),
-            logIndex: parseInt(contractLog5.log_idx),
-          },
-        ],
-      ]);
+      expect(
+        mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls,
+      ).toMatchSnapshot();
     });
   });
 });
