@@ -9,14 +9,14 @@ import { PairDbService } from '@/database/pair/pair-db.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { Context } from '@/tasks/pair-sync/pair-sync.model';
 import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
-import { mockContext } from '@/test/utils/context-mock';
 import * as data from '@/test/mock-data/context-mock-data';
-import { mockupEnvVars, TEST_NET_VARS } from '@/test/utils/env-mock';
 import {
   objSubEv,
   swapEvent,
   swapTxInfo,
 } from '@/test/mock-data/subscription-event-mock-data';
+import { mockContext } from '@/test/utils/context-mock';
+import { mockupEnvVars, TEST_NET_VARS } from '@/test/utils/env-mock';
 
 describe('PairSyncService', () => {
   let service: PairSyncService;
