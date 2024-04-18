@@ -16,6 +16,7 @@ import {
   token2,
   token3,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
+import { omit } from 'lodash';
 
 describe('PairLiquidityInfoHistoryV2DbService', () => {
   let service: PairLiquidityInfoHistoryV2DbService;
@@ -68,10 +69,10 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
         logIndex: historyEntry2.logIndex,
       };
       await service.upsert(updatedEntry);
-      const entry = await prismaService.pairLiquidityInfoHistoryV2.findFirst({
+      const entry = await prismaService.pairLiquidityInfoHistoryV2.findUnique({
         where: { id: historyEntry2.id },
       });
-      expect(entry?.reserve0).toEqual(new Decimal(500));
+      expect(omit(entry, ['createdAt', 'updatedAt'])).toMatchSnapshot();
     });
 
     it('should correctly insert an new entry', async () => {
