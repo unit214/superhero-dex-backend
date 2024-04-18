@@ -60,6 +60,13 @@ export class PairDbService {
     });
   }
 
+  get(pairId: number): Promise<PairWithTokens | null> {
+    return this.prisma.pair.findUnique({
+      where: { id: pairId },
+      include: { token0: true, token1: true },
+    });
+  }
+
   getOne(address: string) {
     return this.prisma.pair.findUnique({
       where: { address },

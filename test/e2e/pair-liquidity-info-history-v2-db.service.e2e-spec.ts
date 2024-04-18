@@ -105,4 +105,26 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
       expect(result2?.id).toEqual(historyEntry4.id);
     });
   });
+
+  describe('getWithinHeightSorted', () => {
+    it('should correctly return all entries greater or equal a given height limit sorted ascending', async () => {
+      const result = await service.getWithinHeightSorted(200002);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry2.id,
+        historyEntry3.id,
+        historyEntry4.id,
+      ]);
+    });
+  });
+
+  describe('deleteFromMicroBlockTime', () => {
+    it('should correctly delete all entries newer or equal a given block time', async () => {
+      await service.deleteFromMicroBlockTime(3000000000003n);
+      const result = await prismaService.pairLiquidityInfoHistoryV2.findMany();
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry1.id,
+        historyEntry2.id,
+      ]);
+    });
+  });
 });
