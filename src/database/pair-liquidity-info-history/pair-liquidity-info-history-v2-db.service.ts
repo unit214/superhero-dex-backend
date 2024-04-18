@@ -36,4 +36,29 @@ export class PairLiquidityInfoHistoryV2DbService {
       ],
     });
   }
+
+  getWithinHeightSorted(heightLimit: number) {
+    return this.prisma.pairLiquidityInfoHistoryV2.findMany({
+      where: {
+        height: {
+          gte: heightLimit,
+        },
+      },
+      orderBy: [
+        { microBlockTime: 'asc' },
+        { transactionIndex: 'asc' },
+        { logIndex: 'asc' },
+      ],
+    });
+  }
+
+  deleteFromMicroBlockTime(microBlockTime: bigint) {
+    return this.prisma.pairLiquidityInfoHistoryV2.deleteMany({
+      where: {
+        microBlockTime: {
+          gte: microBlockTime,
+        },
+      },
+    });
+  }
 }
