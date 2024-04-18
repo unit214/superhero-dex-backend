@@ -36,7 +36,7 @@ module.exports = {
       },
     ],
     eqeqeq: ['error', 'always', { null: 'ignore' }],
-    'simple-import-sort/imports': 'warn',
-    'simple-import-sort/exports': 'warn',
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
   },
 };
