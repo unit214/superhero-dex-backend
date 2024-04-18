@@ -43,7 +43,7 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
     );
 
     // If the reserves of a local microBlock do not match with the data from the middleware or the block does not exist,
-    // delete this block and all newer entries
+    // delete all logs in this block and all newer entries
     let numDeleted = 0;
     for (const liquidityEntry of liquidityEntriesWithinHeightSorted) {
       let isError = false;
