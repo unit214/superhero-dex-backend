@@ -6,8 +6,8 @@ import {
   ContextData,
   mockContext,
   mockupContractMethod,
-} from '@/test/test-utils/context-mock';
-import * as data from '@/test/test-utils/context-mock-data';
+} from '@/test/utils/context-mock';
+import * as data from '@/test/mock-data/context-mock-data';
 
 describe('Context', () => {
   it('sample mockup', async () => {
