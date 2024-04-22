@@ -7,7 +7,6 @@ import {
   contractAddrToAccountAddr,
 } from '@/clients/sdk-client.model';
 import { SdkClientService } from '@/clients/sdk-client.service';
-import { PairDbService } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { decimalToBigInt } from '@/lib/utils';
 
@@ -15,7 +14,6 @@ import { decimalToBigInt } from '@/lib/utils';
 export class PairLiquidityInfoHistoryValidatorV2Service {
   constructor(
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryV2DbService,
-    private pairDb: PairDbService,
     private mdwClient: MdwHttpClientService,
     private sdkClient: SdkClientService,
   ) {}
@@ -34,7 +32,7 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
     // and take the last entry of every microBlock to get the final reserve in that microBlock
     const liquidityEntriesWithinHeightSorted = map(
       groupBy(
-        await this.pairLiquidityInfoHistoryDb.getWithinHeightSorted(
+        await this.pairLiquidityInfoHistoryDb.getWithinHeightSortedWithPair(
           currentHeight - this.VALIDATION_WINDOW_BLOCKS,
         ),
         'microBlockHash',
@@ -50,16 +48,14 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
       let mdwReserve0: bigint | undefined;
       let mdwReserve1: bigint | undefined;
 
-      const pairWithTokens = (await this.pairDb.get(liquidityEntry?.pairId))!;
-
       try {
         // reserve0 is the balance of the pair contract's account of token0
         mdwReserve0 = BigInt(
           (
             await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
-              pairWithTokens.token0.address as ContractAddress,
+              liquidityEntry.pair.token0.address as ContractAddress,
               contractAddrToAccountAddr(
-                pairWithTokens.address as ContractAddress,
+                liquidityEntry.pair.address as ContractAddress,
               ),
               liquidityEntry.microBlockHash,
             )
@@ -70,9 +66,9 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
         mdwReserve1 = BigInt(
           (
             await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
-              pairWithTokens.token1.address as ContractAddress,
+              liquidityEntry.pair.token1.address as ContractAddress,
               contractAddrToAccountAddr(
-                pairWithTokens.address as ContractAddress,
+                liquidityEntry.pair.address as ContractAddress,
               ),
               liquidityEntry.microBlockHash,
             )
