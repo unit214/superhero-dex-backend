@@ -5,7 +5,7 @@ import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 
-const mockMdwClientService = {
+const mockMdwClient = {
   getKeyBlockMicroBlocks: jest.fn(),
 };
 
@@ -22,7 +22,7 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
       providers: [
         PairLiquidityInfoHistoryValidatorService,
         SdkClientService,
-        { provide: MdwHttpClientService, useValue: mockMdwClientService },
+        { provide: MdwHttpClientService, useValue: mockMdwClient },
         {
           provide: PairLiquidityInfoHistoryDbService,
           useValue: mockPairLiquidityInfoHistoryDb,
@@ -69,7 +69,7 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
         historyEntry3,
         historyEntry4,
       ]);
-      mockMdwClientService.getKeyBlockMicroBlocks.mockImplementation(
+      mockMdwClient.getKeyBlockMicroBlocks.mockImplementation(
         (height: number) => {
           if (height === historyEntry1.height) {
             return [
@@ -93,18 +93,18 @@ describe('PairLiquidityInfoHistoryValidatorService', () => {
       await service.validate();
 
       // Assertions
-      expect(mockMdwClientService.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
+      expect(mockMdwClient.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
         historyEntry1.height,
       );
-      expect(mockMdwClientService.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
+      expect(mockMdwClient.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
         historyEntry3.height,
       );
-      expect(mockMdwClientService.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
+      expect(mockMdwClient.getKeyBlockMicroBlocks).toHaveBeenCalledWith(
         historyEntry4.height,
       );
-      expect(
-        mockMdwClientService.getKeyBlockMicroBlocks,
-      ).not.toHaveBeenCalledWith(historyEntry5.height);
+      expect(mockMdwClient.getKeyBlockMicroBlocks).not.toHaveBeenCalledWith(
+        historyEntry5.height,
+      );
       expect(
         mockPairLiquidityInfoHistoryDb.deleteFromMicroBlockTime,
       ).toHaveBeenCalledWith(historyEntry4.microBlockTime);
