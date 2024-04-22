@@ -5,6 +5,7 @@ import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
 import {
   ContractAddress,
   contractAddrToAccountAddr,
+  MicroBlockHash,
 } from '@/clients/sdk-client.model';
 import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
@@ -57,7 +58,7 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
               contractAddrToAccountAddr(
                 liquidityEntry.pair.address as ContractAddress,
               ),
-              liquidityEntry.microBlockHash,
+              liquidityEntry.microBlockHash as MicroBlockHash,
             )
           ).amount,
         );
@@ -70,7 +71,7 @@ export class PairLiquidityInfoHistoryValidatorV2Service {
               contractAddrToAccountAddr(
                 liquidityEntry.pair.address as ContractAddress,
               ),
-              liquidityEntry.microBlockHash,
+              liquidityEntry.microBlockHash as MicroBlockHash,
             )
           ).amount,
         );

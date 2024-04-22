@@ -224,7 +224,7 @@ export class PairLiquidityInfoHistoryImporterService {
     const pairBalances =
       await this.mdwClient.getContractBalancesAtMicroBlockHash(
         pairWithTokens.address as ContractAddress,
-        block.hash,
+        block.hash as MicroBlockHash,
       );
     const totalSupply = pairBalances
       .map((contractBalance) => BigInt(contractBalance.amount))
@@ -235,7 +235,7 @@ export class PairLiquidityInfoHistoryImporterService {
       await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token0.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
-        block.hash,
+        block.hash as MicroBlockHash,
       )
     ).amount;
 
@@ -244,7 +244,7 @@ export class PairLiquidityInfoHistoryImporterService {
       await this.mdwClient.getAccountBalanceForContractAtMicroBlockHash(
         pairWithTokens.token1.address as ContractAddress,
         contractAddrToAccountAddr(pairWithTokens.address as ContractAddress),
-        block.hash,
+        block.hash as MicroBlockHash,
       )
     ).amount;
 
