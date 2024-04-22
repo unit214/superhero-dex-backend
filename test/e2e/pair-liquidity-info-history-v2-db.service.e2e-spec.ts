@@ -37,7 +37,7 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
     await prismaService.token.createMany({ data: [token1, token2, token3] });
     await prismaService.pair.createMany({ data: [pair1, pair2, pair3] });
     await prismaService.pairLiquidityInfoHistoryV2.createMany({
-      data: [historyEntry1, historyEntry2, historyEntry3, historyEntry4],
+      data: [historyEntry4, historyEntry2, historyEntry3, historyEntry1],
     });
   });
 
@@ -106,9 +106,9 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
     });
   });
 
-  describe('getWithinHeightSorted', () => {
+  describe('getWithinHeightSortedWithPair', () => {
     it('should correctly return all entries greater or equal a given height limit sorted ascending', async () => {
-      const result = await service.getWithinHeightSorted(200002);
+      const result = await service.getWithinHeightSortedWithPair(200002);
       expect(result.map((e) => e.id)).toEqual([
         historyEntry2.id,
         historyEntry3.id,
@@ -122,8 +122,8 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
       await service.deleteFromMicroBlockTime(3000000000003n);
       const result = await prismaService.pairLiquidityInfoHistoryV2.findMany();
       expect(result.map((e) => e.id)).toEqual([
-        historyEntry1.id,
         historyEntry2.id,
+        historyEntry1.id,
       ]);
     });
   });
