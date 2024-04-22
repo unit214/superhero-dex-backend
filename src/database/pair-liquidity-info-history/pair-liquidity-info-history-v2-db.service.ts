@@ -37,7 +37,7 @@ export class PairLiquidityInfoHistoryV2DbService {
     });
   }
 
-  getWithinHeightSorted(heightLimit: number) {
+  getWithinHeightSortedWithPair(heightLimit: number) {
     return this.prisma.pairLiquidityInfoHistoryV2.findMany({
       where: {
         height: {
@@ -49,6 +49,14 @@ export class PairLiquidityInfoHistoryV2DbService {
         { transactionIndex: 'asc' },
         { logIndex: 'asc' },
       ],
+      include: {
+        pair: {
+          include: {
+            token0: true,
+            token1: true,
+          },
+        },
+      },
     });
   }
 
