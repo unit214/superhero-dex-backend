@@ -58,7 +58,7 @@ export class MdwHttpClientService {
   getAccountBalanceForContractAtMicroBlockHash(
     contractAddress: ContractAddress,
     accountAddress: AccountAddress,
-    microBlockHash: string,
+    microBlockHash: MicroBlockHash,
   ): Promise<AccountBalance> {
     return this.get<AccountBalance>(
       `/v2/aex9/${contractAddress}/balances/${accountAddress}?hash=${microBlockHash}&${this.defaultParams}`,
