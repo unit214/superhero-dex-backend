@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { RateLimiter } from 'limiter';
 
 import {
-  aeUsdQuoteData,
-  CoinMarketCapResponse,
+  AeUsdQuoteData,
+  CoinmarketcapResponse,
 } from '@/clients/coinmarketcap-client.model';
 import { HttpService } from '@/clients/http.service';
 
@@ -28,7 +28,7 @@ export class CoinmarketcapClientService {
     await this.rateLimiter.removeTokens(1);
     const timeEnd = this.roundMicroBlockTimeDownTo5MinInterval(microBlockTime);
     const url = `https://pro-api.coinmarketcap.com/v3/cryptocurrency/quotes/historical?id=${this.AE_CURRENCY_ID}&interval=${this.INTERVAL}&count=${this.COUNT}&time_end=${timeEnd}`;
-    return this.get<CoinMarketCapResponse<aeUsdQuoteData>>(url);
+    return this.get<CoinmarketcapResponse<AeUsdQuoteData>>(url);
   }
 
   private async get<T>(url: string): Promise<T> {

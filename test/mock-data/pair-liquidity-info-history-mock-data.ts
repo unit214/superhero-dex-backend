@@ -256,7 +256,7 @@ export const contractLog8 = {
   log_idx: '3',
 };
 
-export const coinmarketCapResponseAeUsdQuoteData = {
+export const coinmarketcapResponseAeUsdQuoteData = {
   data: {
     1700: {
       quotes: [{ quote: { USD: { price: 0.050559 } } }],
