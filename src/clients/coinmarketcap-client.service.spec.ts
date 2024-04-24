@@ -5,7 +5,7 @@ import { HttpService } from '@/clients/http.service';
 import resetAllMocks = jest.resetAllMocks;
 import { RateLimiter } from 'limiter';
 
-import { coinmarketCapResponseAeUsdQuoteData } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
+import { coinmarketcapResponseAeUsdQuoteData } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 const mockHttpService = {
   get: jest.fn(),
@@ -31,7 +31,7 @@ describe('CoinmarketcapClientService', () => {
     it('should correctly calculate and fetch the latest 5 min interval for a given timestamp', async () => {
       // Mock functions
       mockHttpService.get.mockResolvedValue(
-        coinmarketCapResponseAeUsdQuoteData,
+        coinmarketcapResponseAeUsdQuoteData,
       );
       // Call function
       await service.getHistoricalPriceDataThrottled(1704203935123);
