@@ -1,4 +1,4 @@
-export type aeUsdQuoteData = {
+export type AeUsdQuoteData = {
   1700: {
     id: number;
     name: string;
@@ -27,12 +27,12 @@ export type aeUsdQuoteData = {
   };
 };
 
-export type CoinMarketCapResponse<T> = {
-  status: CoinMarketCapStatus;
+export type CoinmarketcapResponse<T> = {
+  status: CoinmarketcapStatus;
   data: T;
 };
 
-export type CoinMarketCapStatus = {
+export type CoinmarketcapStatus = {
   timestamp: Date;
   error_code: number;
   error_message: string;
