@@ -10,7 +10,7 @@ import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidit
 import resetAllMocks = jest.resetAllMocks;
 import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
 import {
-  coinmarketCapResponseAeUsdQuoteData,
+  coinmarketcapResponseAeUsdQuoteData,
   contractLog1,
   contractLog2,
   contractLog3,
@@ -96,7 +96,7 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       mockMdwClient.getContract.mockResolvedValue(pairContract);
       mockMdwClient.getMicroBlock.mockResolvedValue(initialMicroBlock);
       mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
-        coinmarketCapResponseAeUsdQuoteData,
+        coinmarketcapResponseAeUsdQuoteData,
       );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
@@ -190,7 +190,7 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         {},
       );
       mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
-        coinmarketCapResponseAeUsdQuoteData,
+        coinmarketcapResponseAeUsdQuoteData,
       );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
@@ -292,7 +292,7 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         contractLog5,
       ]);
       mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
-        coinmarketCapResponseAeUsdQuoteData,
+        coinmarketcapResponseAeUsdQuoteData,
       );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockPairLiquidityInfoHistoryV2ErrorDb.upsert.mockResolvedValue(null);
