@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { HttpService } from '@/clients/http.service';
 import {
   AccountBalance,
   Contract,
@@ -19,6 +20,8 @@ import { nonNullable } from '@/lib/utils';
 
 @Injectable()
 export class MdwHttpClientService {
+  constructor(private httpService: HttpService) {}
+
   private readonly LIMIT = 100;
   private readonly DIRECTION = 'forward';
   private readonly INT_AS_STRING = true;
@@ -81,15 +84,7 @@ export class MdwHttpClientService {
 
   private async get<T>(url: string): Promise<T> {
     const fullUrl = `${NETWORKS[nonNullable(process.env.NETWORK_NAME)].middlewareHttpUrl}${url}`;
-    return fetch(fullUrl).then(async (res) => {
-      if (res.ok) {
-        return (await res.json()) as Promise<T>;
-      } else {
-        throw new Error(
-          `GET ${url} failed with status ${res.status}. Response body: ${await res.text()}`,
-        );
-      }
-    });
+    return this.httpService.get<T>(fullUrl);
   }
 
   // Fetches pages from middleware until the page contains at least one entry that meets the condition
