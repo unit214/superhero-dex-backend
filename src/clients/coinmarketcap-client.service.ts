@@ -11,12 +11,12 @@ import { HttpService } from '@/clients/http.service';
 export class CoinmarketcapClientService {
   constructor(private httpService: HttpService) {}
 
-  private readonly AE_CURRENCY_ID = 1700;
-  private readonly COUNT = 1;
-  private readonly INTERVAL = '24h';
   private readonly AUTH_HEADER = {
     'X-CMC_PRO_API_KEY': process.env.COIN_MARKET_CAP_API_KEY || '',
   };
+  private readonly AE_CURRENCY_ID = 1700;
+  private readonly COUNT = 1;
+  private readonly INTERVAL = '24h';
   private readonly CALLS_LIMIT = 28;
   private readonly CALL_INTERVAL = 'minute';
   private rateLimiter = new RateLimiter({
