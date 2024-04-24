@@ -8,7 +8,9 @@ import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquid
 import { bigIntToDecimal } from '@/lib/utils';
 import { PairLiquidityInfoHistoryImporterV2Service } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
 import resetAllMocks = jest.resetAllMocks;
+import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
 import {
+  coinmarketCapResponseAeUsdQuoteData,
   contractLog1,
   contractLog2,
   contractLog3,
@@ -22,12 +24,6 @@ import {
   pairWithTokens,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
-const mockMdwClient = {
-  getContract: jest.fn(),
-  getMicroBlock: jest.fn(),
-  getContractLogsUntilCondition: jest.fn(),
-};
-
 const mockPairDb = { getAll: jest.fn() };
 
 const mockPairLiquidityInfoHistoryV2Db = {
@@ -40,6 +36,16 @@ const mockPairLiquidityInfoHistoryV2ErrorDb = {
   upsert: jest.fn(),
 };
 
+const mockMdwClient = {
+  getContract: jest.fn(),
+  getMicroBlock: jest.fn(),
+  getContractLogsUntilCondition: jest.fn(),
+};
+
+const mockCoinmarketcapClient = {
+  getHistoricalPriceDataThrottled: jest.fn(),
+};
+
 describe('PairLiquidityInfoHistoryImporterV2Service', () => {
   let service: PairLiquidityInfoHistoryImporterV2Service;
   let logSpy: jest.SpyInstance;
@@ -49,7 +55,6 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PairLiquidityInfoHistoryImporterV2Service,
-        { provide: MdwHttpClientService, useValue: mockMdwClient },
         { provide: PairDbService, useValue: mockPairDb },
         {
           provide: PairLiquidityInfoHistoryV2DbService,
@@ -59,7 +64,12 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
           provide: PairLiquidityInfoHistoryV2ErrorDbService,
           useValue: mockPairLiquidityInfoHistoryV2ErrorDb,
         },
+        { provide: MdwHttpClientService, useValue: mockMdwClient },
         SdkClientService,
+        {
+          provide: CoinmarketcapClientService,
+          useValue: mockCoinmarketcapClient,
+        },
       ],
     }).compile();
     service = module.get<PairLiquidityInfoHistoryImporterV2Service>(
@@ -85,6 +95,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         });
       mockMdwClient.getContract.mockResolvedValue(pairContract);
       mockMdwClient.getMicroBlock.mockResolvedValue(initialMicroBlock);
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketCapResponseAeUsdQuoteData,
+      );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
         contractLog1,
@@ -101,9 +114,7 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       await service.import();
 
       // Assertions
-      expect(
-        mockPairLiquidityInfoHistoryV2ErrorDb.getErrorWithinHours,
-      ).toHaveBeenCalledTimes(5); // Once for pair and 4 times for each inserted event
+      expect(errorSpy.mock.calls).toEqual([]);
 
       expect(logSpy.mock.calls).toEqual([
         ['Started syncing pair liquidity info history.'],
@@ -116,6 +127,10 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         ],
         ['Finished liquidity info history sync for all pairs.'],
       ]);
+
+      expect(
+        mockPairLiquidityInfoHistoryV2ErrorDb.getErrorWithinHours,
+      ).toHaveBeenCalledTimes(5); // Once for pair and 4 times for each inserted event
 
       expect(mockPairLiquidityInfoHistoryV2Db.upsert).toHaveBeenCalledTimes(5);
       expect(
@@ -144,6 +159,8 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       await service.import();
 
       // Assertions
+      expect(errorSpy.mock.calls).toEqual([]);
+
       expect(logSpy.mock.calls).toEqual([
         ['Started syncing pair liquidity info history.'],
         ['Syncing liquidity info history for 1 pairs.'],
@@ -172,6 +189,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       mockPairLiquidityInfoHistoryV2Db.getLastlySyncedLogByPairId.mockResolvedValue(
         {},
       );
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketCapResponseAeUsdQuoteData,
+      );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
         contractLog1,
@@ -184,9 +204,7 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       await service.import();
 
       // Assertions
-      expect(
-        mockPairLiquidityInfoHistoryV2ErrorDb.getErrorWithinHours,
-      ).toHaveBeenCalledTimes(3); // Once for pair and 2 times for each event
+      expect(errorSpy.mock.calls).toEqual([]);
 
       expect(logSpy.mock.calls).toEqual([
         ['Started syncing pair liquidity info history.'],
@@ -199,6 +217,10 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         ],
         ['Finished liquidity info history sync for all pairs.'],
       ]);
+
+      expect(
+        mockPairLiquidityInfoHistoryV2ErrorDb.getErrorWithinHours,
+      ).toHaveBeenCalledTimes(3); // Once for pair and 2 times for each event
 
       expect(
         mockPairLiquidityInfoHistoryV2Db.upsert.mock.calls,
@@ -231,9 +253,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       await service.import();
 
       // Assertions
-      expect(mockPairLiquidityInfoHistoryV2ErrorDb.upsert).toHaveBeenCalledWith(
-        error,
-      );
+      expect(errorSpy.mock.calls).toEqual([
+        [`Skipped pair. ${JSON.stringify(error)}`],
+      ]);
 
       expect(logSpy.mock.calls).toEqual([
         ['Started syncing pair liquidity info history.'],
@@ -241,9 +263,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         ['Finished liquidity info history sync for all pairs.'],
       ]);
 
-      expect(errorSpy.mock.calls).toEqual([
-        [`Skipped pair. ${JSON.stringify(error)}`],
-      ]);
+      expect(mockPairLiquidityInfoHistoryV2ErrorDb.upsert).toHaveBeenCalledWith(
+        error,
+      );
     });
 
     it('should catch and insert an error on log level', async () => {
@@ -269,6 +291,9 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         contractLog4,
         contractLog5,
       ]);
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketCapResponseAeUsdQuoteData,
+      );
       mockPairLiquidityInfoHistoryV2Db.upsert.mockResolvedValue(null);
       mockPairLiquidityInfoHistoryV2ErrorDb.upsert.mockResolvedValue(null);
 
@@ -276,9 +301,10 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
       await service.import();
 
       // Assertions
-      expect(mockPairLiquidityInfoHistoryV2ErrorDb.upsert).toHaveBeenCalledWith(
-        error,
-      );
+
+      expect(errorSpy.mock.calls).toEqual([
+        [`Skipped log. ${JSON.stringify(error)}`],
+      ]);
 
       expect(logSpy.mock.calls).toEqual([
         ['Started syncing pair liquidity info history.'],
@@ -288,6 +314,10 @@ describe('PairLiquidityInfoHistoryImporterV2Service', () => {
         ],
         ['Finished liquidity info history sync for all pairs.'],
       ]);
+
+      expect(mockPairLiquidityInfoHistoryV2ErrorDb.upsert).toHaveBeenCalledWith(
+        error,
+      );
 
       expect(errorSpy.mock.calls).toEqual([
         [`Skipped log. ${JSON.stringify(error)}`],

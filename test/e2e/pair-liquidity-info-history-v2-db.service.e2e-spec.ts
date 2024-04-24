@@ -60,7 +60,7 @@ describe('PairLiquidityInfoHistoryV2DbService', () => {
         reserve1: new Decimal(500),
         deltaReserve0: new Decimal(-500),
         deltaReserve1: new Decimal(-500),
-        aeUsdPrice: new Decimal(0),
+        aeUsdPrice: new Decimal(0.060559),
         height: 200002,
         microBlockHash: historyEntry2.microBlockHash,
         microBlockTime: 2000000000002n,
