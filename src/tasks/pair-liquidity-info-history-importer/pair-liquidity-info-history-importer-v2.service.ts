@@ -67,7 +67,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       `Syncing liquidity info history for ${pairsWithTokens.length} pairs.`,
     );
 
-    for (const pairWithTokens of pairsWithTokens.slice(3, 4)) {
+    for (const pairWithTokens of pairsWithTokens) {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
@@ -286,6 +286,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
     const microBlock = await this.mdwClient.getMicroBlock(
       pairContract.block_hash,
     );
+    const aeUsdPrice = await this.fetchPrice(parseInt(microBlock.time));
     await this.pairLiquidityInfoHistoryDb
       .upsert({
         pairId: pairWithTokens.id,
@@ -294,7 +295,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         reserve1: bigIntToDecimal(0n),
         deltaReserve0: bigIntToDecimal(0n),
         deltaReserve1: bigIntToDecimal(0n),
-        aeUsdPrice: bigIntToDecimal(0n),
+        aeUsdPrice: numberToDecimal(aeUsdPrice),
         height: parseInt(microBlock.height),
         microBlockHash: microBlock.hash,
         microBlockTime: BigInt(microBlock.time),
@@ -354,7 +355,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
     }
   }
 
-  private fetchPrice(microBlockTime: number): Promise<number> {
+  private async fetchPrice(microBlockTime: number): Promise<number> {
     return this.coinmarketcapClient
       .getHistoricalPriceDataThrottled(microBlockTime)
       .then((res) => res.data['1700'].quotes[0].quote.USD.price);
