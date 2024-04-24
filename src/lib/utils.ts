@@ -23,6 +23,9 @@ export const pluralize = (count: number, noun: string, suffix = 's') =>
 const parseEnv = (x) => x && JSON.parse(x);
 export const presentInvalidTokens = parseEnv(process.env.SHOW_INVALID_TOKENS);
 
+export const numberToDecimal = (number: number): Decimal =>
+  new Decimal(number.toString());
+
 export const bigIntToDecimal = (bigInt: bigint): Decimal =>
   new Decimal(bigInt.toString());
 

@@ -43,6 +43,7 @@
     "@prisma/client": "^5.10.2",
     "dex-contracts-v2": "github:aeternity/dex-contracts-v2",
     "dotenv": "^16.4.3",
+    "limiter": "^2.1.0",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.1",
     "rimraf": "^5.0.5",

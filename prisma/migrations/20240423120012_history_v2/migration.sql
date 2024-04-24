@@ -7,7 +7,7 @@ CREATE TABLE "PairLiquidityInfoHistoryV2" (
     "reserve1" DECIMAL(100,0) NOT NULL,
     "deltaReserve0" DECIMAL(100,0) NOT NULL,
     "deltaReserve1" DECIMAL(100,0) NOT NULL,
-    "fiatPrice" DECIMAL(100,0) NOT NULL,
+    "aeUsdPrice" DECIMAL(100,6) NOT NULL,
     "height" INTEGER NOT NULL,
     "microBlockHash" TEXT NOT NULL,
     "microBlockTime" BIGINT NOT NULL,
