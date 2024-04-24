@@ -70,7 +70,7 @@ export const historyEntry1: PairLiquidityInfoHistoryV2 = {
   reserve1: new Decimal(1000),
   deltaReserve0: new Decimal(1000),
   deltaReserve1: new Decimal(1000),
-  aeUsdPrice: new Decimal(0),
+  aeUsdPrice: new Decimal(0.050559),
   height: 100001,
   microBlockHash: 'mh_entry1',
   microBlockTime: 1000000000001n,
@@ -89,7 +89,7 @@ export const historyEntry2: PairLiquidityInfoHistoryV2 = {
   reserve1: new Decimal(950),
   deltaReserve0: new Decimal(50),
   deltaReserve1: new Decimal(-50),
-  aeUsdPrice: new Decimal(0),
+  aeUsdPrice: new Decimal(0.050559),
   height: 200002,
   microBlockHash: 'mh_entry2',
   microBlockTime: 2000000000002n,
@@ -108,7 +108,7 @@ export const historyEntry3: PairLiquidityInfoHistoryV2 = {
   reserve1: new Decimal(1000),
   deltaReserve0: new Decimal(1000),
   deltaReserve1: new Decimal(1000),
-  aeUsdPrice: new Decimal(0),
+  aeUsdPrice: new Decimal(0.050559),
   height: 300003,
   microBlockHash: 'mh_entry3',
   microBlockTime: 3000000000003n,
@@ -127,7 +127,7 @@ export const historyEntry4: PairLiquidityInfoHistoryV2 = {
   reserve1: new Decimal(950),
   deltaReserve0: new Decimal(50),
   deltaReserve1: new Decimal(-50),
-  aeUsdPrice: new Decimal(0),
+  aeUsdPrice: new Decimal(0.050559),
   height: 300003,
   microBlockHash: 'mh_entry3',
   microBlockTime: 3000000000003n,
@@ -254,4 +254,12 @@ export const contractLog8 = {
   event_hash: 'non_relevant_event_hash', // Something else
   height: '30003',
   log_idx: '3',
+};
+
+export const coinmarketCapResponseAeUsdQuoteData = {
+  data: {
+    1700: {
+      quotes: [{ quote: { USD: { price: 0.050559 } } }],
+    },
+  },
 };

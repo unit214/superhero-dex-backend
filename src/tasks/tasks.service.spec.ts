@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
+import { HttpService } from '@/clients/http.service';
 import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
 import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
@@ -27,6 +29,8 @@ describe('TasksService', () => {
         PairLiquidityInfoHistoryImporterV2Service,
         PairLiquidityInfoHistoryValidatorService,
         PairLiquidityInfoHistoryValidatorV2Service,
+        HttpService,
+        CoinmarketcapClientService,
         MdwHttpClientService,
         SdkClientService,
         PairDbService,

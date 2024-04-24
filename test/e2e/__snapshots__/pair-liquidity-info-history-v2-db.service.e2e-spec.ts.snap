@@ -2,10 +2,10 @@
 
 exports[`PairLiquidityInfoHistoryV2DbService upsert should correctly upsert an existing entry 1`] = `
 {
+  "aeUsdPrice": "0.060559",
   "deltaReserve0": "-500",
   "deltaReserve1": "-500",
   "eventType": "PairBurn",
-  "aeUsdPrice": "0",
   "height": 200002,
   "id": 222,
   "logIndex": 1,
