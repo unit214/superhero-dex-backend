@@ -1,4 +1,4 @@
-export type AEQuoteData = {
+export type aeUsdQuoteData = {
   1700: {
     id: number;
     name: string;
