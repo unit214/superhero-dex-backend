@@ -10,6 +10,7 @@ import { HttpService } from '@/clients/http.service';
 @Injectable()
 export class CoinmarketcapClientService {
   constructor(private httpService: HttpService) {}
+
   private readonly AE_CURRENCY_ID = 1700;
   private readonly COUNT = 1;
   private readonly INTERVAL = '24h';
