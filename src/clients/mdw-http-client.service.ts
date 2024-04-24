@@ -97,7 +97,9 @@ export class MdwHttpClientService {
     condition: (data: T) => boolean,
     next: string,
   ): Promise<T[]> {
-    const result = await this.get<MdwPaginatedResponse<T>>(next);
+    const result = await this.get<MdwPaginatedResponse<T>>(
+      next + `&int-as-string=${this.INT_AS_STRING}`,
+    );
 
     if (result.data.filter(condition).length === 0 && result.next) {
       return result.data.concat(
