@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PairLiquidityInfoHistoryV2 } from '@prisma/client';
 import { orderBy } from 'lodash';
 
+import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
 import { ContractLog } from '@/clients/mdw-http-client.model';
 import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
@@ -9,7 +10,7 @@ import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService, PairWithTokens } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryV2DbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-v2-db.service';
 import { PairLiquidityInfoHistoryV2ErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-v2-error-db.service';
-import { bigIntToDecimal, decimalToBigInt } from '@/lib/utils';
+import { bigIntToDecimal, decimalToBigInt, numberToDecimal } from '@/lib/utils';
 
 export enum EventType {
   Sync = 'Sync',
@@ -35,11 +36,12 @@ type DeltaReserveEvent = {
 @Injectable()
 export class PairLiquidityInfoHistoryImporterV2Service {
   constructor(
-    private mdwClient: MdwHttpClientService,
     private pairDb: PairDbService,
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryV2DbService,
     private pairLiquidityInfoHistoryErrorDb: PairLiquidityInfoHistoryV2ErrorDbService,
+    private mdwClient: MdwHttpClientService,
     private sdkClient: SdkClientService,
+    private coinmarketcapClient: CoinmarketcapClientService,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryImporterV2Service.name);
@@ -65,7 +67,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       `Syncing liquidity info history for ${pairsWithTokens.length} pairs.`,
     );
 
-    for (const pairWithTokens of pairsWithTokens) {
+    for (const pairWithTokens of pairsWithTokens.slice(3, 4)) {
       try {
         // If an error occurred for this pair recently, skip pair
         const error =
@@ -164,6 +166,9 @@ export class PairLiquidityInfoHistoryImporterV2Service {
               current.event.eventType === EventType.Sync &&
               succeeding.event.eventType !== EventType.Sync
             ) {
+              const aeUsdPrice = await this.fetchPrice(
+                parseInt(succeeding.log.block_time),
+              );
               liquidityInfo = {
                 pairId: pairWithTokens.id,
                 eventType: succeeding.event.eventType,
@@ -171,7 +176,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
                 reserve1: bigIntToDecimal(current.event.reserve1),
                 deltaReserve0: bigIntToDecimal(succeeding.event.deltaReserve0),
                 deltaReserve1: bigIntToDecimal(succeeding.event.deltaReserve1),
-                fiatPrice: bigIntToDecimal(0n),
+                aeUsdPrice: numberToDecimal(aeUsdPrice),
                 height: parseInt(succeeding.log.height),
                 microBlockHash: succeeding.log.block_hash,
                 microBlockTime: BigInt(succeeding.log.block_time),
@@ -185,6 +190,9 @@ export class PairLiquidityInfoHistoryImporterV2Service {
                 await this.pairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId(
                   pairWithTokens.id,
                 );
+              const aeUsdPrice = await this.fetchPrice(
+                parseInt(current.log.block_time),
+              );
               liquidityInfo = {
                 pairId: pairWithTokens.id,
                 eventType: current.event.eventType,
@@ -204,7 +212,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
                         decimalToBigInt(lastSyncedLog.reserve1),
                     )
                   : bigIntToDecimal(0n),
-                fiatPrice: bigIntToDecimal(0n),
+                aeUsdPrice: numberToDecimal(aeUsdPrice),
                 height: parseInt(current.log.height),
                 microBlockHash: current.log.block_hash,
                 microBlockTime: BigInt(current.log.block_time),
@@ -286,7 +294,7 @@ export class PairLiquidityInfoHistoryImporterV2Service {
         reserve1: bigIntToDecimal(0n),
         deltaReserve0: bigIntToDecimal(0n),
         deltaReserve1: bigIntToDecimal(0n),
-        fiatPrice: bigIntToDecimal(0n),
+        aeUsdPrice: bigIntToDecimal(0n),
         height: parseInt(microBlock.height),
         microBlockHash: microBlock.hash,
         microBlockTime: BigInt(microBlock.time),
@@ -344,5 +352,15 @@ export class PairLiquidityInfoHistoryImporterV2Service {
       default:
         return undefined;
     }
+  }
+
+  private fetchPrice(microBlockTime: number): Promise<number> {
+    return this.coinmarketcapClient
+      .getHistoricalPriceDataThrottled(microBlockTime)
+      .then((res) => res.data['1700'].quotes[0].quote.USD.price);
+    // .catch((err) => {
+    //   console.log(err);
+    //   return 0;
+    // });
   }
 }
