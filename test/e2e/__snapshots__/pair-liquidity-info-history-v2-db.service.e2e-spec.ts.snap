@@ -5,7 +5,7 @@ exports[`PairLiquidityInfoHistoryV2DbService upsert should correctly upsert an e
   "deltaReserve0": "-500",
   "deltaReserve1": "-500",
   "eventType": "PairBurn",
-  "fiatPrice": "0",
+  "aeUsdPrice": "0",
   "height": 200002,
   "id": 222,
   "logIndex": 1,

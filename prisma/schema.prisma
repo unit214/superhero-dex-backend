@@ -85,7 +85,7 @@ model PairLiquidityInfoHistoryV2 {
   reserve1         Decimal  @db.Decimal(100, 0)
   deltaReserve0    Decimal  @db.Decimal(100, 0)
   deltaReserve1    Decimal  @db.Decimal(100, 0)
-  fiatPrice        Decimal  @db.Decimal(100, 0)
+  aeUsdPrice       Decimal  @db.Decimal(100, 6)
   height           Int
   microBlockHash   String
   microBlockTime   BigInt
