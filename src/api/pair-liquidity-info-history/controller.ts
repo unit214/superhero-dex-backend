@@ -20,6 +20,7 @@ export class PairLiquidityInfoHistoryController {
   @Get()
   @ApiOperation({
     summary: 'Retrieve all entries of the pair liquidity info history',
+    deprecated: true,
   })
   @ApiQuery({
     name: 'limit',
