@@ -1,44 +1,60 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { Contract } from '@/clients/mdw-http-client.model';
 import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
-import { ContractAddress } from '@/clients/sdk-client.model';
 import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
-import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+import { bigIntToDecimal } from '@/lib/utils';
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import resetAllMocks = jest.resetAllMocks;
+import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
+import {
+  coinmarketcapResponseAeUsdQuoteData,
+  contractLog1,
+  contractLog2,
+  contractLog3,
+  contractLog4,
+  contractLog5,
+  contractLog6,
+  contractLog7,
+  contractLog8,
+  initialMicroBlock,
+  pairContract,
+  pairWithTokens,
+} from '@/test/mock-data/pair-liquidity-info-history-mock-data';
+
+const mockPairDb = { getAll: jest.fn() };
+
+const mockPairLiquidityInfoHistoryDb = {
+  getLastlySyncedLogByPairId: jest.fn(),
+  upsert: jest.fn(),
+};
+
+const mockPairLiquidityInfoHistoryErrorDb = {
+  getErrorWithinHours: jest.fn(),
+  upsert: jest.fn(),
+};
 
 const mockMdwClient = {
   getContract: jest.fn(),
   getMicroBlock: jest.fn(),
   getContractLogsUntilCondition: jest.fn(),
-  getContractBalancesAtMicroBlockHash: jest.fn(),
-  getAccountBalanceForContractAtMicroBlockHash: jest.fn(),
 };
 
-const mockPairDb = {
-  getAll: jest.fn(),
-};
-
-const mockPairLiquidityInfoHistoryDb = {
-  getLastlySyncedBlockByPairId: jest.fn(),
-  upsert: jest.fn(),
-};
-
-const mockPairLiquidityInfoHistoryErrorDb = {
-  getErrorByPairIdAndMicroBlockHashWithinHours: jest.fn(),
+const mockCoinmarketcapClient = {
+  getHistoricalPriceDataThrottled: jest.fn(),
 };
 
 describe('PairLiquidityInfoHistoryImporterService', () => {
   let service: PairLiquidityInfoHistoryImporterService;
+  let logSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PairLiquidityInfoHistoryImporterService,
-        SdkClientService,
-        { provide: MdwHttpClientService, useValue: mockMdwClient },
         { provide: PairDbService, useValue: mockPairDb },
         {
           provide: PairLiquidityInfoHistoryDbService,
@@ -48,114 +64,268 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
           provide: PairLiquidityInfoHistoryErrorDbService,
           useValue: mockPairLiquidityInfoHistoryErrorDb,
         },
+        { provide: MdwHttpClientService, useValue: mockMdwClient },
+        SdkClientService,
+        {
+          provide: CoinmarketcapClientService,
+          useValue: mockCoinmarketcapClient,
+        },
       ],
     }).compile();
     service = module.get<PairLiquidityInfoHistoryImporterService>(
       PairLiquidityInfoHistoryImporterService,
     );
+    logSpy = jest.spyOn(service.logger, 'log');
+    errorSpy = jest.spyOn(service.logger, 'error');
+    resetAllMocks();
   });
 
   describe('import', () => {
     it('should import liquidity correctly', async () => {
-      // Mock data
-      const pair1 = {
-        id: 1,
-        address: 'ct_pair' as ContractAddress,
-        token0: { address: 'ct_token0' },
-        token1: { address: 'ct_token1' },
-      };
-      const pair1Contract: Contract = {
-        aexn_type: '',
-        block_hash: 'mh_hash0',
-        contract: pair1.address,
-        source_tx_hash: 'th_',
-        source_tx_type: '',
-        create_tx: {},
-      };
-      const initialMicroBlock = {
-        hash: pair1Contract.block_hash,
-        height: '10000',
-        time: '1000000000000',
-      };
-      const pairContractLog1 = {
-        block_time: '1000000000001',
-        block_hash: 'mh_hash1',
-        height: '10001',
-      };
-      const pairContractLog2 = {
-        block_time: '1000000000002',
-        block_hash: 'mh_hash2',
-        height: '10002',
-      };
-
       // Mock functions
-      mockPairDb.getAll.mockResolvedValue([pair1]);
-      mockPairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours.mockResolvedValue(
+      mockPairDb.getAll.mockResolvedValue([pairWithTokens]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours.mockResolvedValue(
         undefined,
       );
-      mockPairLiquidityInfoHistoryDb.getLastlySyncedBlockByPairId.mockReturnValue(
-        undefined,
-      );
-      mockMdwClient.getContract.mockResolvedValue(pair1Contract);
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({
+          reserve0: bigIntToDecimal(100n),
+          reserve1: bigIntToDecimal(100n),
+        });
+      mockMdwClient.getContract.mockResolvedValue(pairContract);
       mockMdwClient.getMicroBlock.mockResolvedValue(initialMicroBlock);
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketcapResponseAeUsdQuoteData,
+      );
       mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
-        pairContractLog1,
-        pairContractLog2,
+        contractLog1,
+        contractLog2,
+        contractLog3,
+        contractLog4,
+        contractLog5,
+        contractLog6,
+        contractLog7,
+        contractLog8,
       ]);
-      mockMdwClient.getContractBalancesAtMicroBlockHash.mockResolvedValue([
-        { amount: '1' },
-        { amount: '1' },
-      ]);
-      mockMdwClient.getAccountBalanceForContractAtMicroBlockHash.mockResolvedValue(
-        { amount: '1' },
-      );
-      jest.spyOn(service.logger, 'log');
 
       // Start import
       await service.import();
 
       // Assertions
-      // Insert initial liquidity
-      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
-        pairId: pair1.id,
-        totalSupply: '0',
-        reserve0: '0',
-        reserve1: '0',
-        height: parseInt(initialMicroBlock.height),
-        microBlockHash: initialMicroBlock.hash,
-        microBlockTime: BigInt(initialMicroBlock.time),
-      });
+      expect(errorSpy.mock.calls).toEqual([]);
+
+      expect(logSpy.mock.calls).toEqual([
+        ['Started syncing pair liquidity info history.'],
+        ['Syncing liquidity info history for 1 pairs.'],
+        [
+          `Inserted initial liquidity for pair ${pairWithTokens.id} ${pairWithTokens.address}.`,
+        ],
+        [
+          `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced 4 log(s).`,
+        ],
+        ['Finished liquidity info history sync for all pairs.'],
+      ]);
+
       expect(
-        mockPairLiquidityInfoHistoryErrorDb.getErrorByPairIdAndMicroBlockHashWithinHours,
-      ).toHaveBeenCalledTimes(3);
-      expect(service.logger.log).toHaveBeenCalledWith(
-        `Started syncing pair ${pair1.id} ${pair1.address}. Need to sync 2 micro block(s). This can take some time.`,
+        mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours,
+      ).toHaveBeenCalledTimes(5); // Once for pair and 4 times for each inserted event
+
+      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledTimes(5);
+      expect(
+        mockPairLiquidityInfoHistoryDb.upsert.mock.calls,
+      ).toMatchSnapshot();
+    });
+
+    it('should skip a pair if there was a recent error', async () => {
+      // Mock functions
+      mockPairDb.getAll.mockResolvedValue([pairWithTokens]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours.mockResolvedValue(
+        {
+          id: 1,
+          pairId: 1,
+          microBlockHash: '',
+          transactionHash: '',
+          logIndex: -1,
+          error: 'error',
+          timesOccurred: 1,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
       );
-      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
-        pairId: pair1.id,
-        totalSupply: '2',
-        reserve0: '1',
-        reserve1: '1',
-        height: parseInt(pairContractLog1.height),
-        microBlockHash: pairContractLog1.block_hash,
-        microBlockTime: BigInt(pairContractLog1.block_time),
-      });
-      expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledWith({
-        pairId: pair1.id,
-        totalSupply: '2',
-        reserve0: '1',
-        reserve1: '1',
-        height: parseInt(pairContractLog2.height),
-        microBlockHash: pairContractLog2.block_hash,
-        microBlockTime: BigInt(pairContractLog2.block_time),
-      });
-      expect(service.logger.log).toHaveBeenCalledWith(
-        `Completed sync for pair ${pair1.id} ${pair1.address}. Synced 2 micro block(s).`,
+
+      // Start import
+      await service.import();
+
+      // Assertions
+      expect(errorSpy.mock.calls).toEqual([]);
+
+      expect(logSpy.mock.calls).toEqual([
+        ['Started syncing pair liquidity info history.'],
+        ['Syncing liquidity info history for 1 pairs.'],
+        [`Skipped pair ${pairWithTokens.id} due to recent error.`],
+        ['Finished liquidity info history sync for all pairs.'],
+      ]);
+    });
+
+    it('should skip a log if there was a recent error', async () => {
+      // Mock functions
+      mockPairDb.getAll.mockResolvedValue([pairWithTokens]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({
+          id: 1,
+          pairId: 1,
+          microBlockHash: contractLog1.block_hash,
+          transactionHash: contractLog1.call_tx_hash,
+          logIndex: contractLog1.log_idx,
+          error: 'error',
+          timesOccurred: 1,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        })
+        .mockResolvedValueOnce(undefined);
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId.mockResolvedValue(
+        {},
       );
-      expect(service.logger.log).toHaveBeenCalledWith(
-        'Finished liquidity info history sync for all pairs.',
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketcapResponseAeUsdQuoteData,
       );
+      mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
+      mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
+        contractLog1,
+        contractLog2,
+        contractLog4,
+        contractLog5,
+      ]);
+
+      // Start import
+      await service.import();
+
+      // Assertions
+      expect(errorSpy.mock.calls).toEqual([]);
+
+      expect(logSpy.mock.calls).toEqual([
+        ['Started syncing pair liquidity info history.'],
+        ['Syncing liquidity info history for 1 pairs.'],
+        [
+          `Skipped log with block hash ${contractLog1.block_hash} tx hash ${contractLog1.call_tx_hash} and log index ${contractLog1.log_idx} due to recent error.`,
+        ],
+        [
+          `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced 1 log(s).`,
+        ],
+        ['Finished liquidity info history sync for all pairs.'],
+      ]);
+
+      expect(
+        mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours,
+      ).toHaveBeenCalledTimes(3); // Once for pair and 2 times for each event
+
+      expect(
+        mockPairLiquidityInfoHistoryDb.upsert.mock.calls,
+      ).toMatchSnapshot();
+    });
+
+    it('should catch and insert an error on pair level', async () => {
+      const error = {
+        pairId: pairWithTokens.id,
+        microBlockHash: '',
+        transactionHash: '',
+        logIndex: -1,
+        error: 'Error: error',
+      };
+
+      // Mock functions
+      mockPairDb.getAll.mockResolvedValue([pairWithTokens]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours.mockResolvedValue(
+        undefined,
+      );
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId.mockResolvedValue(
+        {},
+      );
+      mockMdwClient.getContractLogsUntilCondition.mockRejectedValue(
+        new Error('error'),
+      );
+      mockPairLiquidityInfoHistoryErrorDb.upsert.mockResolvedValue(null);
+
+      // Start import
+      await service.import();
+
+      // Assertions
+      expect(errorSpy.mock.calls).toEqual([
+        [`Skipped pair. ${JSON.stringify(error)}`],
+      ]);
+
+      expect(logSpy.mock.calls).toEqual([
+        ['Started syncing pair liquidity info history.'],
+        ['Syncing liquidity info history for 1 pairs.'],
+        ['Finished liquidity info history sync for all pairs.'],
+      ]);
+
+      expect(mockPairLiquidityInfoHistoryErrorDb.upsert).toHaveBeenCalledWith(
+        error,
+      );
+    });
+
+    it('should catch and insert an error on log level', async () => {
+      const error = {
+        pairId: pairWithTokens.id,
+        microBlockHash: contractLog3.block_hash,
+        transactionHash: contractLog3.call_tx_hash,
+        logIndex: parseInt(contractLog3.log_idx),
+        error: 'Error: error',
+      };
+
+      // Mock functions
+      mockPairDb.getAll.mockResolvedValue([pairWithTokens]);
+      mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours.mockResolvedValue(
+        undefined,
+      );
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId
+        .mockResolvedValueOnce({})
+        .mockRejectedValueOnce(new Error('error'))
+        .mockRejectedValueOnce(undefined);
+      mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
+        contractLog3,
+        contractLog4,
+        contractLog5,
+      ]);
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
+        coinmarketcapResponseAeUsdQuoteData,
+      );
+      mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
+      mockPairLiquidityInfoHistoryErrorDb.upsert.mockResolvedValue(null);
+
+      // Start import
+      await service.import();
+
+      // Assertions
+
+      expect(errorSpy.mock.calls).toEqual([
+        [`Skipped log. ${JSON.stringify(error)}`],
+      ]);
+
+      expect(logSpy.mock.calls).toEqual([
+        ['Started syncing pair liquidity info history.'],
+        ['Syncing liquidity info history for 1 pairs.'],
+        [
+          `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced 1 log(s).`,
+        ],
+        ['Finished liquidity info history sync for all pairs.'],
+      ]);
+
+      expect(mockPairLiquidityInfoHistoryErrorDb.upsert).toHaveBeenCalledWith(
+        error,
+      );
+
+      expect(errorSpy.mock.calls).toEqual([
+        [`Skipped log. ${JSON.stringify(error)}`],
+      ]);
+
+      expect(
+        mockPairLiquidityInfoHistoryDb.upsert.mock.calls,
+      ).toMatchSnapshot();
     });
   });
 });

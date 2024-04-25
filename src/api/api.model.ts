@@ -258,6 +258,7 @@ export enum OrderQueryEnum {
   desc = 'desc',
 }
 
+// TODO adjust
 export class PairLiquidityInfoHistoryEntry {
   @ApiProperty(pairAddressPropertyOptions)
   pairAddress: string;
