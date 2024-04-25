@@ -42,6 +42,8 @@ const errorEntry1: PairLiquidityInfoHistoryError = {
   id: 1,
   pairId: 1,
   microBlockHash: '',
+  transactionHash: '',
+  logIndex: -1,
   error: 'error_1',
   timesOccurred: 1,
   createdAt: new Date('2024-01-01 12:00:00.000'),
@@ -51,6 +53,8 @@ const errorEntry2: PairLiquidityInfoHistoryError = {
   id: 2,
   pairId: 1,
   microBlockHash: 'mh_1',
+  transactionHash: 'th_1',
+  logIndex: 1,
   error: 'error_2',
   timesOccurred: 1,
   createdAt: new Date('2024-01-01 12:00:00.000'),
@@ -92,32 +96,20 @@ describe('PairLiquidityInfoHistoryErrorDbService', () => {
     await prismaService.$disconnect();
   });
 
-  describe('getErrorByPairIdAndMicroBlockHashWithinHours', () => {
-    it('should correctly return an error within a recent given time window in hours by pairId', async () => {
+  describe('getErrorWithinHours', () => {
+    it('should correctly return an error within a recent given time window in hours on pair basis', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2024-01-01 17:59:00.000'));
-      const result = await service.getErrorByPairIdAndMicroBlockHashWithinHours(
-        1,
-        '',
-        6,
-      );
+      const result = await service.getErrorWithinHours(1, '', '', -1, 6);
       expect(result?.id).toEqual(1);
     });
 
-    it('should correctly return an error within a recent given time window in hours by pairId and microBlockHash', async () => {
-      const result = await service.getErrorByPairIdAndMicroBlockHashWithinHours(
-        1,
-        'mh_1',
-        6,
-      );
+    it('should correctly return an error within a recent given time window in hours on log basis', async () => {
+      const result = await service.getErrorWithinHours(1, 'mh_1', 'th_1', 1, 6);
       expect(result?.id).toEqual(2);
     });
 
     it('should not return errors older than the given time window in hours', async () => {
-      const result = await service.getErrorByPairIdAndMicroBlockHashWithinHours(
-        1,
-        '',
-        5,
-      );
+      const result = await service.getErrorWithinHours(1, '', '', -1, 5);
       expect(result).toBe(null);
     });
   });

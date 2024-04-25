@@ -7,15 +7,19 @@ import { PrismaService } from '@/database/prisma.service';
 export class PairLiquidityInfoHistoryErrorDbService {
   constructor(private prisma: PrismaService) {}
 
-  getErrorByPairIdAndMicroBlockHashWithinHours(
+  getErrorWithinHours(
     pairId: number,
     microBlockHash: string,
+    transactionHash: string,
+    logIndex: number,
     withinHours: number,
   ): Promise<PairLiquidityInfoHistoryError | null> {
     return this.prisma.pairLiquidityInfoHistoryError.findFirst({
       where: {
         pairId: pairId,
         microBlockHash: microBlockHash,
+        transactionHash: transactionHash,
+        logIndex: logIndex,
         updatedAt: {
           gt: new Date(Date.now() - withinHours * 60 * 60 * 1000),
         },
@@ -31,9 +35,11 @@ export class PairLiquidityInfoHistoryErrorDbService {
   ) {
     return this.prisma.pairLiquidityInfoHistoryError.upsert({
       where: {
-        pairIdMicroBlockHashErrorUniqueIndex: {
+        pairIdMicroBlockHashTxHashLogIndexErrorUniqueIndex: {
           pairId: data.pairId,
           microBlockHash: data.microBlockHash,
+          transactionHash: data.transactionHash,
+          logIndex: data.logIndex,
           error: data.error,
         },
       },
@@ -41,6 +47,8 @@ export class PairLiquidityInfoHistoryErrorDbService {
       create: {
         pairId: data.pairId,
         microBlockHash: data.microBlockHash,
+        transactionHash: data.transactionHash,
+        logIndex: data.logIndex,
         error: data.error,
       },
     });

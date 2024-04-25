@@ -7,8 +7,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
-import * as dto from '@/api/api.model';
-import { OrderQueryEnum } from '@/api/api.model';
+import { OrderQueryEnum, PairLiquidityInfoHistoryEntry } from '@/api/api.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
 
@@ -68,7 +67,7 @@ export class PairLiquidityInfoHistoryController {
       'Retrieve only history entries that are equal or older than the given micro block time',
     required: false,
   })
-  @ApiResponse({ status: 200, type: [dto.PairLiquidityInfoHistoryEntry] })
+  @ApiResponse({ status: 200, type: [PairLiquidityInfoHistoryEntry] })
   async findAll(
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 100,
     @Query('offset', new ParseIntPipe({ optional: true })) offset: number = 0,
@@ -80,7 +79,7 @@ export class PairLiquidityInfoHistoryController {
     fromBlockTime?: number,
     @Query('to-block-time', new ParseIntPipe({ optional: true }))
     toBlockTime?: number,
-  ): Promise<dto.PairLiquidityInfoHistoryEntry[]> {
+  ): Promise<PairLiquidityInfoHistoryEntry[]> {
     return this.pairLiquidityInfoHistoryService
       .getAllHistoryEntries(
         Number(limit),
@@ -92,17 +91,23 @@ export class PairLiquidityInfoHistoryController {
         toBlockTime != null ? BigInt(toBlockTime) : undefined,
       )
       .then((entries) =>
-        entries.map((entry) => ({
-          pairAddress: entry.pair.address,
-          liquidityInfo: {
-            totalSupply: entry.totalSupply,
-            reserve0: entry.reserve0,
-            reserve1: entry.reserve1,
+        entries.map(() =>
+          //   {
+          //   pairAddress: entry.pair.address,
+          //   liquidityInfo: {
+          //     totalSupply: entry.totalSupply,
+          //     reserve0: entry.reserve0,
+          //     reserve1: entry.reserve1,
+          //   },
+          //   height: entry.height,
+          //   microBlockHash: entry.microBlockHash,
+          //   microBlockTime: entry.microBlockTime.toString(),
+          // }
+          {
+            // TODO adjust
+            return {} as PairLiquidityInfoHistoryEntry;
           },
-          height: entry.height,
-          microBlockHash: entry.microBlockHash,
-          microBlockTime: entry.microBlockTime.toString(),
-        })),
+        ),
       );
   }
 }

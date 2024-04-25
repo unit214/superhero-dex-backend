@@ -1,106 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { omit } from 'lodash';
 
 import { OrderQueryEnum } from '@/api/api.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { PrismaService } from '@/database/prisma.service';
-
-const token1: Token = {
-  id: 1,
-  address: 'ct_token1',
-  symbol: '1',
-  name: '1',
-  decimals: 18,
-  malformed: false,
-  noContract: false,
-  listed: false,
-};
-const token2: Token = {
-  id: 2,
-  address: 'ct_token2',
-  symbol: '2',
-  name: '2',
-  decimals: 18,
-  malformed: false,
-  noContract: false,
-  listed: false,
-};
-const token3: Token = {
-  id: 3,
-  address: 'ct_token3',
-  symbol: '3',
-  name: '3',
-  decimals: 18,
-  malformed: false,
-  noContract: false,
-  listed: false,
-};
-const pair1: Pair = {
-  id: 1,
-  address: 'ct_pair1',
-  t0: 1,
-  t1: 2,
-  synchronized: true,
-};
-const pair2: Pair = {
-  id: 2,
-  address: 'ct_pair2',
-  t0: 2,
-  t1: 3,
-  synchronized: true,
-};
-const pair3: Pair = {
-  id: 3,
-  address: 'ct_pair4',
-  t0: 2,
-  t1: 3,
-  synchronized: true,
-};
-const historyEntry1: PairLiquidityInfoHistory = {
-  id: 1,
-  pairId: 1,
-  totalSupply: '2000148656239820912122563',
-  reserve0: '950875688379385634428666',
-  reserve1: '4208476309359648851631167',
-  height: 100001,
-  microBlockHash: 'mh_entry1',
-  microBlockTime: 1000000000001n,
-  updatedAt: new Date(),
-};
-const historyEntry2: PairLiquidityInfoHistory = {
-  id: 2,
-  pairId: 1,
-  totalSupply: '9954575303087659158151',
-  reserve0: '20210309618736130321327',
-  reserve1: '4903471477408475598460',
-  height: 200002,
-  microBlockHash: 'mh_entry2',
-  microBlockTime: 2000000000002n,
-  updatedAt: new Date(),
-};
-const historyEntry3: PairLiquidityInfoHistory = {
-  id: 3,
-  pairId: 2,
-  totalSupply: '56931443813890767374824',
-  reserve0: '20556919390913460010617',
-  reserve1: '157691178959228289022449',
-  height: 300003,
-  microBlockHash: 'mh_entry3',
-  microBlockTime: 3000000000003n,
-  updatedAt: new Date(),
-};
-const historyEntry4: PairLiquidityInfoHistory = {
-  id: 4,
-  pairId: 2,
-  totalSupply: '56931443813890767374824',
-  reserve0: '20556919390913460010617',
-  reserve1: '157691178959228289022449',
-  height: 300003,
-  microBlockHash: 'mh_entry4',
-  microBlockTime: 4000000000004n,
-  updatedAt: new Date(),
-};
+import { EventType } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import {
+  historyEntry1,
+  historyEntry2,
+  historyEntry3,
+  historyEntry4,
+  pair1,
+  pair2,
+  pair3,
+  token1,
+  token2,
+  token3,
+} from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 describe('PairLiquidityInfoHistoryDbService', () => {
   let service: PairLiquidityInfoHistoryDbService;
@@ -121,7 +39,7 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     await prismaService.token.createMany({ data: [token1, token2, token3] });
     await prismaService.pair.createMany({ data: [pair1, pair2, pair3] });
     await prismaService.pairLiquidityInfoHistory.createMany({
-      data: [historyEntry1, historyEntry2, historyEntry3, historyEntry4],
+      data: [historyEntry4, historyEntry2, historyEntry3, historyEntry1],
     });
   });
 
@@ -135,15 +53,100 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     await prismaService.$disconnect();
   });
 
+  describe('upsert', () => {
+    it('should correctly upsert an existing entry', async () => {
+      const updatedEntry = {
+        pairId: historyEntry2.pairId,
+        eventType: EventType.PairBurn,
+        reserve0: new Decimal(500),
+        reserve1: new Decimal(500),
+        deltaReserve0: new Decimal(-500),
+        deltaReserve1: new Decimal(-500),
+        aeUsdPrice: new Decimal(0.060559),
+        height: 200002,
+        microBlockHash: historyEntry2.microBlockHash,
+        microBlockTime: 2000000000002n,
+        transactionHash: historyEntry2.transactionHash,
+        transactionIndex: 200002n,
+        logIndex: historyEntry2.logIndex,
+      };
+      await service.upsert(updatedEntry);
+      const entry = await prismaService.pairLiquidityInfoHistory.findUnique({
+        where: { id: historyEntry2.id },
+      });
+      expect(omit(entry, ['createdAt', 'updatedAt'])).toMatchSnapshot();
+    });
+
+    it('should correctly insert an new entry', async () => {
+      const newEntry = {
+        pairId: 1,
+        eventType: EventType.PairBurn,
+        reserve0: new Decimal(500),
+        reserve1: new Decimal(500),
+        deltaReserve0: new Decimal(-500),
+        deltaReserve1: new Decimal(-500),
+        aeUsdPrice: new Decimal(0),
+        height: 500005,
+        microBlockHash: 'mh_entry5',
+        microBlockTime: 5000000000005n,
+        transactionHash: 'th_entry5',
+        transactionIndex: 500005n,
+        logIndex: 1,
+      };
+      await service.upsert(newEntry);
+      const entry = await service.getLastlySyncedLogByPairId(1);
+      expect(entry?.microBlockHash).toEqual('mh_entry5');
+    });
+  });
+
+  describe('getLastlySyncedLogByPairId', () => {
+    it('should correctly return the last synced log for a given pairId', async () => {
+      const result1 = await service.getLastlySyncedLogByPairId(1);
+      const result2 = await service.getLastlySyncedLogByPairId(2);
+      expect(result1?.id).toEqual(historyEntry2.id);
+      expect(result2?.id).toEqual(historyEntry4.id);
+    });
+  });
+
+  describe('getWithinHeightSortedWithPair', () => {
+    it('should correctly return all entries greater or equal a given height limit sorted ascending', async () => {
+      const result = await service.getWithinHeightSortedWithPair(200002);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry2.id,
+        historyEntry3.id,
+        historyEntry4.id,
+      ]);
+    });
+  });
+
+  describe('deleteFromMicroBlockTime', () => {
+    it('should correctly delete all entries newer or equal a given block time', async () => {
+      await service.deleteFromMicroBlockTime(3000000000003n);
+      const result = await prismaService.pairLiquidityInfoHistory.findMany();
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry2.id,
+        historyEntry1.id,
+      ]);
+    });
+  });
+
   describe('getAll', () => {
     it('should return all entries', async () => {
       const result = await service.getAll(100, 0, OrderQueryEnum.asc);
-      expect(result.map((e) => e.id)).toEqual([1, 2, 3, 4]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry1.id,
+        historyEntry2.id,
+        historyEntry3.id,
+        historyEntry4.id,
+      ]);
     });
 
     it('should return return entries with limit, offset and order', async () => {
       const result = await service.getAll(2, 1, OrderQueryEnum.desc);
-      expect(result.map((e) => e.id)).toEqual([3, 2]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry3.id,
+        historyEntry2.id,
+      ]);
     });
 
     it('should correctly filter by pair address', async () => {
@@ -156,7 +159,10 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         undefined,
         undefined,
       );
-      expect(result.map((e) => e.id)).toEqual([1, 2]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry1.id,
+        historyEntry2.id,
+      ]);
     });
 
     it('should correctly filter by height', async () => {
@@ -169,7 +175,10 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         undefined,
         undefined,
       );
-      expect(result.map((e) => e.id)).toEqual([3, 4]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry3.id,
+        historyEntry4.id,
+      ]);
     });
 
     it('should correctly return entries newer or equal fromBlockTime', async () => {
@@ -182,7 +191,11 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         2000000000002n,
         undefined,
       );
-      expect(result.map((e) => e.id)).toEqual([2, 3, 4]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry2.id,
+        historyEntry3.id,
+        historyEntry4.id,
+      ]);
     });
 
     it('should correctly return entries older or equal toBlockTime', async () => {
@@ -195,29 +208,12 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         undefined,
         3000000000003n,
       );
-      expect(result.map((e) => e.id)).toEqual([3, 2, 1]);
-    });
-  });
-
-  describe('getLastlySyncedBlockByPairId', () => {
-    it('should correctly return the last synced block for a given pairId', async () => {
-      const result = await service.getLastlySyncedBlockByPairId(1);
-      expect(result?.microBlockTime).toEqual(2000000000002n);
-    });
-  });
-
-  describe('getWithinHeightSorted', () => {
-    it('should correctly return all entries greater or equal a given height limit sorted by microBlockTime ascending', async () => {
-      const result = await service.getWithinHeightSorted(200002);
-      expect(result.map((e) => e.id)).toEqual([2, 3, 4]);
-    });
-  });
-
-  describe('deleteFromMicroBlockTime', () => {
-    it('should correctly delete all entries newer or equal a given block time', async () => {
-      await service.deleteFromMicroBlockTime(3000000000003n);
-      const result = await prismaService.pairLiquidityInfoHistory.findMany();
-      expect(result.map((e) => e.id)).toEqual([1, 2]);
+      expect(result.map((e) => e.id)).toEqual([
+        historyEntry4.id,
+        historyEntry3.id,
+        historyEntry2.id,
+        historyEntry1.id,
+      ]);
     });
   });
 });
