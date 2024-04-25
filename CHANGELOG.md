@@ -6,6 +6,7 @@
 ### Miscellaneous
 
 * upgrade aepp-sdk to 13.3.2 ([a780d2b](https://www.github.com/unit214/superhero-dex-backend/commit/a780d2bad9c1c640707ffc6e904bb49ebad928d2))
+* mark history/liquidity endpoint as deprecated  ([8be1984](https://github.com/unit214/superhero-dex-backend/commit/8be1984a1b55ba0cc50075b87421a993af8911b8))
 
 ## [1.2.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.1.1...v1.2.0) (2024-03-22)
 
