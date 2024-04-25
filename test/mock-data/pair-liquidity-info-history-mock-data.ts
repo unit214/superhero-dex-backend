@@ -1,9 +1,9 @@
-import { Pair, PairLiquidityInfoHistoryV2, Token } from '@prisma/client';
+import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { Contract } from '@/clients/mdw-http-client.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
-import { EventType } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer-v2.service';
+import { EventType } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 
 export const token1: Token = {
   id: 1,
@@ -62,7 +62,7 @@ export const pair3: Pair = {
   synchronized: true,
 };
 
-export const historyEntry1: PairLiquidityInfoHistoryV2 = {
+export const historyEntry1: PairLiquidityInfoHistory = {
   id: 111,
   pairId: 1,
   eventType: EventType.PairMint,
@@ -81,7 +81,7 @@ export const historyEntry1: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 
-export const historyEntry2: PairLiquidityInfoHistoryV2 = {
+export const historyEntry2: PairLiquidityInfoHistory = {
   id: 222,
   pairId: 1,
   eventType: EventType.SwapTokens,
@@ -100,7 +100,7 @@ export const historyEntry2: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 
-export const historyEntry3: PairLiquidityInfoHistoryV2 = {
+export const historyEntry3: PairLiquidityInfoHistory = {
   id: 333,
   pairId: 2,
   eventType: EventType.PairMint,
@@ -119,7 +119,7 @@ export const historyEntry3: PairLiquidityInfoHistoryV2 = {
   updatedAt: new Date(),
 };
 
-export const historyEntry4: PairLiquidityInfoHistoryV2 = {
+export const historyEntry4: PairLiquidityInfoHistory = {
   id: 444,
   pairId: 2,
   eventType: EventType.SwapTokens,

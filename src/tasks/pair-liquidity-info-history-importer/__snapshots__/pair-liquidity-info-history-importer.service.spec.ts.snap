@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PairLiquidityInfoHistoryImporterV2Service import should import liquidity correctly 1`] = `
+exports[`PairLiquidityInfoHistoryImporterService import should import liquidity correctly 1`] = `
 [
   [
     {
@@ -90,7 +90,7 @@ exports[`PairLiquidityInfoHistoryImporterV2Service import should import liquidit
 ]
 `;
 
-exports[`PairLiquidityInfoHistoryImporterV2Service import should skip a log if there was a recent error 1`] = `
+exports[`PairLiquidityInfoHistoryImporterService import should skip a log if there was a recent error 1`] = `
 [
   [
     {
@@ -112,7 +112,7 @@ exports[`PairLiquidityInfoHistoryImporterV2Service import should skip a log if t
 ]
 `;
 
-exports[`PairLiquidityInfoHistoryImporterV2Service import should catch and insert an error on log level 1`] = `
+exports[`PairLiquidityInfoHistoryImporterService import should catch and insert an error on log level 1`] = `
 [
   [
     {
