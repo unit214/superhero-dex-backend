@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.1](https://www.github.com/unit214/superhero-dex-backend/compare/v1.2.0...v1.2.1) (2024-04-25)
+
+
+### Miscellaneous
+
+* upgrade aepp-sdk to 13.3.2 ([a780d2b](https://www.github.com/unit214/superhero-dex-backend/commit/a780d2bad9c1c640707ffc6e904bb49ebad928d2))
+
 ## [1.2.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.1.1...v1.2.0) (2024-03-22)
 
 
