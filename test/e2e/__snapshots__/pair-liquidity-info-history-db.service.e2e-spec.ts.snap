@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PairLiquidityInfoHistoryV2DbService upsert should correctly upsert an existing entry 1`] = `
+exports[`PairLiquidityInfoHistoryDbService upsert should correctly upsert an existing entry 1`] = `
 {
   "aeUsdPrice": "0.060559",
   "deltaReserve0": "-500",

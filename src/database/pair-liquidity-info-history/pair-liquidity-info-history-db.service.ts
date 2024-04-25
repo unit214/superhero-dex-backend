@@ -9,6 +9,23 @@ import { PrismaService } from '@/database/prisma.service';
 export class PairLiquidityInfoHistoryDbService {
   constructor(private prisma: PrismaService) {}
 
+  upsert(
+    data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt' | 'createdAt'>,
+  ) {
+    return this.prisma.pairLiquidityInfoHistory.upsert({
+      where: {
+        pairIdMicroBlockHashTxHashLogIndexUniqueIndex: {
+          pairId: data.pairId,
+          microBlockHash: data.microBlockHash,
+          transactionHash: data.transactionHash,
+          logIndex: data.logIndex,
+        },
+      },
+      update: data,
+      create: data,
+    });
+  }
+
   getAll = (
     limit: number,
     offset: number,
@@ -32,57 +49,49 @@ export class PairLiquidityInfoHistoryDbService {
       },
       orderBy:
         order != null
-          ? {
-              microBlockTime: order,
-            }
+          ? [
+              { microBlockTime: order },
+              { transactionIndex: order },
+              { logIndex: order },
+            ]
           : {},
       take: limit,
       skip: offset,
     });
 
-  getCountByPairId(pairId: number) {
-    return this.prisma.pairLiquidityInfoHistory.count({
-      where: {
-        pairId: pairId,
-      },
-    });
-  }
-  getLastlySyncedBlockByPairId(pairId: number) {
+  getLastlySyncedLogByPairId(pairId: number) {
     return this.prisma.pairLiquidityInfoHistory.findFirst({
       where: {
         pairId,
       },
-      orderBy: [{ height: 'desc' }, { microBlockTime: 'desc' }],
-      select: {
-        height: true,
-        microBlockTime: true,
-      },
+      orderBy: [
+        { microBlockTime: 'desc' },
+        { transactionIndex: 'desc' },
+        { logIndex: 'desc' },
+      ],
     });
   }
 
-  getWithinHeightSorted(heightLimit: number) {
+  getWithinHeightSortedWithPair(heightLimit: number) {
     return this.prisma.pairLiquidityInfoHistory.findMany({
       where: {
         height: {
           gte: heightLimit,
         },
       },
-      orderBy: {
-        microBlockTime: 'asc',
-      },
-    });
-  }
-
-  upsert(data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt'>) {
-    return this.prisma.pairLiquidityInfoHistory.upsert({
-      where: {
-        pairIdMicroBlockHashUniqueIndex: {
-          pairId: data.pairId,
-          microBlockHash: data.microBlockHash,
+      orderBy: [
+        { microBlockTime: 'asc' },
+        { transactionIndex: 'asc' },
+        { logIndex: 'asc' },
+      ],
+      include: {
+        pair: {
+          include: {
+            token0: true,
+            token1: true,
+          },
         },
       },
-      update: data,
-      create: data,
     });
   }
 
