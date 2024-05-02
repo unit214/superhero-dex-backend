@@ -92,7 +92,7 @@ jobs:
         uses: aeternity/ae-github-actions/argocd-deploy@v4
         with:
           git-sha: ${{ steps.git-sha.outputs.GIT_SHA }}
-          url-prefix: ${{ steps.release_tag.outputs.TAG }}}
+          url-prefix: ${{ steps.release_tag.outputs.TAG }}
           env: ${{ env.ENV }}
           app: ${{ env.APP }}
 
