@@ -359,9 +359,5 @@ export class PairLiquidityInfoHistoryImporterService {
     return this.coinmarketcapClient
       .getHistoricalPriceDataThrottled(microBlockTime)
       .then((res) => res.data['1700'].quotes[0].quote.USD.price);
-    // .catch((err) => {
-    //   console.log(err);
-    //   return 0;
-    // });
   }
 }
