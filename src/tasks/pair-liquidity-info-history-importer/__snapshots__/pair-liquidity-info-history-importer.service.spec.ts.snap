@@ -112,7 +112,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should skip a log if the
 ]
 `;
 
-exports[`PairLiquidityInfoHistoryImporterService import should catch and insert an error on log level 1`] = `
+exports[`PairLiquidityInfoHistoryImporterService import should catch and insert any error on log level (e.g. API rate limit reached) 1`] = `
 [
   [
     {

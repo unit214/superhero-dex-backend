@@ -268,13 +268,15 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       );
     });
 
-    it('should catch and insert an error on log level', async () => {
+    it('should catch and insert any error on log level (e.g. API rate limit reached)', async () => {
+      const errorMessage =
+        "You've exceeded your API Key's HTTP request rate limit. Rate limits reset every minute.";
       const error = {
         pairId: pairWithTokens.id,
         microBlockHash: contractLog3.block_hash,
         transactionHash: contractLog3.call_tx_hash,
         logIndex: parseInt(contractLog3.log_idx),
-        error: 'Error: error',
+        error: `Error: ${errorMessage}`,
       };
 
       // Mock functions
@@ -282,26 +284,26 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
       mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours.mockResolvedValue(
         undefined,
       );
-      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId
-        .mockResolvedValueOnce({})
-        .mockRejectedValueOnce(new Error('error'))
-        .mockRejectedValueOnce(undefined);
       mockMdwClient.getContractLogsUntilCondition.mockResolvedValue([
         contractLog3,
         contractLog4,
         contractLog5,
       ]);
-      mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
-        coinmarketcapResponseAeUsdQuoteData,
-      );
-      mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValue(null);
-      mockPairLiquidityInfoHistoryErrorDb.upsert.mockResolvedValue(null);
+      mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined);
+      mockCoinmarketcapClient.getHistoricalPriceDataThrottled
+        .mockRejectedValueOnce(new Error(errorMessage))
+        .mockResolvedValueOnce(coinmarketcapResponseAeUsdQuoteData);
+
+      mockPairLiquidityInfoHistoryDb.upsert.mockResolvedValueOnce(null);
+      mockPairLiquidityInfoHistoryErrorDb.upsert.mockResolvedValueOnce(null);
 
       // Start import
       await service.import();
 
       // Assertions
-
       expect(errorSpy.mock.calls).toEqual([
         [`Skipped log. ${JSON.stringify(error)}`],
       ]);
