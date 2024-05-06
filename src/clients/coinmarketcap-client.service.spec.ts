@@ -60,8 +60,8 @@ describe('CoinmarketcapClientService', () => {
       mockHttpService.get.mockResolvedValue({});
 
       // Call function
-      service.getHistoricalPriceDataThrottled(1704203935123);
-      service.getHistoricalPriceDataThrottled(1704203935123);
+      await service.getHistoricalPriceDataThrottled(1704203935123);
+      await service.getHistoricalPriceDataThrottled(1704203935123);
       service.getHistoricalPriceDataThrottled(1704203935123);
 
       await new Promise((res) => setTimeout(res, 200));
