@@ -8,24 +8,30 @@ import {
   ContractLog,
   MdwMicroBlock,
   MdwPaginatedResponse,
+  TransactionWithContext,
 } from '@/clients/mdw-http-client.model';
 import {
   AccountAddress,
   ContractAddress,
   KeyBlockHash,
   MicroBlockHash,
+  TxHash,
 } from '@/clients/sdk-client.model';
 import NETWORKS from '@/lib/network-config';
 import { nonNullable } from '@/lib/utils';
 
 @Injectable()
 export class MdwHttpClientService {
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService) {
+    // fill the transactionSenderMapping with the latest transactions from the router
+    void this.fillTransactionSenderMapping();
+  }
 
   private readonly LIMIT = 100;
   private readonly DIRECTION = 'forward';
   private readonly INT_AS_STRING = true;
   private readonly defaultParams = `direction=${this.DIRECTION}&limit=${this.LIMIT}&int-as-string=${this.INT_AS_STRING}`;
+  private readonly transactionSenderMapping = new Map<string, string>();
 
   getContract(contractAddress: ContractAddress): Promise<Contract> {
     return this.get<Contract>(
@@ -80,6 +86,27 @@ export class MdwHttpClientService {
     return this.getAllPages<MdwMicroBlock>(
       `/v2/key-blocks/${hashOrKbi}/micro-blocks?${this.defaultParams}`,
     );
+  }
+
+  async getSenderAccountForTransaction(txHash: TxHash): Promise<string> {
+    if (!this.transactionSenderMapping.has(txHash)) {
+      const tx = await this.getTransaction(txHash);
+      this.transactionSenderMapping.set(txHash, tx.tx.caller_id);
+    }
+    return this.transactionSenderMapping.get(txHash)!;
+  }
+
+  async getTransaction(txHash: string): Promise<TransactionWithContext> {
+    return this.get(`/v3/transactions/${txHash}`);
+  }
+
+  async fillTransactionSenderMapping() {
+    const transactions = await this.getAllPages<TransactionWithContext>(
+      `/v3/transactions?contract_id=${process.env.ROUTER_ADDRESS}&${this.defaultParams}`,
+    );
+    transactions.forEach((tx) => {
+      this.transactionSenderMapping.set(tx.hash, tx.tx.caller_id);
+    });
   }
 
   private async get<T>(url: string): Promise<T> {
