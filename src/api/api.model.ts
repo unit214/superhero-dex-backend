@@ -4,6 +4,8 @@ export const contractPattern =
   'ct_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const transactionPattern =
   'th_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
+export const accountPattern =
+  'ak_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
@@ -340,4 +342,11 @@ export class PairLiquidityInfoHistoryEntry {
     example: 0,
   })
   logIndex: number;
+
+  @ApiProperty({
+    description: 'Account that sent the transaction',
+    pattern: accountPattern,
+    example: 'ak_JQzjTGpZGBtNtXMH1vYLwB1X2B6zUSLr6AfoQtgM6zQfXue4E',
+  })
+  senderAccount: string;
 }
