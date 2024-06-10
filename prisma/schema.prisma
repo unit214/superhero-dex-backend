@@ -60,6 +60,7 @@ model PairLiquidityInfoHistory {
   microBlockHash   String
   microBlockTime   BigInt
   transactionHash  String
+  senderWallet     String
   transactionIndex BigInt
   logIndex         Int
   createdAt        DateTime @default(now())
