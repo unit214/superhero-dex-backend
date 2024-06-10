@@ -107,7 +107,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Call route
       const result = await request(app.getHttpServer()).get(
-        '/history/liquidity?limit=50&offset=50&order=desc&pair-address=ct_22iY9&height=912485&from-block-time=1709027642807&to-block-time=1709027642807',
+        '/history/liquidity?limit=50&offset=50&order=desc&pairAddress=ct_22iY9&height=912485&fromBlockTime=1709027642807&toBlockTime=1709027642807',
       );
 
       // Assertions
@@ -178,10 +178,10 @@ describe('PairLiquidityInfoHistoryController', () => {
       expect(result.status).toBe(400);
     });
 
-    it('should validate from-block-time query param correctly', async () => {
+    it('should validate fromBlockTime query param correctly', async () => {
       // Call route
       const result = await request(app.getHttpServer()).get(
-        '/history/liquidity?from-block-time=xyz',
+        '/history/liquidity?fromBlockTime=xyz',
       );
 
       // Assertions
@@ -191,10 +191,10 @@ describe('PairLiquidityInfoHistoryController', () => {
       expect(result.status).toBe(400);
     });
 
-    it('should validate to-block-time query param correctly', async () => {
+    it('should validate toBlockTime query param correctly', async () => {
       // Call route
       const result = await request(app.getHttpServer()).get(
-        '/history/liquidity?to-block-time=xyz',
+        '/history/liquidity?toBlockTime=xyz',
       );
 
       // Assertions
