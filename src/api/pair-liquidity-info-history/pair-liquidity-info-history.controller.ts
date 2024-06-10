@@ -90,23 +90,21 @@ export class PairLiquidityInfoHistoryController {
         toBlockTime != null ? BigInt(toBlockTime) : undefined,
       )
       .then((entries) =>
-        entries.map(() =>
-          //   {
-          //   pairAddress: entry.pair.address,
-          //   liquidityInfo: {
-          //     totalSupply: entry.totalSupply,
-          //     reserve0: entry.reserve0,
-          //     reserve1: entry.reserve1,
-          //   },
-          //   height: entry.height,
-          //   microBlockHash: entry.microBlockHash,
-          //   microBlockTime: entry.microBlockTime.toString(),
-          // }
-          {
-            // TODO adjust
-            return {} as PairLiquidityInfoHistoryEntry;
-          },
-        ),
+        entries.map((entry) => ({
+          pairAddress: entry.pair.address,
+          type: entry.eventType,
+          reserve0: entry.reserve0.toString(),
+          reserve1: entry.reserve1.toString(),
+          deltaReserve0: entry.deltaReserve0.toString(),
+          deltaReserve1: entry.deltaReserve1.toString(),
+          aeUsdPrice: entry.aeUsdPrice.toString(),
+          height: entry.height,
+          microBlockHash: entry.microBlockHash,
+          microBlockTime: entry.microBlockTime.toString(),
+          transactionHash: entry.transactionHash,
+          transactionIndex: entry.transactionIndex.toString(),
+          logIndex: entry.logIndex,
+        })),
       );
   }
 }
