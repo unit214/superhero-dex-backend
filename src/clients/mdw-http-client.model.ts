@@ -72,3 +72,36 @@ export type MdwMicroBlock = {
   txs_hash: string;
   version: string;
 };
+
+export type TransactionWithContext = {
+  block_hash: MicroBlockHash;
+  block_height: string;
+  encoded_tx: string;
+  hash: TxHash;
+  micro_index: string;
+  micro_time: string;
+  signatures: string[];
+  tx: Transaction;
+};
+
+export type Transaction = {
+  abi_version: string;
+  aexn_type: string | null;
+  amount: string;
+  arguments: unknown[];
+  call_data: string;
+  caller_id: AccountAddress;
+  contract_id: ContractAddress;
+  fee: string;
+  function: string;
+  gas: string;
+  gas_price: string;
+  gas_used: string;
+  log: ContractLog[];
+  nonce: string;
+  result: string;
+  return: any;
+  return_type: string;
+  type: string;
+  version: string;
+};

@@ -183,6 +183,10 @@ export class PairLiquidityInfoHistoryImporterService {
                 transactionHash: succeeding.log.call_tx_hash,
                 transactionIndex: BigInt(succeeding.log.call_txi),
                 logIndex: parseInt(succeeding.log.log_idx),
+                senderAccount:
+                  await this.mdwClient.getSenderAccountForTransaction(
+                    current.log.call_tx_hash,
+                  ),
               };
               // Else if current event is a Sync event and the next event is also a Sync event, insert Sync event
             } else if (current.event.eventType === EventType.Sync) {
@@ -219,6 +223,10 @@ export class PairLiquidityInfoHistoryImporterService {
                 transactionHash: current.log.call_tx_hash,
                 transactionIndex: BigInt(current.log.call_txi),
                 logIndex: parseInt(current.log.log_idx),
+                senderAccount:
+                  await this.mdwClient.getSenderAccountForTransaction(
+                    current.log.call_tx_hash,
+                  ),
               };
               // Else continue, as every non-Sync event is preceded by a Sync event and thus already inserted previously
             } else {
@@ -301,6 +309,9 @@ export class PairLiquidityInfoHistoryImporterService {
         microBlockTime: BigInt(microBlock.time),
         transactionHash: pairContract.source_tx_hash,
         transactionIndex: 0n,
+        senderAccount: await this.mdwClient.getSenderAccountForTransaction(
+          pairContract.source_tx_hash,
+        ),
         logIndex: 0,
       })
       .then(() =>
