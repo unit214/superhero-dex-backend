@@ -92,6 +92,7 @@ export class PairLiquidityInfoHistoryController {
       .then((entries) =>
         entries.map((entry) => ({
           pairAddress: entry.pair.address,
+          senderAccount: entry.senderAccount,
           type: entry.eventType,
           reserve0: entry.reserve0.toString(),
           reserve1: entry.reserve1.toString(),
