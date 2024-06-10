@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export const contractPattern =
   'ct_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
+export const transactionPattern =
+  'th_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
@@ -258,24 +260,84 @@ export enum OrderQueryEnum {
   desc = 'desc',
 }
 
-// TODO adjust
+class EventTypeEnum {
+  static readonly CreatePair = 'CreatePair';
+  static readonly PairMint = 'PairMint';
+  static readonly PairBurn = 'PairBurn';
+  static readonly SwapTokens = 'SwapTokens';
+}
+
 export class PairLiquidityInfoHistoryEntry {
-  @ApiProperty(pairAddressPropertyOptions)
+  @ApiProperty({
+    description: 'Pair Address of the history entry',
+    pattern: contractPattern,
+  })
   pairAddress: string;
-  @ApiProperty({ description: 'Liquidity info of the pair' })
-  liquidityInfo: LiquidityInfo;
+  @ApiProperty({ description: 'Type of the event' })
+  type: EventTypeEnum;
+
+  @ApiProperty({
+    description: 'Whole reserve of token0 owned by the Pair contract',
+    pattern: bigNumberPattern,
+  })
+  reserve0: string;
+
+  @ApiProperty({
+    description: 'Whole reserve of token1 owned by the Pair contract',
+    pattern: bigNumberPattern,
+  })
+  reserve1: string;
+
+  @ApiProperty({
+    description: 'Change in reserve0',
+    pattern: bigNumberPattern,
+  })
+  deltaReserve0: string;
+
+  @ApiProperty({
+    description: 'Change in reserve1',
+    pattern: bigNumberPattern,
+  })
+  deltaReserve1: string;
+
+  @ApiProperty({
+    description: 'Price of AE in USD',
+  })
+  aeUsdPrice: string;
+
   @ApiProperty({
     description: 'Block height of the history entry',
   })
   height: number;
+
   @ApiProperty({
     description: 'Micro block hash of the history entry',
     pattern: microBlockHashPattern,
   })
   microBlockHash: string;
+
   @ApiProperty({
     description: 'Micro block time of the history entry',
     pattern: microBlockTimePattern,
   })
   microBlockTime: string;
+
+  @ApiProperty({
+    description: 'Transaction hash of the history entry',
+    pattern: transactionPattern,
+    example: 'th_JQzjTGpZGBtNtXMH1vYLwB1X2B6zUSLr6AfoQtgM6zQfXue4E',
+  })
+  transactionHash: string;
+
+  @ApiProperty({
+    description: 'Transaction index of the history entry',
+    example: '0',
+  })
+  transactionIndex: string;
+
+  @ApiProperty({
+    description: 'Log index of the history entry',
+    example: 0,
+  })
+  logIndex: number;
 }
