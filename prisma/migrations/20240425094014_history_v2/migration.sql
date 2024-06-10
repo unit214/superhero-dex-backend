@@ -8,6 +8,7 @@
   - Added the required column `deltaReserve0` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
   - Added the required column `deltaReserve1` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
   - Added the required column `eventType` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `senderAccount` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
   - Added the required column `logIndex` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
   - Added the required column `transactionHash` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
   - Added the required column `transactionIndex` to the `PairLiquidityInfoHistory` table without a default value. This is not possible if the table is not empty.
@@ -30,6 +31,7 @@ ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN     "deltaReserve0" DECIMAL(100,0) NOT NULL,
 ADD COLUMN     "deltaReserve1" DECIMAL(100,0) NOT NULL,
 ADD COLUMN     "eventType" TEXT NOT NULL,
+ADD COLUMN     "senderAccount" TEXT NOT NULL,
 ADD COLUMN     "logIndex" INTEGER NOT NULL,
 ADD COLUMN     "transactionHash" TEXT NOT NULL,
 ADD COLUMN     "transactionIndex" BIGINT NOT NULL,
