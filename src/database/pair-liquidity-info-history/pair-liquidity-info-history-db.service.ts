@@ -59,6 +59,23 @@ export class PairLiquidityInfoHistoryDbService {
       skip: offset,
     });
 
+  getEntriesWithoutAePrice() {
+    return this.prisma.pairLiquidityInfoHistory.findMany({
+      where: {
+        token0AePrice: null,
+        token1AePrice: null,
+      },
+      include: {
+        pair: true,
+      },
+      orderBy: [
+        { microBlockTime: 'asc' },
+        { transactionIndex: 'asc' },
+        { logIndex: 'asc' },
+      ],
+    });
+  }
+
   getLastlySyncedLogByPairId(pairId: number) {
     return this.prisma.pairLiquidityInfoHistory.findFirst({
       where: {
@@ -93,6 +110,38 @@ export class PairLiquidityInfoHistoryDbService {
         },
       },
     });
+  }
+
+  getLatestEntryForAllPairsAtTime(microBlockTime: bigint) {
+    // This query is not supported by Prisma, so we use $queryRaw
+    return this.prisma.$queryRaw<
+      {
+        id: number;
+        pairId: number;
+        reserve0: bigint;
+        reserve1: bigint;
+        token0AePrice: number;
+        token1AePrice: number;
+        t0: number;
+        t1: number;
+      }[]
+    >`
+        WITH ranked_entries AS (SELECT e.*, ROW_NUMBER() OVER (PARTITION BY "pairId" ORDER BY "microBlockTime" DESC) AS re
+                                FROM "PairLiquidityInfoHistory" AS e
+                                WHERE "microBlockTime" < ${microBlockTime})
+        SELECT r."id",
+               r."pairId",
+               r."reserve0",
+               r."reserve1",
+               r."token0AePrice",
+               r."token1AePrice",
+               p.t0,
+               p.t1
+        FROM ranked_entries r
+                 LEFT JOIN "Pair" p ON r."pairId" = p.id
+        WHERE re = 1
+          AND "reserve0" > 0
+          AND "reserve1" > 0;`;
   }
 
   deleteFromMicroBlockTime(microBlockTime: bigint) {
