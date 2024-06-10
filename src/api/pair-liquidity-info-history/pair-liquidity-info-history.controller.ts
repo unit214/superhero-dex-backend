@@ -20,7 +20,6 @@ export class PairLiquidityInfoHistoryController {
   @Get()
   @ApiOperation({
     summary: 'Retrieve all entries of the pair liquidity info history',
-    deprecated: true,
   })
   @ApiQuery({
     name: 'limit',
@@ -42,7 +41,7 @@ export class PairLiquidityInfoHistoryController {
     required: false,
   })
   @ApiQuery({
-    name: 'pair-address',
+    name: 'pairAddress',
     type: String,
     description: 'Retrieve only history entries for the given pair address',
     required: false,
@@ -54,14 +53,14 @@ export class PairLiquidityInfoHistoryController {
     required: false,
   })
   @ApiQuery({
-    name: 'from-block-time',
+    name: 'fromBlockTime',
     type: Number,
     description:
       'Retrieve only history entries that are equal or newer than the given micro block time',
     required: false,
   })
   @ApiQuery({
-    name: 'to-block-time',
+    name: 'toBlockTime',
     type: Number,
     description:
       'Retrieve only history entries that are equal or older than the given micro block time',
@@ -73,11 +72,11 @@ export class PairLiquidityInfoHistoryController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset: number = 0,
     @Query('order', new ParseEnumPipe(OrderQueryEnum, { optional: true }))
     order: OrderQueryEnum = OrderQueryEnum.asc,
-    @Query('pair-address') pairAddress?: ContractAddress,
+    @Query('pairAddress') pairAddress?: ContractAddress,
     @Query('height', new ParseIntPipe({ optional: true })) height?: number,
-    @Query('from-block-time', new ParseIntPipe({ optional: true }))
+    @Query('fromBlockTime', new ParseIntPipe({ optional: true }))
     fromBlockTime?: number,
-    @Query('to-block-time', new ParseIntPipe({ optional: true }))
+    @Query('toBlockTime', new ParseIntPipe({ optional: true }))
     toBlockTime?: number,
   ): Promise<PairLiquidityInfoHistoryEntry[]> {
     return this.pairLiquidityInfoHistoryService
