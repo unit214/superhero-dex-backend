@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PairLiquidityInfoHistory } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 import { OrderQueryEnum } from '@/api/api.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
@@ -10,7 +11,10 @@ export class PairLiquidityInfoHistoryDbService {
   constructor(private prisma: PrismaService) {}
 
   upsert(
-    data: Omit<PairLiquidityInfoHistory, 'id' | 'updatedAt' | 'createdAt'>,
+    data: Omit<
+      PairLiquidityInfoHistory,
+      'id' | 'updatedAt' | 'createdAt' | 'token0AePrice' | 'token1AePrice'
+    >,
   ) {
     return this.prisma.pairLiquidityInfoHistory.upsert({
       where: {
@@ -23,6 +27,15 @@ export class PairLiquidityInfoHistoryDbService {
       },
       update: data,
       create: data,
+    });
+  }
+
+  update(id: number, data: Partial<PairLiquidityInfoHistory>) {
+    return this.prisma.pairLiquidityInfoHistory.update({
+      where: {
+        id,
+      },
+      data,
     });
   }
 
@@ -118,10 +131,10 @@ export class PairLiquidityInfoHistoryDbService {
       {
         id: number;
         pairId: number;
-        reserve0: bigint;
-        reserve1: bigint;
-        token0AePrice: number;
-        token1AePrice: number;
+        reserve0: Decimal;
+        reserve1: Decimal;
+        token0AePrice: Decimal;
+        token1AePrice: Decimal;
         t0: number;
         t1: number;
       }[]
