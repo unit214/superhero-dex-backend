@@ -141,7 +141,7 @@ export class PairLiquidityInfoHistoryDbService {
     >`
         WITH ranked_entries AS (SELECT e.*, ROW_NUMBER() OVER (PARTITION BY "pairId" ORDER BY "microBlockTime" DESC) AS re
                                 FROM "PairLiquidityInfoHistory" AS e
-                                WHERE "microBlockTime" < ${microBlockTime})
+                                WHERE "microBlockTime" <= ${microBlockTime})
         SELECT r."id",
                r."pairId",
                r."reserve0",

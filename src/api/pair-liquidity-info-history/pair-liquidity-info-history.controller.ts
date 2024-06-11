@@ -98,6 +98,16 @@ export class PairLiquidityInfoHistoryController {
           reserve1: entry.reserve1.toString(),
           deltaReserve0: entry.deltaReserve0.toString(),
           deltaReserve1: entry.deltaReserve1.toString(),
+          token0AePrice:
+            entry.token0AePrice === null ||
+            entry.token0AePrice.toString() === '-1'
+              ? null
+              : entry.token0AePrice?.toString(),
+          token1AePrice:
+            entry.token1AePrice === null ||
+            entry.token1AePrice.toString() === '-1'
+              ? null
+              : entry.token1AePrice?.toString(),
           aeUsdPrice: entry.aeUsdPrice.toString(),
           height: entry.height,
           microBlockHash: entry.microBlockHash,
