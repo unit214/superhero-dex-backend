@@ -157,10 +157,9 @@ export class PairLiquidityInfoHistoryImporterService {
             const succeeding =
               logsAndEvents[logsAndEvents.indexOf(current) + 1];
 
-            let liquidityInfo: Omit<
-              PairLiquidityInfoHistory,
-              'id' | 'updatedAt' | 'createdAt'
-            >;
+            let liquidityInfo: Parameters<
+              typeof this.pairLiquidityInfoHistoryDb.upsert
+            >[0];
             // If current event is a Sync event and the next event is not a Sync event, insert merged liquidity info
             if (
               current.event.eventType === EventType.Sync &&
