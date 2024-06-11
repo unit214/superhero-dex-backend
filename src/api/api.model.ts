@@ -303,6 +303,18 @@ export class PairLiquidityInfoHistoryEntry {
   deltaReserve1: string;
 
   @ApiProperty({
+    description: 'Exchange rate of token0 to AE',
+    pattern: bigNumberPattern,
+  })
+  token0AePrice: string | null;
+
+  @ApiProperty({
+    description: 'Exchange rate of token1 to AE',
+    pattern: bigNumberPattern,
+  })
+  token1AePrice: string | null;
+
+  @ApiProperty({
     description: 'Price of AE in USD',
   })
   aeUsdPrice: string;

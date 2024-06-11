@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Decimal } from '@prisma/client/runtime/library';
+import BigNumber from 'bignumber.js';
 
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { getPaths } from '@/lib/paths';
-import { decimalToBigInt, numberToDecimal } from '@/lib/utils';
 
 @Injectable()
 export class PairPathCalculatorService {
@@ -26,8 +27,7 @@ export class PairPathCalculatorService {
       throw new Error('WAE token not found in db');
     }
 
-    const precisionDenominator = 10n ** 18n;
-    const poolFee = 997n * (precisionDenominator / 1000n);
+    const poolFee = new BigNumber(0.997);
 
     for (const entry of entries) {
       this.logger.debug(`Processing entry ${entry.id}`);
@@ -46,12 +46,15 @@ export class PairPathCalculatorService {
       const aePrices = [entry.pair.t0, entry.pair.t1].map((token) => {
         // validate if the token is the wae token, then we can skip the path calculation
         if (token === waeToken.id) {
-          return 1n;
+          return new BigNumber(1);
         }
 
         // get all paths
         const paths = getPaths(token, waeToken.id, edges);
         this.logger.debug(`Found ${paths.length} paths from ${token} to WAE`);
+        if (paths.length > 0) {
+          console.log(paths[0]);
+        }
 
         // if there are no paths we can't calculate the exchange rate
         // TODO determine how we flag this so the calculation will not be repeated
@@ -59,7 +62,6 @@ export class PairPathCalculatorService {
           return null;
         }
 
-        // TODO check what the result is when there is no path from getPaths
         const shortestPath = paths.reduce((a, b) =>
           a.length <= b.length ? a : b,
         );
@@ -90,44 +92,55 @@ export class PairPathCalculatorService {
 
             if (previousToken === edge.t0) {
               previousToken = edge.t1;
-              return (
-                acc *
-                (decimalToBigInt(edge.reserve1) /
-                  decimalToBigInt(edge.reserve0)) *
-                poolFee
-              );
+              return acc
+                .multipliedBy(poolFee)
+                .multipliedBy(
+                  new BigNumber(edge.reserve1.toString()).dividedBy(
+                    edge.reserve0.toString(),
+                  ),
+                );
             }
             if (previousToken === edge.t1) {
               previousToken = edge.t0;
-              return (
-                acc *
-                (decimalToBigInt(edge.reserve0) /
-                  decimalToBigInt(edge.reserve1)) *
-                poolFee
-              );
+              console.log(edge.reserve0.toString());
+              console.log(edge.reserve1.toString());
+              console.log(poolFee.toString());
+              return acc
+                .multipliedBy(poolFee)
+                .multipliedBy(
+                  new BigNumber(edge.reserve0.toString()).dividedBy(
+                    edge.reserve1.toString(),
+                  ),
+                );
             }
             throw new Error(
               'Could not match previous token with edge t0 or t1',
             );
-          }, 1n * precisionDenominator);
+          }, new BigNumber(1));
         }
         return null;
       });
+
+      // check if either one is null and the otherone is not
+      if (
+        (aePrices[0] === null && aePrices[1] !== null) ||
+        (aePrices[0] !== null && aePrices[1] === null)
+      ) {
+        throw new Error(
+          `One of the ae prices is null and the other one is not, this can not be. Check entry ${entry.id}.`,
+        );
+      }
 
       // save the ae prices to the db
       await this.pairLiquidityInfoHistoryDb.update(entry.id, {
         token0AePrice:
           aePrices[0] !== null
-            ? numberToDecimal(
-                Number(aePrices[0]) / Number(precisionDenominator),
-              )
-            : null,
+            ? new Decimal(aePrices[0].toString())
+            : new Decimal(-1),
         token1AePrice:
           aePrices[1] !== null
-            ? numberToDecimal(
-                Number(aePrices[1]) / Number(precisionDenominator),
-              )
-            : null,
+            ? new Decimal(aePrices[1].toString())
+            : new Decimal(-1),
       });
     }
   }
