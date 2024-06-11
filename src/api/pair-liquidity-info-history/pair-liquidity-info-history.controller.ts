@@ -79,43 +79,46 @@ export class PairLiquidityInfoHistoryController {
     @Query('toBlockTime', new ParseIntPipe({ optional: true }))
     toBlockTime?: number,
   ): Promise<PairLiquidityInfoHistoryEntry[]> {
-    return this.pairLiquidityInfoHistoryService
-      .getAllHistoryEntries(
-        Number(limit),
-        Number(offset),
-        order,
-        pairAddress,
-        height != null ? Number(height) : undefined,
-        fromBlockTime != null ? BigInt(fromBlockTime) : undefined,
-        toBlockTime != null ? BigInt(toBlockTime) : undefined,
-      )
-      .then((entries) =>
-        entries.map((entry) => ({
-          pairAddress: entry.pair.address,
-          senderAccount: entry.senderAccount,
-          type: entry.eventType,
-          reserve0: entry.reserve0.toString(),
-          reserve1: entry.reserve1.toString(),
-          deltaReserve0: entry.deltaReserve0.toString(),
-          deltaReserve1: entry.deltaReserve1.toString(),
-          token0AePrice:
-            entry.token0AePrice === null ||
-            entry.token0AePrice.toString() === '-1'
-              ? null
-              : entry.token0AePrice?.toString(),
-          token1AePrice:
-            entry.token1AePrice === null ||
-            entry.token1AePrice.toString() === '-1'
-              ? null
-              : entry.token1AePrice?.toString(),
-          aeUsdPrice: entry.aeUsdPrice.toString(),
-          height: entry.height,
-          microBlockHash: entry.microBlockHash,
-          microBlockTime: entry.microBlockTime.toString(),
-          transactionHash: entry.transactionHash,
-          transactionIndex: entry.transactionIndex.toString(),
-          logIndex: entry.logIndex,
-        })),
-      );
+    return (
+      this.pairLiquidityInfoHistoryService
+        .getAllHistoryEntries(
+          Number(limit),
+          Number(offset),
+          order,
+          pairAddress,
+          height != null ? Number(height) : undefined,
+          fromBlockTime != null ? BigInt(fromBlockTime) : undefined,
+          toBlockTime != null ? BigInt(toBlockTime) : undefined,
+        )
+        // TODO return fee & usdValue of delta & reserve
+        .then((entries) =>
+          entries.map((entry) => ({
+            pairAddress: entry.pair.address,
+            senderAccount: entry.senderAccount,
+            type: entry.eventType,
+            reserve0: entry.reserve0.toString(),
+            reserve1: entry.reserve1.toString(),
+            deltaReserve0: entry.deltaReserve0.toString(),
+            deltaReserve1: entry.deltaReserve1.toString(),
+            token0AePrice:
+              entry.token0AePrice === null ||
+              entry.token0AePrice.toString() === '-1'
+                ? null
+                : entry.token0AePrice?.toString(),
+            token1AePrice:
+              entry.token1AePrice === null ||
+              entry.token1AePrice.toString() === '-1'
+                ? null
+                : entry.token1AePrice?.toString(),
+            aeUsdPrice: entry.aeUsdPrice.toString(),
+            height: entry.height,
+            microBlockHash: entry.microBlockHash,
+            microBlockTime: entry.microBlockTime.toString(),
+            transactionHash: entry.transactionHash,
+            transactionIndex: entry.transactionIndex.toString(),
+            logIndex: entry.logIndex,
+          })),
+        )
+    );
   }
 }
