@@ -52,9 +52,6 @@ export class PairPathCalculatorService {
         // get all paths
         const paths = getPaths(token, waeToken.id, edges);
         this.logger.debug(`Found ${paths.length} paths from ${token} to WAE`);
-        if (paths.length > 0) {
-          console.log(paths[0]);
-        }
 
         // if there are no paths we can't calculate the exchange rate
         // TODO determine how we flag this so the calculation will not be repeated
@@ -102,9 +99,6 @@ export class PairPathCalculatorService {
             }
             if (previousToken === edge.t1) {
               previousToken = edge.t0;
-              console.log(edge.reserve0.toString());
-              console.log(edge.reserve1.toString());
-              console.log(poolFee.toString());
               return acc
                 .multipliedBy(poolFee)
                 .multipliedBy(
