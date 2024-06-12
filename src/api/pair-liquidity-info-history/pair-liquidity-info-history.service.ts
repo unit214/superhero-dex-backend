@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Pair, PairLiquidityInfoHistory } from '@prisma/client';
+import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
 
 import { OrderQueryEnum } from '@/api/api.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
@@ -18,7 +18,11 @@ export class PairLiquidityInfoHistoryService {
     height?: number,
     fromBlockTime?: bigint,
     toBlockTime?: bigint,
-  ): Promise<({ pair: Pair } & PairLiquidityInfoHistory)[]> {
+  ): Promise<
+    ({
+      pair: Pair & { token0: Token; token1: Token };
+    } & PairLiquidityInfoHistory)[]
+  > {
     return this.pairLiquidityInfoHistoryDb.getAll(
       limit,
       offset,

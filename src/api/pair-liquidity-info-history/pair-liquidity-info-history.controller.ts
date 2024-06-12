@@ -6,10 +6,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import BigNumber from 'bignumber.js';
 
 import { OrderQueryEnum, PairLiquidityInfoHistoryEntry } from '@/api/api.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
+import { calculateUsdValue } from '@/lib/utils';
 
 @Controller('history/liquidity')
 export class PairLiquidityInfoHistoryController {
@@ -79,20 +81,64 @@ export class PairLiquidityInfoHistoryController {
     @Query('toBlockTime', new ParseIntPipe({ optional: true }))
     toBlockTime?: number,
   ): Promise<PairLiquidityInfoHistoryEntry[]> {
-    return (
-      this.pairLiquidityInfoHistoryService
-        .getAllHistoryEntries(
-          Number(limit),
-          Number(offset),
-          order,
-          pairAddress,
-          height != null ? Number(height) : undefined,
-          fromBlockTime != null ? BigInt(fromBlockTime) : undefined,
-          toBlockTime != null ? BigInt(toBlockTime) : undefined,
-        )
-        // TODO return fee & usdValue of delta & reserve
-        .then((entries) =>
-          entries.map((entry) => ({
+    return this.pairLiquidityInfoHistoryService
+      .getAllHistoryEntries(
+        Number(limit),
+        Number(offset),
+        order,
+        pairAddress,
+        height != null ? Number(height) : undefined,
+        fromBlockTime != null ? BigInt(fromBlockTime) : undefined,
+        toBlockTime != null ? BigInt(toBlockTime) : undefined,
+      )
+      .then((entries) =>
+        entries.map((entry) => {
+          const usdItems: {
+            reserveUsd: string | null;
+            txUsdFee: string | null;
+            txUsdValue: string | null;
+          } = {
+            reserveUsd: null,
+            txUsdFee: null,
+            txUsdValue: null,
+          };
+          const token0AePrice =
+            entry.token0AePrice === null ||
+            entry.token0AePrice.toString() === '-1'
+              ? null
+              : entry.token0AePrice?.toString();
+
+          const token1AePrice =
+            entry.token1AePrice === null ||
+            entry.token1AePrice.toString() === '-1'
+              ? null
+              : entry.token1AePrice?.toString();
+
+          if (token0AePrice !== null && token1AePrice !== null) {
+            usdItems.reserveUsd = calculateUsdValue({
+              reserve0: entry.reserve0.toString(),
+              reserve1: entry.reserve1.toString(),
+              token0AePrice: token0AePrice,
+              token1AePrice: token1AePrice,
+              decimals0: entry.pair.token0.decimals,
+              decimals1: entry.pair.token1.decimals,
+              aeUsdPrice: entry.aeUsdPrice.toString(),
+            });
+            usdItems.txUsdValue = calculateUsdValue({
+              reserve0: entry.deltaReserve0.toString(),
+              reserve1: entry.deltaReserve1.toString(),
+              token0AePrice: token0AePrice,
+              token1AePrice: token1AePrice,
+              decimals0: entry.pair.token0.decimals,
+              decimals1: entry.pair.token1.decimals,
+              aeUsdPrice: entry.aeUsdPrice.toString(),
+            });
+            usdItems.txUsdFee = new BigNumber(usdItems.txUsdValue)
+              .multipliedBy(0.003)
+              .toString();
+          }
+
+          return {
             pairAddress: entry.pair.address,
             senderAccount: entry.senderAccount,
             type: entry.eventType,
@@ -100,16 +146,8 @@ export class PairLiquidityInfoHistoryController {
             reserve1: entry.reserve1.toString(),
             deltaReserve0: entry.deltaReserve0.toString(),
             deltaReserve1: entry.deltaReserve1.toString(),
-            token0AePrice:
-              entry.token0AePrice === null ||
-              entry.token0AePrice.toString() === '-1'
-                ? null
-                : entry.token0AePrice?.toString(),
-            token1AePrice:
-              entry.token1AePrice === null ||
-              entry.token1AePrice.toString() === '-1'
-                ? null
-                : entry.token1AePrice?.toString(),
+            token0AePrice: token0AePrice,
+            token1AePrice: token1AePrice,
             aeUsdPrice: entry.aeUsdPrice.toString(),
             height: entry.height,
             microBlockHash: entry.microBlockHash,
@@ -117,8 +155,9 @@ export class PairLiquidityInfoHistoryController {
             transactionHash: entry.transactionHash,
             transactionIndex: entry.transactionIndex.toString(),
             logIndex: entry.logIndex,
-          })),
-        )
-    );
+            ...usdItems,
+          };
+        }),
+      );
   }
 }
