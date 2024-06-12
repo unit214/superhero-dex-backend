@@ -27,8 +27,6 @@ export class PairPathCalculatorService {
       throw new Error('WAE token not found in db');
     }
 
-    const poolFee = new BigNumber(0.997);
-
     for (const entry of entries) {
       this.logger.debug(`Processing entry ${entry.id}`);
       // for each entry get the timestamp and use the info history db service to fetch the graph at the time
@@ -84,28 +82,21 @@ export class PairPathCalculatorService {
             // now we combine the two exchange rates
             // 3.33 * 0.3 = 1
 
-            // but we also have to pay a fee, so we have to subtract the fee from each step
-            // 3.33 * 0.3 * 0.997^2 = 0.9901
+            const reserve0 = new BigNumber(edge.reserve0.toString()).div(
+              new BigNumber(10).pow(edge.decimals0),
+            );
+
+            const reserve1 = new BigNumber(edge.reserve1.toString()).div(
+              new BigNumber(10).pow(edge.decimals1),
+            );
 
             if (previousToken === edge.t0) {
               previousToken = edge.t1;
-              return acc
-                .multipliedBy(poolFee)
-                .multipliedBy(
-                  new BigNumber(edge.reserve1.toString()).dividedBy(
-                    edge.reserve0.toString(),
-                  ),
-                );
+              return acc.multipliedBy(reserve1.dividedBy(reserve0));
             }
             if (previousToken === edge.t1) {
               previousToken = edge.t0;
-              return acc
-                .multipliedBy(poolFee)
-                .multipliedBy(
-                  new BigNumber(edge.reserve0.toString()).dividedBy(
-                    edge.reserve1.toString(),
-                  ),
-                );
+              return acc.multipliedBy(reserve0.dividedBy(reserve1));
             }
             throw new Error(
               'Could not match previous token with edge t0 or t1',
