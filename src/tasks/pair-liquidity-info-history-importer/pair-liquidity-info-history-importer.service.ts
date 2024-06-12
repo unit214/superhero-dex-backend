@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PairLiquidityInfoHistory } from '@prisma/client';
 import { orderBy } from 'lodash';
 
 import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
