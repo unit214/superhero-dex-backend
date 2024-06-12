@@ -69,6 +69,9 @@ export const calculateUsdValue = ({
     .multipliedBy(token1AePrice)
     .div(new BigNumber(10).pow(decimals1));
 
+  console.log(reserve0, amountFromToken0.toString());
+  console.log(reserve1, amountFromToken1.toString());
+
   return amountFromToken0
     .plus(amountFromToken1)
     .multipliedBy(aeUsdPrice)
