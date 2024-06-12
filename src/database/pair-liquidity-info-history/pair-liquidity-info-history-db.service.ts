@@ -58,7 +58,12 @@ export class PairLiquidityInfoHistoryDbService {
         },
       },
       include: {
-        pair: true,
+        pair: {
+          include: {
+            token0: true,
+            token1: true,
+          },
+        },
       },
       orderBy:
         order != null

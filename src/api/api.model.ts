@@ -361,4 +361,22 @@ export class PairLiquidityInfoHistoryEntry {
     example: 'ak_JQzjTGpZGBtNtXMH1vYLwB1X2B6zUSLr6AfoQtgM6zQfXue4E',
   })
   senderAccount: string;
+
+  @ApiProperty({
+    description: 'USD value of the reserve',
+    pattern: bigNumberPattern,
+  })
+  reserveUsd: string | null;
+
+  @ApiProperty({
+    description: 'USD value of the transaction',
+    pattern: bigNumberPattern,
+  })
+  txUsdValue: string | null;
+
+  @ApiProperty({
+    description: 'USD value of the pool fee',
+    pattern: bigNumberPattern,
+  })
+  txUsdFee: string | null;
 }
