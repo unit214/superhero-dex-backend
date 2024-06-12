@@ -106,7 +106,7 @@ export class PairPathCalculatorService {
         return null;
       });
 
-      // check if either one is null and the otherone is not
+      // check if either one is null and the other one is not
       if (
         (aePrices[0] === null && aePrices[1] !== null) ||
         (aePrices[0] !== null && aePrices[1] === null)

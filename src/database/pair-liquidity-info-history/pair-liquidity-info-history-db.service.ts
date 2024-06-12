@@ -82,6 +82,8 @@ export class PairLiquidityInfoHistoryDbService {
       where: {
         token0AePrice: null,
         token1AePrice: null,
+        reserve0: { gt: 0 },
+        reserve1: { gt: 0 },
       },
       include: {
         pair: true,
@@ -144,7 +146,7 @@ export class PairLiquidityInfoHistoryDbService {
         decimals1: number;
       }[]
     >`
-        WITH ranked_entries AS (SELECT e.*, ROW_NUMBER() OVER (PARTITION BY "pairId" ORDER BY "microBlockTime" DESC) AS re
+        WITH ranked_entries AS (SELECT e.*, ROW_NUMBER() OVER (PARTITION BY "pairId" ORDER BY "microBlockTime" DESC, "logIndex" DESC) AS re
                                 FROM "PairLiquidityInfoHistory" AS e
                                 WHERE "microBlockTime" <= ${microBlockTime})
         SELECT r."id",
@@ -160,8 +162,8 @@ export class PairLiquidityInfoHistoryDbService {
                  LEFT JOIN "Token" t0 ON p."t0" = t0.id
                   LEFT JOIN "Token" t1 ON p."t1" = t1.id
         WHERE re = 1
-          AND "reserve0" > 0
-          AND "reserve1" > 0;`;
+          AND r."reserve0" > 0
+          AND r."reserve1" > 0;`;
   }
 
   deleteFromMicroBlockTime(microBlockTime: bigint) {
