@@ -106,13 +106,17 @@ export class PairLiquidityInfoHistoryController {
 
   private mapDbEntryToResponse(entry: PairLiquidityInfoHistoryWithTokens) {
     const usdItems: {
-      reserveUsd: string | null;
+      reserve0Usd: string | null;
+      reserve1Usd: string | null;
+      delta0UsdValue: string | null;
+      delta1UsdValue: string | null;
       txUsdFee: string | null;
-      txUsdValue: string | null;
     } = {
-      reserveUsd: null,
+      reserve0Usd: null,
+      reserve1Usd: null,
+      delta0UsdValue: null,
+      delta1UsdValue: null,
       txUsdFee: null,
-      txUsdValue: null,
     };
     const token0AePrice =
       entry.token0AePrice === null || entry.token0AePrice.toString() === '-1'
@@ -125,25 +129,31 @@ export class PairLiquidityInfoHistoryController {
         : entry.token1AePrice?.toString();
 
     if (token0AePrice !== null && token1AePrice !== null) {
-      usdItems.reserveUsd = calculateUsdValue({
-        reserve0: entry.reserve0.toString(),
-        reserve1: entry.reserve1.toString(),
-        token0AePrice: token0AePrice,
-        token1AePrice: token1AePrice,
-        decimals0: entry.pair.token0.decimals,
-        decimals1: entry.pair.token1.decimals,
+      usdItems.reserve0Usd = calculateUsdValue({
+        reserve: entry.reserve0.toString(),
+        tokenAePrice: token0AePrice,
+        decimals: entry.pair.token0.decimals,
         aeUsdPrice: entry.aeUsdPrice.toString(),
       });
-      usdItems.txUsdValue = calculateUsdValue({
-        reserve0: entry.deltaReserve0.toString(),
-        reserve1: entry.deltaReserve1.toString(),
-        token0AePrice: token0AePrice,
-        token1AePrice: token1AePrice,
-        decimals0: entry.pair.token0.decimals,
-        decimals1: entry.pair.token1.decimals,
+      usdItems.reserve1Usd = calculateUsdValue({
+        reserve: entry.reserve1.toString(),
+        tokenAePrice: token1AePrice,
+        decimals: entry.pair.token1.decimals,
         aeUsdPrice: entry.aeUsdPrice.toString(),
       });
-      usdItems.txUsdFee = new BigNumber(usdItems.txUsdValue)
+      usdItems.delta0UsdValue = calculateUsdValue({
+        reserve: entry.deltaReserve0.toString(),
+        tokenAePrice: token0AePrice,
+        decimals: entry.pair.token0.decimals,
+        aeUsdPrice: entry.aeUsdPrice.toString(),
+      });
+      usdItems.delta1UsdValue = calculateUsdValue({
+        reserve: entry.deltaReserve1.toString(),
+        tokenAePrice: token1AePrice,
+        decimals: entry.pair.token1.decimals,
+        aeUsdPrice: entry.aeUsdPrice.toString(),
+      });
+      usdItems.txUsdFee = new BigNumber(usdItems.delta0UsdValue)
         .multipliedBy(0.003)
         .toString();
     }
