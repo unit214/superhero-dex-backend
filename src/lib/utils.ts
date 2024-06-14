@@ -34,46 +34,24 @@ export const decimalToBigInt = (decimal: Decimal): bigint =>
   BigInt(decimal.toFixed().toString());
 
 export const calculateUsdValue = ({
-  reserve0,
-  token0AePrice,
-  decimals0,
-  reserve1,
-  token1AePrice,
-  decimals1,
+  reserve,
+  tokenAePrice,
+  decimals,
   aeUsdPrice,
 }: {
-  reserve0: string;
-  token0AePrice: string;
-  decimals0: number;
-  reserve1: string;
-  token1AePrice: string;
-  decimals1: number;
+  reserve: string;
+  tokenAePrice: string;
+  decimals: number;
   aeUsdPrice: string;
 }) => {
-  if (
-    !reserve0 ||
-    !reserve1 ||
-    !token0AePrice ||
-    !token1AePrice ||
-    !aeUsdPrice
-  ) {
+  if (!reserve || !tokenAePrice || !aeUsdPrice) {
     return '0';
   }
 
-  const amountFromToken0 = new BigNumber(reserve0)
+  return new BigNumber(reserve)
     .abs()
-    .multipliedBy(token0AePrice)
-    .div(new BigNumber(10).pow(decimals0));
-  const amountFromToken1 = new BigNumber(reserve1)
-    .abs()
-    .multipliedBy(token1AePrice)
-    .div(new BigNumber(10).pow(decimals1));
-
-  console.log(reserve0, amountFromToken0.toString());
-  console.log(reserve1, amountFromToken1.toString());
-
-  return amountFromToken0
-    .plus(amountFromToken1)
+    .div(new BigNumber(10).pow(decimals))
+    .multipliedBy(tokenAePrice)
     .multipliedBy(aeUsdPrice)
     .toString();
 };
