@@ -3,6 +3,7 @@ import { PairLiquidityInfoHistory } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { OrderQueryEnum } from '@/api/api.model';
+import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
 import { PrismaService } from '@/database/prisma.service';
 

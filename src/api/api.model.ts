@@ -363,16 +363,28 @@ export class PairLiquidityInfoHistoryEntry {
   senderAccount: string;
 
   @ApiProperty({
-    description: 'USD value of the reserve',
+    description: 'USD value of the reserve of token 0 of the pair',
     pattern: bigNumberPattern,
   })
-  reserveUsd: string | null;
+  reserve0Usd: string | null;
 
   @ApiProperty({
-    description: 'USD value of the transaction',
+    description: 'USD value of the reserve of token 1 of the pair',
     pattern: bigNumberPattern,
   })
-  txUsdValue: string | null;
+  reserve1Usd: string | null;
+
+  @ApiProperty({
+    description: 'USD value of the transaction of token 0 of the pair',
+    pattern: bigNumberPattern,
+  })
+  delta0UsdValue: string | null;
+
+  @ApiProperty({
+    description: 'USD value of the transaction of token 1 of the pair',
+    pattern: bigNumberPattern,
+  })
+  delta1UsdValue: string | null;
 
   @ApiProperty({
     description: 'USD value of the pool fee',
