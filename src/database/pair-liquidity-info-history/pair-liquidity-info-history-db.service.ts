@@ -39,15 +39,25 @@ export class PairLiquidityInfoHistoryDbService {
     });
   }
 
-  getAll = (
-    limit: number,
-    offset: number,
-    order?: OrderQueryEnum,
-    pairAddress?: ContractAddress,
-    height?: number,
-    fromBlockTime?: bigint,
-    toBlockTime?: bigint,
-  ) =>
+  getAll = ({
+    limit,
+    offset,
+    order,
+    pairAddress,
+    tokenAddress,
+    height,
+    fromBlockTime,
+    toBlockTime,
+  }: {
+    limit: number;
+    offset: number;
+    order?: OrderQueryEnum;
+    pairAddress?: ContractAddress;
+    tokenAddress?: ContractAddress;
+    height?: number;
+    fromBlockTime?: bigint;
+    toBlockTime?: bigint;
+  }): Promise<PairLiquidityInfoHistoryWithTokens[]> =>
     this.prisma.pairLiquidityInfoHistory.findMany({
       where: {
         pair: pairAddress ? { address: { equals: pairAddress } } : {},
@@ -56,6 +66,12 @@ export class PairLiquidityInfoHistoryDbService {
           gte: fromBlockTime,
           lte: toBlockTime,
         },
+        ...(tokenAddress && {
+          OR: [
+            { pair: { token0: { address: tokenAddress } } },
+            { pair: { token1: { address: tokenAddress } } },
+          ],
+        }),
       },
       include: {
         pair: {
