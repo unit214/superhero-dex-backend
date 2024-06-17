@@ -94,6 +94,42 @@ If the token is marked as malformed or no contract was found decimals will be \`
     example: false,
   })
   noContract: boolean;
+
+  @ApiProperty({
+    description: 'Price of the token in USD',
+    pattern: bigNumberPattern,
+  })
+  priceUsd: string;
+
+  @ApiProperty({
+    description: 'Price change in percent',
+    example: {
+      day: '0',
+      week: '0',
+    },
+  })
+  priceChange: {
+    day: string;
+    week: string;
+  };
+
+  @ApiProperty({
+    description: 'Fully diluted valuation in USD',
+    pattern: bigNumberPattern,
+  })
+  fdvUsd: string;
+
+  @ApiProperty({
+    description: 'Volume in USD',
+    example: {
+      day: '0',
+      week: '0',
+    },
+  })
+  volumeUsd: {
+    day: string;
+    week: string;
+  };
 }
 
 export class Pair extends PairBase {
@@ -108,6 +144,30 @@ export class Pair extends PairBase {
     description: 'Contract address for the token stored as token1',
   })
   token1: string;
+
+  @ApiProperty({
+    description: 'How many transactions were made in the pair',
+    example: 0,
+  })
+  transactions: number;
+
+  @ApiProperty({
+    description: 'Total Value Locked in USD',
+    pattern: bigNumberPattern,
+  })
+  tvlUsd: string;
+
+  @ApiProperty({
+    description: 'Volume in USD',
+    example: {
+      day: '0',
+      week: '0',
+    },
+  })
+  volumeUsd: {
+    day: string;
+    week: string;
+  };
 }
 
 const liquidityInfoPropertyOptions = {
