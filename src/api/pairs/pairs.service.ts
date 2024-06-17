@@ -6,8 +6,8 @@ import { presentInvalidTokens } from '@/lib/utils';
 @Injectable()
 export class PairsService {
   constructor(private readonly pairDbService: PairDbService) {}
-  async getAllPairs(onlyListed?: boolean) {
-    return this.pairDbService.getAllWithCondition(
+  async getAllPairsWithAggregation(onlyListed?: boolean) {
+    return this.pairDbService.getAllWithConditionAndAggregations(
       presentInvalidTokens,
       onlyListed,
     );
