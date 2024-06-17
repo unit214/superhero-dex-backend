@@ -71,6 +71,12 @@ for this purpose use the individual \`pairs/:address\` route`,
       token0: pair.token0.address,
       token1: pair.token1.address,
       synchronized: pair.synchronized,
+      transactions: '0', // TODO PIWO: fill me
+      tvlUsd: '0', // TODO PIWO: fill me
+      volumeUsd: {
+        day: '0', // TODO PIWO: fill me
+        week: '0', // TODO PIWO: fill me
+      },
     }));
   }
 

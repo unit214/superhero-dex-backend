@@ -54,9 +54,20 @@ export class TokensController {
   })
   @ApiResponse({ status: 200, type: [dto.TokenWithListed] })
   async getAllTokens(): Promise<dto.TokenWithListed[]> {
-    return (await this.tokensService.getAllTokens()).map((token) =>
-      removeId(token),
-    );
+    return (await this.tokensService.getAllTokens()).map((token) => ({
+      ...removeId(token),
+      priceUsd: '0', // TODO PIWO: fill me
+      priceChange: {
+        // in percent
+        day: '0', // TODO PIWO: fill me
+        week: '0', // TODO PIWO: fill me
+      },
+      fdvUsd: '0', // TODO PIWO: fill me
+      volumeUsd: {
+        day: '0', // TODO PIWO: fill me
+        week: '0', // TODO PIWO: fill me
+      },
+    }));
   }
 
   @Get('listed')
