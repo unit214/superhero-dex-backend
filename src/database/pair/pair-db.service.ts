@@ -21,6 +21,87 @@ export class PairDbService {
     });
   }
 
+  getAllWithConditionAndAggregations(
+    showInvalidTokens: boolean,
+    onlyListed?: boolean,
+  ) {
+    return this.prisma.$queryRaw<
+      {
+        address: string;
+        token0: string;
+        token1: string;
+        synchronized: boolean;
+        transactions: number;
+        tvlUsd: string;
+        volumeUsd: { day: string; week: string };
+      }[]
+    >`
+      WITH
+        ranked_entries AS (
+          SELECT
+            e.*,
+            ROW_NUMBER() OVER (
+              PARTITION BY
+                "pairId"
+              ORDER BY
+                "microBlockTime" DESC,
+                "logIndex" DESC
+            ) AS re
+          FROM
+            "PairLiquidityInfoHistory" AS e
+        )
+      SELECT
+        p.address AS address,
+        t0.address AS token0,
+        t1.address AS token1,
+        p.synchronized AS synchronized,
+        COUNT(DISTINCT plih."transactionHash")::int AS transactions,
+        r.id,
+        CASE
+          WHEN r."token0AePrice" > 0
+          AND r."token1AePrice" > 0 THEN (r.reserve0 / POW (10, t0.decimals)) * r."token0AePrice" * r."aeUsdPrice" + (r.reserve1 / POW (10, t1.decimals)) * r."token1AePrice" * r."aeUsdPrice"
+          ELSE 0
+        END AS "tvlUsd",
+        (
+          SELECT
+            '{ "day": "0",  "week": "0"  }'::jsonb
+        ) AS "volumeUsd"
+      FROM
+        "Pair" p
+        LEFT JOIN "Token" t0 ON p.t0 = t0.id
+        LEFT JOIN "Token" t1 ON p.t1 = t1.id
+        LEFT JOIN "PairLiquidityInfoHistory" plih ON p.id = plih."pairId"
+        LEFT JOIN ranked_entries r ON p.id = r."pairId"
+      WHERE
+        r.re = 1
+        AND CASE
+          WHEN ${showInvalidTokens} THEN t0.malformed = FALSE
+          AND t0."noContract" = FALSE
+          AND t1.malformed = FALSE
+          AND t1."noContract" = FALSE
+          ELSE TRUE
+        END
+        AND CASE
+          WHEN ${onlyListed} THEN t0.listed = TRUE
+          AND t1.listed = TRUE
+          ELSE TRUE
+        END
+      GROUP BY
+        p.address,
+        t0.address,
+        t1.address,
+        p.synchronized,
+        r."aeUsdPrice",
+        r.reserve0,
+        r."token0AePrice",
+        r.reserve1,
+        r."token1AePrice",
+        r.id,
+        t0.decimals,
+        t1.decimals
+    `;
+  }
+
   getAllWithCondition(showInvalidTokens: boolean, onlyListed?: boolean) {
     return this.prisma.pair.findMany({
       where: this.tokensCondition(showInvalidTokens, onlyListed),
