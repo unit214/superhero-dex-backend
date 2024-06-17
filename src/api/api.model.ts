@@ -94,7 +94,51 @@ If the token is marked as malformed or no contract was found decimals will be \`
     example: false,
   })
   noContract: boolean;
+}
 
+export class TokenWithListed extends Token {
+  @ApiProperty({
+    description:
+      'Specifies if a token is supported/listed officially by the DEX or is just added by a random user',
+    examples: [true, false],
+  })
+  listed: boolean;
+}
+
+const liquidityInfoPropertyOptions = {
+  type: LiquidityInfo,
+  nullable: true,
+  description: `Liquidity pair information. NOTE: between the pair addition moment and the first liquidity fetching \
+liquidityInfo will be null. After that it will always have the last fetched values`,
+};
+
+export class TokenWithPairAddresses extends TokenWithListed {
+  @ApiProperty({
+    description:
+      'All pairs addresses in which a given token takes part (as token0 or as token1)',
+    pattern: contractPattern,
+  })
+  pairs: string[];
+}
+
+export class TokenPairWithLiquidityInfo {
+  @ApiProperty(pairAddressPropertyOptions)
+  address: string;
+
+  @ApiProperty({
+    description: 'If pair is synchronized',
+    examples: [true, false],
+  })
+  synchronized: boolean;
+
+  @ApiProperty({ description: 'The other token from pair' })
+  oppositeToken: TokenWithListed;
+
+  @ApiProperty(liquidityInfoPropertyOptions)
+  liquidityInfo?: LiquidityInfo;
+}
+
+export class TokenWithUsd extends TokenWithListed {
   @ApiProperty({
     description: 'Price of the token in USD',
     pattern: bigNumberPattern,
@@ -132,7 +176,7 @@ If the token is marked as malformed or no contract was found decimals will be \`
   };
 }
 
-export class Pair extends PairBase {
+export class PairWithUsd extends PairBase {
   @ApiProperty({
     pattern: contractPattern,
     description: 'Contract address for the token stored as token0',
@@ -169,13 +213,6 @@ export class Pair extends PairBase {
     week: string;
   };
 }
-
-const liquidityInfoPropertyOptions = {
-  type: LiquidityInfo,
-  nullable: true,
-  description: `Liquidity pair information. NOTE: between the pair addition moment and the first liquidity fetching \
-liquidityInfo will be null. After that it will always have the last fetched values`,
-};
 
 class PairWithLiquidity extends PairBase {
   @ApiProperty(liquidityInfoPropertyOptions)
@@ -227,41 +264,6 @@ export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
       'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
   })
   token1: string;
-}
-
-export class TokenWithListed extends Token {
-  @ApiProperty({
-    description:
-      'Specifies if a token is supported/listed officially by the DEX or is just added by a random user',
-    examples: [true, false],
-  })
-  listed: boolean;
-}
-
-export class TokenWithPairAddresses extends TokenWithListed {
-  @ApiProperty({
-    description:
-      'All pairs addresses in which a given token takes part (as token0 or as token1)',
-    pattern: contractPattern,
-  })
-  pairs: string[];
-}
-
-export class TokenPairWithLiquidityInfo {
-  @ApiProperty(pairAddressPropertyOptions)
-  address: string;
-
-  @ApiProperty({
-    description: 'If pair is synchronized',
-    examples: [true, false],
-  })
-  synchronized: boolean;
-
-  @ApiProperty({ description: 'The other token from pair' })
-  oppositeToken: TokenWithListed;
-
-  @ApiProperty(liquidityInfoPropertyOptions)
-  liquidityInfo?: LiquidityInfo;
 }
 
 export class TokenPairs {

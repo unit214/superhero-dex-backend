@@ -61,17 +61,17 @@ for this purpose use the individual \`pairs/:address\` route`,
       'Retrieves only the pairs having both tokens added in the official token list',
     required: false,
   })
-  @ApiResponse({ status: 200, type: [dto.Pair] })
+  @ApiResponse({ status: 200, type: [dto.PairWithUsd] })
   async getAllPairs(
     @Query('only-listed') onlyListedStr?: string, //false | true
-  ): Promise<dto.Pair[]> {
+  ): Promise<dto.PairWithUsd[]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
     return (await this.pairsService.getAllPairs(!!onlyListed)).map((pair) => ({
       address: pair.address,
       token0: pair.token0.address,
       token1: pair.token1.address,
       synchronized: pair.synchronized,
-      transactions: '0', // TODO PIWO: fill me
+      transactions: 0, // TODO PIWO: fill me
       tvlUsd: '0', // TODO PIWO: fill me
       volumeUsd: {
         day: '0', // TODO PIWO: fill me
