@@ -66,12 +66,14 @@ for this purpose use the individual \`pairs/:address\` route`,
     @Query('only-listed') onlyListedStr?: string, //false | true
   ): Promise<dto.PairWithUsd[]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
-    return (await this.pairsService.getAllPairs(!!onlyListed)).map((pair) => ({
+    return (await this.pairsService.getAllPairs(onlyListed)).map((pair) => ({
       address: pair.address,
       token0: pair.token0.address,
       token1: pair.token1.address,
       synchronized: pair.synchronized,
-      transactions: 0, // TODO PIWO: fill me
+      transactions: new Set(
+        pair.liquidityInfoHistory.map((history) => history.transactionHash),
+      ).size,
       tvlUsd: '0', // TODO PIWO: fill me
       volumeUsd: {
         day: '0', // TODO PIWO: fill me
