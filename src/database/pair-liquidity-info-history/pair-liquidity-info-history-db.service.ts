@@ -163,24 +163,41 @@ export class PairLiquidityInfoHistoryDbService {
         decimals1: number;
       }[]
     >`
-        WITH ranked_entries AS (SELECT e.*, ROW_NUMBER() OVER (PARTITION BY "pairId" ORDER BY "microBlockTime" DESC, "logIndex" DESC) AS re
-                                FROM "PairLiquidityInfoHistory" AS e
-                                WHERE "microBlockTime" <= ${microBlockTime})
-        SELECT r."id",
-               r."pairId",
-               r."reserve0",
-               r."reserve1",
-               p.t0,
-               p.t1,
-               t0."decimals" AS "decimals0",
-               t1."decimals" AS "decimals1"
-        FROM ranked_entries r
-                 LEFT JOIN "Pair" p ON r."pairId" = p.id
-                 LEFT JOIN "Token" t0 ON p."t0" = t0.id
-                  LEFT JOIN "Token" t1 ON p."t1" = t1.id
-        WHERE re = 1
-          AND r."reserve0" > 0
-          AND r."reserve1" > 0;`;
+      WITH
+        ranked_entries AS (
+          SELECT
+            e.*,
+            ROW_NUMBER() OVER (
+              PARTITION BY
+                "pairId"
+              ORDER BY
+                "microBlockTime" DESC,
+                "logIndex" DESC
+            ) AS re
+          FROM
+            "PairLiquidityInfoHistory" AS e
+          WHERE
+            "microBlockTime" <= ${microBlockTime}
+        )
+      SELECT
+        r."id",
+        r."pairId",
+        r."reserve0",
+        r."reserve1",
+        p.t0,
+        p.t1,
+        t0."decimals" AS "decimals0",
+        t1."decimals" AS "decimals1"
+      FROM
+        ranked_entries r
+        LEFT JOIN "Pair" p ON r."pairId" = p.id
+        LEFT JOIN "Token" t0 ON p."t0" = t0.id
+        LEFT JOIN "Token" t1 ON p."t1" = t1.id
+      WHERE
+        re = 1
+        AND r."reserve0" > 0
+        AND r."reserve1" > 0;
+    `;
   }
 
   deleteFromMicroBlockTime(microBlockTime: bigint) {
