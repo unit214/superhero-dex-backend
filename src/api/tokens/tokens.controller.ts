@@ -17,6 +17,7 @@ import {
 import * as prisma from '@prisma/client';
 
 import * as dto from '@/api/api.model';
+import { TokenWithUsd } from '@/api/api.model';
 import { TokensService } from '@/api/tokens/tokens.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
 import { removeId } from '@/lib/utils';
@@ -52,8 +53,8 @@ export class TokensController {
     summary: 'Retrieves all stored tokens',
     description: `All the tokens no matter if are officially supported by the DEX (listed=true) or not will be retrieved`,
   })
-  @ApiResponse({ status: 200, type: [dto.TokenWithListed] })
-  async getAllTokens(): Promise<dto.TokenWithListed[]> {
+  @ApiResponse({ status: 200, type: [dto.TokenWithUsd] })
+  async getAllTokens(): Promise<dto.TokenWithUsd[]> {
     return (await this.tokensService.getAllTokens()).map((token) => ({
       ...removeId(token),
       priceUsd: '0', // TODO PIWO: fill me
