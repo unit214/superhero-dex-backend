@@ -27,6 +27,11 @@ export class PairDbService {
       include: {
         token0: true,
         token1: true,
+        liquidityInfoHistory: {
+          select: {
+            transactionHash: true,
+          },
+        },
       },
     });
   }
