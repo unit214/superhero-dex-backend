@@ -366,7 +366,7 @@ export class PairLiquidityInfoHistoryImporterService {
 
   private async fetchPrice(microBlockTime: number): Promise<number> {
     // mock with random value between 0.05 and 0.5
-    return Math.random() * (0.5 - 0.05) + 0.05;
+    return 0.1;
 
     return this.coinmarketcapClient
       .getHistoricalPriceDataThrottled(microBlockTime)
