@@ -7,7 +7,7 @@ export const transactionPattern =
 export const accountPattern =
   'ak_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
-export const usdValuePattern = '[1-9]+.[1-9]{0,4}';
+export const usdValuePattern = '[1-9]+(\.[1-9]{0,4})?';
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
   'mh_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
