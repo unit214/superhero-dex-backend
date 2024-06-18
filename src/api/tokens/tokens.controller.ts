@@ -17,7 +17,6 @@ import {
 import * as prisma from '@prisma/client';
 
 import * as dto from '@/api/api.model';
-import { TokenWithUsd } from '@/api/api.model';
 import { TokensService } from '@/api/tokens/tokens.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
 import { removeId } from '@/lib/utils';
