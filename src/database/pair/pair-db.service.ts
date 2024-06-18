@@ -32,49 +32,158 @@ export class PairDbService {
         token1: string;
         synchronized: boolean;
         transactions: number;
-        tvlUsd: string;
-        volumeUsd: { day: string; week: string };
+        tvlUsd: number;
+        volumeUsdDay: number;
+        volumeUsdWeek: number;
+        volumeUsdMonth: number;
+        volumeUsdYear: number;
+        volumeUsdAll: number;
       }[]
     >`
-      WITH
-        ranked_entries AS (
-          SELECT
-            e.*,
-            ROW_NUMBER() OVER (
-              PARTITION BY
-                "pairId"
-              ORDER BY
-                "microBlockTime" DESC,
-                "logIndex" DESC
-            ) AS re
-          FROM
-            "PairLiquidityInfoHistory" AS e
-        )
       SELECT
         p.address AS address,
         t0.address AS token0,
         t1.address AS token1,
         p.synchronized AS synchronized,
-        COUNT(DISTINCT plih."transactionHash")::int AS transactions,
-        r.id,
+        COUNT(DISTINCT liquidity_history."transactionHash")::int AS transactions,
         CASE
-          WHEN r."token0AePrice" > 0
-          AND r."token1AePrice" > 0 THEN (r.reserve0 / POW (10, t0.decimals)) * r."token0AePrice" * r."aeUsdPrice" + (r.reserve1 / POW (10, t1.decimals)) * r."token1AePrice" * r."aeUsdPrice"
+          WHEN latest_liquidity_info."token0AePrice" >= 0
+          AND latest_liquidity_info."token1AePrice" >= 0 THEN ROUND(
+            (
+              (
+                latest_liquidity_info.reserve0 / POW (10, t0.decimals)
+              ) * latest_liquidity_info."token0AePrice" * latest_liquidity_info."aeUsdPrice" + (
+                latest_liquidity_info.reserve1 / POW (10, t1.decimals)
+              ) * latest_liquidity_info."token1AePrice" * latest_liquidity_info."aeUsdPrice"
+            )::numeric,
+            4
+          )
           ELSE 0
         END AS "tvlUsd",
-        (
-          SELECT
-            '{ "day": "0",  "week": "0"  }'::jsonb
-        ) AS "volumeUsd"
+        ROUND(
+          SUM(
+            CASE
+              WHEN liquidity_history."token0AePrice" >= 0
+              AND liquidity_history."token1AePrice" >= 0
+              AND liquidity_history."eventType" = 'SwapTokens'
+              AND liquidity_history."microBlockTime" >= extract(
+                epoch
+                FROM
+                  NOW() - INTERVAL '1 DAY'
+              ) * 1000 THEN (
+                ABS(liquidity_history."deltaReserve0") / POW (10, t0.decimals)
+              ) * liquidity_history."token0AePrice" * liquidity_history."aeUsdPrice" + (
+                ABS(liquidity_history."deltaReserve1") / POW (10, t1.decimals)
+              ) * liquidity_history."token1AePrice" * liquidity_history."aeUsdPrice"
+            END
+          )::numeric,
+          4
+        ) AS "volumeUsdDay",
+        ROUND(
+          SUM(
+            CASE
+              WHEN liquidity_history."token0AePrice" >= 0
+              AND liquidity_history."token1AePrice" >= 0
+              AND liquidity_history."eventType" = 'SwapTokens'
+              AND liquidity_history."microBlockTime" >= extract(
+                epoch
+                FROM
+                  NOW() - INTERVAL '1 WEEK'
+              ) * 1000 THEN (
+                ABS(liquidity_history."deltaReserve0") / POW (10, t0.decimals)
+              ) * liquidity_history."token0AePrice" * liquidity_history."aeUsdPrice" + (
+                ABS(liquidity_history."deltaReserve1") / POW (10, t1.decimals)
+              ) * liquidity_history."token1AePrice" * liquidity_history."aeUsdPrice"
+            END
+          )::numeric,
+          4
+        ) AS "volumeUsdWeek",
+        ROUND(
+          SUM(
+            CASE
+              WHEN liquidity_history."token0AePrice" >= 0
+              AND liquidity_history."token1AePrice" >= 0
+              AND liquidity_history."eventType" = 'SwapTokens'
+              AND liquidity_history."microBlockTime" >= extract(
+                epoch
+                FROM
+                  NOW() - INTERVAL '1 MONTH'
+              ) * 1000 THEN (
+                ABS(liquidity_history."deltaReserve0") / POW (10, t0.decimals)
+              ) * liquidity_history."token0AePrice" * liquidity_history."aeUsdPrice" + (
+                ABS(liquidity_history."deltaReserve1") / POW (10, t1.decimals)
+              ) * liquidity_history."token1AePrice" * liquidity_history."aeUsdPrice"
+            END
+          )::numeric,
+          4
+        ) AS "volumeUsdMonth",
+        ROUND(
+          SUM(
+            CASE
+              WHEN liquidity_history."token0AePrice" >= 0
+              AND liquidity_history."token1AePrice" >= 0
+              AND liquidity_history."eventType" = 'SwapTokens'
+              AND liquidity_history."microBlockTime" >= extract(
+                epoch
+                FROM
+                  NOW() - INTERVAL '1 YEAR'
+              ) * 1000 THEN (
+                ABS(liquidity_history."deltaReserve0") / POW (10, t0.decimals)
+              ) * liquidity_history."token0AePrice" * liquidity_history."aeUsdPrice" + (
+                ABS(liquidity_history."deltaReserve1") / POW (10, t1.decimals)
+              ) * liquidity_history."token1AePrice" * liquidity_history."aeUsdPrice"
+            END
+          )::numeric,
+          4
+        ) AS "volumeUsdYear",
+        ROUND(
+          SUM(
+            CASE
+              WHEN liquidity_history."token0AePrice" >= 0
+              AND liquidity_history."token1AePrice" >= 0
+              AND liquidity_history."eventType" = 'SwapTokens' THEN (
+                ABS(liquidity_history."deltaReserve0") / POW (10, t0.decimals)
+              ) * liquidity_history."token0AePrice" * liquidity_history."aeUsdPrice" + (
+                ABS(liquidity_history."deltaReserve1") / POW (10, t1.decimals)
+              ) * liquidity_history."token1AePrice" * liquidity_history."aeUsdPrice"
+            END
+          )::numeric,
+          4
+        ) AS "volumeUsdAll"
       FROM
         "Pair" p
-        LEFT JOIN "Token" t0 ON p.t0 = t0.id
-        LEFT JOIN "Token" t1 ON p.t1 = t1.id
-        LEFT JOIN "PairLiquidityInfoHistory" plih ON p.id = plih."pairId"
-        LEFT JOIN ranked_entries r ON p.id = r."pairId"
+        LEFT JOIN LATERAL (
+          SELECT
+            *
+          FROM
+            "Token"
+          WHERE
+            p.t0 = id
+        ) t0 ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT
+            *
+          FROM
+            "Token"
+          WHERE
+            p.t1 = id
+        ) t1 ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT
+            *
+          FROM
+            "PairLiquidityInfoHistory"
+          WHERE
+            p.id = "pairId"
+          ORDER BY
+            "microBlockTime" DESC,
+            "logIndex" DESC
+          LIMIT
+            1
+        ) latest_liquidity_info ON TRUE
+        LEFT JOIN "PairLiquidityInfoHistory" liquidity_history ON p.id = liquidity_history."pairId"
       WHERE
-        r.re = 1
-        AND CASE
+        CASE
           WHEN ${showInvalidTokens} THEN t0.malformed = FALSE
           AND t0."noContract" = FALSE
           AND t1.malformed = FALSE
@@ -87,18 +196,16 @@ export class PairDbService {
           ELSE TRUE
         END
       GROUP BY
-        p.address,
+        p.id,
         t0.address,
         t1.address,
-        p.synchronized,
-        r."aeUsdPrice",
-        r.reserve0,
-        r."token0AePrice",
-        r.reserve1,
-        r."token1AePrice",
-        r.id,
+        latest_liquidity_info."token0AePrice",
+        latest_liquidity_info."token1AePrice",
+        latest_liquidity_info."reserve0",
+        latest_liquidity_info.reserve1,
         t0.decimals,
-        t1.decimals
+        t1.decimals,
+        latest_liquidity_info."aeUsdPrice";
     `;
   }
 
