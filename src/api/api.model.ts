@@ -7,6 +7,7 @@ export const transactionPattern =
 export const accountPattern =
   'ak_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
+export const usdValuePattern = '[1-9]+.[1-9]{0,4}';
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
   'mh_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
@@ -197,21 +198,39 @@ export class PairWithUsd extends PairBase {
 
   @ApiProperty({
     description: 'Total Value Locked in USD',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
   })
-  tvlUsd: string;
+  tvlUsd: number;
 
   @ApiProperty({
-    description: 'Volume in USD',
-    example: {
-      day: '0',
-      week: '0',
-    },
+    description: 'Volume for last day in USD',
+    pattern: usdValuePattern,
   })
-  volumeUsd: {
-    day: string;
-    week: string;
-  };
+  volumeUsdDay: number;
+
+  @ApiProperty({
+    description: 'Volume for last week in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdWeek: number;
+
+  @ApiProperty({
+    description: 'Volume for last month in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdMonth: number;
+
+  @ApiProperty({
+    description: 'Volume for last year in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdYear: number;
+
+  @ApiProperty({
+    description: 'Volume for all time in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdAll: number;
 }
 
 class PairWithLiquidity extends PairBase {
