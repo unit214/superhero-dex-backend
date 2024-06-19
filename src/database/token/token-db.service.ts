@@ -16,6 +16,68 @@ export class TokenDbService {
     });
   }
 
+  getAllWithAggregation(showInvalidTokens: boolean) {
+    return this.prisma.$queryRaw<
+      {
+        address: string;
+        symbol: string;
+        name: string;
+        decimals: number;
+        malformed: boolean;
+        noContract: boolean;
+        listed: boolean;
+        priceAe: string;
+        priceUsd: string;
+      }[]
+    >`
+      SELECT
+        t.address,
+        t.symbol,
+        t.name,
+        t.decimals,
+        t.malformed,
+        t."noContract",
+        t.listed,
+        SUM(
+          (latest_liquidity_info."token0AePrice") * (
+            latest_liquidity_info."reserve0" / POW (10, t.decimals)
+          ) / total_reserve (t.id)
+        ) AS "priceAE",
+        SUM(
+          (
+            latest_liquidity_info."token0AePrice" * latest_liquidity_info."aeUsdPrice"
+          ) * (
+            latest_liquidity_info."reserve0" / POW (10, t.decimals)
+          ) / total_reserve (t.id)
+        ) AS "priceUsd"
+      FROM
+        "Token" t
+        LEFT JOIN public."Pair" p ON t.id = p.t0
+        OR t.id = p.t1
+        LEFT JOIN LATERAL (
+          SELECT
+            *
+          FROM
+            "PairLiquidityInfoHistory"
+          WHERE
+            p.id = "pairId"
+          ORDER BY
+            "microBlockTime" DESC,
+            "logIndex" DESC
+          LIMIT
+            1
+        ) latest_liquidity_info ON TRUE
+      WHERE
+        CASE
+          WHEN ${showInvalidTokens} THEN t.malformed = FALSE
+          AND t."noContract" = FALSE
+          ELSE TRUE
+        END
+      GROUP BY
+        t.id
+    `;
+  }
+
   getListed(): Promise<Token[]> {
     //there is no reason to list invalid tokens
     return this.prisma.token.findMany({
@@ -100,6 +162,7 @@ export class TokenDbService {
       malformed: false,
     });
   }
+
   upsertMalformedToken(address: string): Promise<Token> {
     return this.commonUpsert(address, { malformed: true, noContract: false });
   }
