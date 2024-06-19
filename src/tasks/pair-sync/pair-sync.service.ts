@@ -57,12 +57,7 @@ export class PairSyncService implements OnModuleInit {
           throw new Error('Middleware connection closed');
         }
       },
-      onEventReceived: this.createOnEventReceived(
-        this.logger,
-        this.onFactoryEventReceived.bind(this),
-        this.refreshPairLiquidityByAddress.bind(this),
-        () => this.pairDb.getAllAddresses(),
-      ),
+      onEventReceived: this.createOnEventReceived.bind(this),
     });
   }
 
@@ -212,63 +207,57 @@ export class PairSyncService implements OnModuleInit {
     this.logger.log(`Pairs liquidity refresh completed`);
   }
 
-  private createOnEventReceived =
-    (
-      logger: Logger,
-      onFactory: typeof this.onFactoryEventReceived,
-      refreshPairLiquidity: typeof this.refreshPairLiquidityByAddress,
-      getAllAddresses: () => Promise<ContractAddress[]>,
-    ) =>
-    async (event: SubscriptionEvent) => {
-      const {
-        hash,
-        tx: { type },
-      } = event.payload;
-      if (type !== 'ContractCallTx') {
-        logger.debug(`Ignoring transaction of type '${type}'`);
-        return;
-      }
-      //TODO: try to trow exception here to see if it reconnects
-      const txInfo = await this.ctx.node.getTransactionInfoByHash(hash);
-      if (txInfo == null) {
-        throw new Error(`No tx info for hash '${hash}'`);
-      }
-      if (!txInfo.callInfo) {
-        throw new Error(`No tx.callInfo for hash '${hash}'`);
-      }
-      if (txInfo.callInfo.returnType !== 'ok') {
-        logger.debug(`Ignore reverted transaction: '${hash}'`);
-        return;
-      }
-      // make a list with all unique contracts
-      const contracts = [
-        ...new Set(
-          txInfo.callInfo?.log.map((x) => x.address as ContractAddress),
-        ),
-      ];
+  private createOnEventReceived = async (event: SubscriptionEvent) => {
+    const {
+      hash,
+      tx: { type },
+    } = event.payload;
+    if (type !== 'ContractCallTx') {
+      this.logger.debug(`Ignoring transaction of type '${type}'`);
+      return;
+    }
+    //TODO: try to trow exception here to see if it reconnects
+    const txInfo = await this.ctx.node.getTransactionInfoByHash(hash);
+    if (txInfo == null) {
+      throw new Error(`No tx info for hash '${hash}'`);
+    }
+    if (!txInfo.callInfo) {
+      throw new Error(`No tx.callInfo for hash '${hash}'`);
+    }
+    if (txInfo.callInfo.returnType !== 'ok') {
+      this.logger.debug(`Ignore reverted transaction: '${hash}'`);
+      return;
+    }
+    // make a list with all unique contracts
+    const contracts = [
+      ...new Set(txInfo.callInfo?.log.map((x) => x.address as ContractAddress)),
+    ];
 
-      // get all known addresses
-      const addresses: { [key: ContractAddress]: boolean | undefined } = (
-        await getAllAddresses()
-      ).reduce((a, v) => ({ ...a, [v]: true }), {});
+    // get all known addresses
+    const addresses: { [key: ContractAddress]: boolean | undefined } = (
+      await this.pairDb.getAllAddresses()
+    ).reduce((a, v) => ({ ...a, [v]: true }), {});
 
-      //parse events on be on
-      const allPromises = contracts.map((contract) => {
-        // factory state was modified
-        if (contract === process.env.FACTORY_ADDRESS) {
-          return onFactory(event.payload.block_height);
-        }
-        // if the pair is newly created within this transaction
-        // the pair will be ignored in this loop, but that's not a problem, because
-        // the factory event handler was also involved here and will take care of the
-        // newly created pair
-        else if (addresses[contract]) {
-          return refreshPairLiquidity(contract, event.payload.block_height);
-        }
-        return Promise.resolve();
-      });
-      return Promise.all(allPromises);
-    };
+    //parse events on be on
+    const allPromises = contracts.map((contract) => {
+      // factory state was modified
+      if (contract === process.env.FACTORY_ADDRESS) {
+        return this.onFactoryEventReceived(event.payload.block_height);
+      }
+      // if the pair is newly created within this transaction
+      // the pair will be ignored in this loop, but that's not a problem, because
+      // the factory event handler was also involved here and will take care of the
+      // newly created pair
+      else if (addresses[contract]) {
+        return this.refreshPairLiquidityByAddress(
+          contract,
+          event.payload.block_height,
+        );
+      }
+      return Promise.resolve();
+    });
+    return Promise.all(allPromises);
+  };
 
   private async updateTokenMetadata(
     address: ContractAddress,
