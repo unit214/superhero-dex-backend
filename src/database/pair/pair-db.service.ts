@@ -24,6 +24,7 @@ export class PairDbService {
   getAllWithConditionAndAggregations(
     showInvalidTokens: boolean,
     onlyListed?: boolean,
+    filterToken?: ContractAddress,
   ) {
     return this.prisma.$queryRaw<
       {
@@ -193,6 +194,11 @@ export class PairDbService {
         AND CASE
           WHEN ${onlyListed} THEN t0.listed = TRUE
           AND t1.listed = TRUE
+          ELSE TRUE
+        END
+        AND CASE
+          WHEN ${!!filterToken} THEN t0.address = ${filterToken}
+          OR t1.address = ${filterToken}
           ELSE TRUE
         END
       GROUP BY

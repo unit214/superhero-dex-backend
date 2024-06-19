@@ -128,7 +128,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
   @ApiOperation({
     summary: 'Retrieves all belonging pairs for a given token',
     description: `Gets all pairs with the liquidity attached and also the other pair token information. 
-The returning object is splitted in two, pairs in which the given token represents the token0 and another list in which
+The returning object is split in two, pairs in which the given token represents the token0 and another list in which
 the given token represents the token1`,
   })
   @ApiResponse({ status: 200, type: dto.TokenPairs })
