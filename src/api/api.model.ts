@@ -145,7 +145,7 @@ export class TokenWithUsd extends TokenWithListed {
     pattern: bigNumberPattern,
   })
   priceUsd: string;
-
+  /*
   @ApiProperty({
     description: 'Price change in percent',
     example: {
@@ -174,7 +174,7 @@ export class TokenWithUsd extends TokenWithListed {
   volumeUsd: {
     day: string;
     week: string;
-  };
+  };*/
 }
 
 export class PairWithUsd extends PairBase {
