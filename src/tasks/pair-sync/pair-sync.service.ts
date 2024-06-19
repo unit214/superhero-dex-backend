@@ -60,7 +60,7 @@ export class PairSyncService implements OnModuleInit {
       onEventReceived: this.createOnEventReceived(
         this.logger,
         this.onFactoryEventReceived,
-        this.refreshPairLiquidityByAddress,
+        this.refreshPairLiquidityByAddress.bind(this),
         () => this.pairDb.getAllAddresses(),
       ),
     });
