@@ -249,6 +249,7 @@ export class PairSyncService implements OnModuleInit {
       // the factory event handler was also involved here and will take care of the
       // newly created pair
       else if (addresses[contract]) {
+        // TODO trigger history sync here as well
         return this.refreshPairLiquidityByAddress(
           contract,
           event.payload.block_height,
