@@ -14,6 +14,9 @@ export class TokensService {
   async getAllTokens(): Promise<Token[]> {
     return this.tokenDbService.getAll(presentInvalidTokens);
   }
+  async getAllTokensWithAggregation() {
+    return this.tokenDbService.getAllWithAggregation(presentInvalidTokens);
+  }
   async getListedTokens(): Promise<Token[]> {
     return this.tokenDbService.getListed();
   }
