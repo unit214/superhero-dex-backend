@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
 
+import { ContractAddress } from '@/clients/sdk-client.model';
 import { PairDbService } from '@/database/pair/pair-db.service';
 import { presentInvalidTokens } from '@/lib/utils';
 
 @Injectable()
 export class PairsService {
   constructor(private readonly pairDbService: PairDbService) {}
-  async getAllPairsWithAggregation(onlyListed?: boolean) {
+  async getAllPairsWithAggregation(
+    onlyListed?: boolean,
+    tokenAddress?: ContractAddress,
+  ) {
     return this.pairDbService.getAllWithConditionAndAggregations(
       presentInvalidTokens,
       onlyListed,
+      tokenAddress,
     );
   }
 

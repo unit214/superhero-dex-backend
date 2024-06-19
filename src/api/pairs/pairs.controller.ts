@@ -10,6 +10,7 @@ import * as prisma from '@prisma/client';
 
 import * as dto from '@/api/api.model';
 import { PairsService } from '@/api/pairs/pairs.service';
+import { ContractAddress } from '@/clients/sdk-client.model';
 import { getPaths } from '@/lib/paths';
 import { removeId } from '@/lib/utils';
 
@@ -61,12 +62,20 @@ for this purpose use the individual \`pairs/:address\` route`,
       'Retrieves only the pairs having both tokens added in the official token list',
     required: false,
   })
+  @ApiQuery({
+    name: 'token',
+    type: String,
+    description:
+      'Allows to filter the pairs by a specific token address (token0 or token1)',
+    required: false,
+  })
   @ApiResponse({ status: 200, type: [dto.PairWithUsd] })
   async getAllPairs(
-    @Query('only-listed') onlyListedStr?: string, //false | true
+    @Query('only-listed') onlyListedStr?: string, // false | true
+    @Query('token') token?: ContractAddress,
   ): Promise<dto.PairWithUsd[]> {
     const onlyListed = !!onlyListedStr && onlyListedStr !== 'false';
-    return this.pairsService.getAllPairsWithAggregation(onlyListed);
+    return this.pairsService.getAllPairsWithAggregation(onlyListed, token);
   }
 
   @Get('by-address/:address')
