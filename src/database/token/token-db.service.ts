@@ -37,6 +37,10 @@ export class TokenDbService {
         volumeUsdMonth: number;
         volumeUsdYear: number;
         volumeUsdAll: number;
+        priceChangeDay: number;
+        priceChangeWeek: number;
+        priceChangeMonth: number;
+        priceChangeYear: number;
       }[]
     >`
       SELECT
@@ -55,7 +59,7 @@ export class TokenDbService {
             ELSE (latest_liquidity_info."token1AePrice") * (
               latest_liquidity_info."reserve1" / POW (10, t.decimals)
             )
-          END / total_reserve (t.id)
+          END / total_reserve (t.id, INTERVAL '0 DAY')
         ) AS "priceAe",
         ROUND(
           SUM(
@@ -66,7 +70,7 @@ export class TokenDbService {
               ELSE (latest_liquidity_info."token1AePrice") * (
                 latest_liquidity_info."reserve1" / POW (10, t.decimals)
               )
-            END * latest_liquidity_info."aeUsdPrice" / total_reserve (t.id)
+            END * latest_liquidity_info."aeUsdPrice" / total_reserve (t.id, INTERVAL '0 DAY')
           )::numeric,
           4
         ) AS "priceUsd",
@@ -93,12 +97,32 @@ export class TokenDbService {
           )::numeric,
           4
         ) AS "fdvUsd",
-        total_reserve (t.id) AS "totalReserve",
-        count(p.id) AS "pairs",
+        total_reserve (t.id, INTERVAL '0 DAY') AS "totalReserve",
+        count(p.id)::integer AS "pairs",
         volume_usd (t.id, INTERVAL '1 DAY') AS "volumeUsdDay",
         volume_usd (t.id, INTERVAL '1 WEEK') AS "volumeUsdWeek",
         volume_usd (t.id, INTERVAL '1 YEAR') AS "volumeUsdYear",
-        volume_usd (t.id, INTERVAL '100 YEAR') AS "volumeUsdAll"
+        volume_usd (t.id, INTERVAL '100 YEAR') AS "volumeUsdAll",
+        (
+          (
+            historic_price (t.id, INTERVAL '0 DAY') - historic_price (t.id, INTERVAL '1 DAY')
+          ) / historic_price (t.id, INTERVAL '1 DAY')
+        ) * 100 AS "priceChangeDay",
+        (
+          (
+            historic_price (t.id, INTERVAL '0 DAY') - historic_price (t.id, INTERVAL '1 WEEK')
+          ) / historic_price (t.id, INTERVAL '1 WEEK')
+        ) * 100 AS "priceChangeWeek",
+        (
+          (
+            historic_price (t.id, INTERVAL '0 DAY') - historic_price (t.id, INTERVAL '1 MONTH')
+          ) / historic_price (t.id, INTERVAL '1 MONTH')
+        ) * 100 AS "priceChangeMonth",
+        (
+          (
+            historic_price (t.id, INTERVAL '0 DAY') - historic_price (t.id, INTERVAL '1 YEAR')
+          ) / historic_price (t.id, INTERVAL '1 YEAR')
+        ) * 100 AS "priceChangeYear"
       FROM
         "Token" t
         LEFT JOIN public."Pair" p ON t.id = p.t0
