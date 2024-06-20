@@ -61,10 +61,6 @@ export class TokensController {
         day: '0', // TODO PIWO: fill me
         week: '0', // TODO PIWO: fill me
       },
-      volumeUsd: {
-        day: '0', // TODO PIWO: fill me
-        week: '0', // TODO PIWO: fill me
-      },
     }));*/
   }
 
