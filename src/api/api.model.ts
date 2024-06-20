@@ -142,9 +142,45 @@ export class TokenPairWithLiquidityInfo {
 export class TokenWithUsd extends TokenWithListed {
   @ApiProperty({
     description: 'Price of the token in USD',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
   })
-  priceUsd: string;
+  priceUsd: number;
+
+  @ApiProperty({
+    description: 'Fully diluted valuation in USD',
+    pattern: usdValuePattern,
+  })
+  fdvUsd: number;
+
+  @ApiProperty({
+    description: 'Volume for last day in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdDay: number;
+
+  @ApiProperty({
+    description: 'Volume for last day in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdWeek: number;
+
+  @ApiProperty({
+    description: 'Volume for last day in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdMonth: number;
+
+  @ApiProperty({
+    description: 'Volume for last day in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdYear: number;
+
+  @ApiProperty({
+    description: 'Volume for all time in USD',
+    pattern: usdValuePattern,
+  })
+  volumeUsdAll: number;
   /*
   @ApiProperty({
     description: 'Price change in percent',
