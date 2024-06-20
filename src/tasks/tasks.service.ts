@@ -25,7 +25,7 @@ export class TasksService {
     this._isRunning = isRunning;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async runPairLiquidityInfoHistoryImporter() {
     try {
       if (!this.isRunning) {
@@ -58,7 +58,7 @@ export class TasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(EVERY_5_MINUTES_STARTING_AT_02_30)
   async runPairLiquidityInfoHistoryValidator() {
     try {
       if (!this.isRunning) {
