@@ -28,8 +28,8 @@ export class TokenDbService {
         listed: boolean;
         priceAe: string;
         priceUsd: number;
-        fdvAe: string;
-        fdvUsd: number;
+        tvlAe: string;
+        tvlUsd: number;
         totalReserve: string;
         pairs: number;
         volumeUsdDay: number;
@@ -83,7 +83,7 @@ export class TokenDbService {
               latest_liquidity_info."reserve1" / POW (10, t.decimals)
             )
           END
-        ) AS "fdvAe",
+        ) AS "tvlAe",
         ROUND(
           SUM(
             CASE
@@ -96,7 +96,7 @@ export class TokenDbService {
             END * latest_liquidity_info."aeUsdPrice"
           )::numeric,
           4
-        ) AS "fdvUsd",
+        ) AS "tvlUsd",
         total_reserve (t.id, INTERVAL '0 DAY') AS "totalReserve",
         count(p.id)::integer AS "pairs",
         volume_usd (t.id, INTERVAL '1 DAY') AS "volumeUsdDay",
