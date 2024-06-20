@@ -55,13 +55,12 @@ export class TokensController {
   @ApiResponse({ status: 200, type: [dto.TokenWithUsd] })
   async getAllTokens(): Promise<dto.TokenWithUsd[]> {
     return this.tokensService.getAllTokensWithAggregation();
-    /*      priceUsd: '0', // TODO PIWO: fill me
+    /*
       priceChange: {
         // in percent
         day: '0', // TODO PIWO: fill me
         week: '0', // TODO PIWO: fill me
       },
-      fdvUsd: '0', // TODO PIWO: fill me
       volumeUsd: {
         day: '0', // TODO PIWO: fill me
         week: '0', // TODO PIWO: fill me
