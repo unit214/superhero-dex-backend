@@ -27,7 +27,16 @@ export class TokenDbService {
         noContract: boolean;
         listed: boolean;
         priceAe: string;
-        priceUsd: string;
+        priceUsd: number;
+        fdvAe: string;
+        fdvUsd: number;
+        totalReserve: string;
+        pairs: number;
+        volumeUsdDay: number;
+        volumeUsdWeek: number;
+        volumeUsdMonth: number;
+        volumeUsdYear: number;
+        volumeUsdAll: number;
       }[]
     >`
       SELECT
@@ -39,17 +48,57 @@ export class TokenDbService {
         t."noContract",
         t.listed,
         SUM(
-          (latest_liquidity_info."token0AePrice") * (
-            latest_liquidity_info."reserve0" / POW (10, t.decimals)
-          ) / total_reserve (t.id)
-        ) AS "priceAE",
+          CASE
+            WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+              latest_liquidity_info."reserve0" / POW (10, t.decimals)
+            )
+            ELSE (latest_liquidity_info."token1AePrice") * (
+              latest_liquidity_info."reserve1" / POW (10, t.decimals)
+            )
+          END / total_reserve (t.id)
+        ) AS "priceAe",
+        ROUND(
+          SUM(
+            CASE
+              WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+                latest_liquidity_info."reserve0" / POW (10, t.decimals)
+              )
+              ELSE (latest_liquidity_info."token1AePrice") * (
+                latest_liquidity_info."reserve1" / POW (10, t.decimals)
+              )
+            END * latest_liquidity_info."aeUsdPrice" / total_reserve (t.id)
+          )::numeric,
+          4
+        ) AS "priceUsd",
         SUM(
-          (
-            latest_liquidity_info."token0AePrice" * latest_liquidity_info."aeUsdPrice"
-          ) * (
-            latest_liquidity_info."reserve0" / POW (10, t.decimals)
-          ) / total_reserve (t.id)
-        ) AS "priceUsd"
+          CASE
+            WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+              latest_liquidity_info."reserve0" / POW (10, t.decimals)
+            )
+            ELSE (latest_liquidity_info."token1AePrice") * (
+              latest_liquidity_info."reserve1" / POW (10, t.decimals)
+            )
+          END
+        ) AS "fdvAe",
+        ROUND(
+          SUM(
+            CASE
+              WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+                latest_liquidity_info."reserve0" / POW (10, t.decimals)
+              )
+              ELSE (latest_liquidity_info."token1AePrice") * (
+                latest_liquidity_info."reserve1" / POW (10, t.decimals)
+              )
+            END * latest_liquidity_info."aeUsdPrice"
+          )::numeric,
+          4
+        ) AS "fdvUsd",
+        total_reserve (t.id) AS "totalReserve",
+        count(p.id) AS "pairs",
+        volume_usd (t.id, INTERVAL '1 DAY') AS "volumeUsdDay",
+        volume_usd (t.id, INTERVAL '1 WEEK') AS "volumeUsdWeek",
+        volume_usd (t.id, INTERVAL '1 YEAR') AS "volumeUsdYear",
+        volume_usd (t.id, INTERVAL '100 YEAR') AS "volumeUsdAll"
       FROM
         "Token" t
         LEFT JOIN public."Pair" p ON t.id = p.t0
@@ -61,6 +110,8 @@ export class TokenDbService {
             "PairLiquidityInfoHistory"
           WHERE
             p.id = "pairId"
+            AND "token0AePrice" >= 0
+            AND "token1AePrice" >= 0
           ORDER BY
             "microBlockTime" DESC,
             "logIndex" DESC
