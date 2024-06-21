@@ -8,6 +8,8 @@ export const accountPattern =
   'ak_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
 export const usdValuePattern = '[1-9]+(.[1-9]{0,4})?';
+export const aeValuePattern = '[1-9]+(.[1-9]{0,18})?';
+export const percentPattern = '[1-9]+(.[1-9]+)?';
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
   'mh_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
@@ -141,76 +143,94 @@ export class TokenPairWithLiquidityInfo {
 
 export class TokenWithUsd extends TokenWithListed {
   @ApiProperty({
+    description: 'Price of the token in AE',
+    pattern: aeValuePattern,
+  })
+  priceAe: string;
+
+  @ApiProperty({
     description: 'Price of the token in USD',
     pattern: usdValuePattern,
   })
-  priceUsd: number;
+  priceUsd: string;
+
+  @ApiProperty({
+    description: 'Total locked value in AE',
+    pattern: aeValuePattern,
+  })
+  tvlAe: string;
 
   @ApiProperty({
     description: 'Total locked value in USD',
     pattern: usdValuePattern,
   })
-  tvlUsd: number;
+  tvlUsd: string;
+
+  @ApiProperty({
+    description: 'Total Reserve',
+    pattern: usdValuePattern,
+  })
+  totalReserve: string;
+
+  @ApiProperty({
+    description: 'Number of pairs for this token',
+    pattern: bigNumberPattern,
+  })
+  pairs: number;
 
   @ApiProperty({
     description: 'Volume for last day in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdDay: number;
+  volumeUsdDay: string;
 
   @ApiProperty({
-    description: 'Volume for last day in USD',
+    description: 'Volume for last week in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdWeek: number;
+  volumeUsdWeek: string;
 
   @ApiProperty({
-    description: 'Volume for last day in USD',
+    description: 'Volume for last month in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdMonth: number;
+  volumeUsdMonth: string;
 
   @ApiProperty({
-    description: 'Volume for last day in USD',
+    description: 'Volume for last year in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdYear: number;
+  volumeUsdYear: string;
 
   @ApiProperty({
     description: 'Volume for all time in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdAll: number;
-  /*
-  @ApiProperty({
-    description: 'Price change in percent',
-    example: {
-      day: '0',
-      week: '0',
-    },
-  })
-  priceChange: {
-    day: string;
-    week: string;
-  };
+  volumeUsdAll: string;
 
   @ApiProperty({
-    description: 'Total Locked Value in USD',
-    pattern: bigNumberPattern,
+    description: 'Price change for last day in percent',
+    pattern: percentPattern,
   })
-  tvlUsd: string;
+  priceChangeDay: string;
 
   @ApiProperty({
-    description: 'Volume in USD',
-    example: {
-      day: '0',
-      week: '0',
-    },
+    description: 'Price change for last week in percent',
+    pattern: percentPattern,
   })
-  volumeUsd: {
-    day: string;
-    week: string;
-  };*/
+  priceChangeWeek: string;
+
+  @ApiProperty({
+    description: 'Price change for last month in percent',
+    pattern: percentPattern,
+  })
+  priceChangeMonth: string;
+
+  @ApiProperty({
+    description: 'Price change for last year in percent',
+    pattern: percentPattern,
+  })
+  priceChangeYear: string;
 }
 
 export class PairWithUsd extends PairBase {
@@ -236,37 +256,37 @@ export class PairWithUsd extends PairBase {
     description: 'Total Value Locked in USD',
     pattern: usdValuePattern,
   })
-  tvlUsd: number;
+  tvlUsd: string;
 
   @ApiProperty({
     description: 'Volume for last day in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdDay: number;
+  volumeUsdDay: string;
 
   @ApiProperty({
     description: 'Volume for last week in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdWeek: number;
+  volumeUsdWeek: string;
 
   @ApiProperty({
     description: 'Volume for last month in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdMonth: number;
+  volumeUsdMonth: string;
 
   @ApiProperty({
     description: 'Volume for last year in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdYear: number;
+  volumeUsdYear: string;
 
   @ApiProperty({
     description: 'Volume for all time in USD',
     pattern: usdValuePattern,
   })
-  volumeUsdAll: number;
+  volumeUsdAll: string;
 }
 
 class PairWithLiquidity extends PairBase {
