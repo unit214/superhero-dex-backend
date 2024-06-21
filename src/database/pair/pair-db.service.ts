@@ -33,12 +33,12 @@ export class PairDbService {
         token1: string;
         synchronized: boolean;
         transactions: number;
-        tvlUsd: number;
-        volumeUsdDay: number;
-        volumeUsdWeek: number;
-        volumeUsdMonth: number;
-        volumeUsdYear: number;
-        volumeUsdAll: number;
+        tvlUsd: string;
+        volumeUsdDay: string;
+        volumeUsdWeek: string;
+        volumeUsdMonth: string;
+        volumeUsdYear: string;
+        volumeUsdAll: string;
       }[]
     >`
       SELECT
