@@ -5,7 +5,7 @@ OR REPLACE FUNCTION total_reserve (integer, interval) RETURNS numeric AS 'SELECT
                 ELSE (latest_liquidity_info."reserve1" / POW(10, t.decimals)) END
         )
  FROM "Token" t
-          LEFT JOIN public."Pair" p on t.id = p.t0 OR t.id = p.t1
+          LEFT JOIN "Pair" p on t.id = p.t0 OR t.id = p.t1
           LEFT JOIN LATERAL (SELECT *
                              FROM "PairLiquidityInfoHistory"
                              WHERE p.id = "pairId"
@@ -38,7 +38,7 @@ OR REPLACE FUNCTION volume_usd (integer, interval) RETURNS numeric AS 'SELECT RO
                              liquidity_history."aeUsdPrice" END END
         )::numeric, 4)
  FROM "Token" t
-          LEFT JOIN public."Pair" p on t.id = p.t0 OR t.id = p.t1
+          LEFT JOIN "Pair" p on t.id = p.t0 OR t.id = p.t1
           LEFT JOIN "PairLiquidityInfoHistory" liquidity_history ON p.id = liquidity_history."pairId"
 
  WHERE $1 = t.id' LANGUAGE SQL IMMUTABLE RETURNS NULL ON NULL INPUT;
@@ -51,7 +51,7 @@ OR REPLACE FUNCTION historic_price (integer, interval) RETURNS numeric AS 'SELEC
                     (latest_liquidity_info."reserve1" / POW(10, t.decimals)) END /
            total_reserve(t.id, $2))
  FROM "Token" t
-          LEFT JOIN public."Pair" p on t.id = p.t0 OR t.id = p.t1
+          LEFT JOIN "Pair" p on t.id = p.t0 OR t.id = p.t1
           LEFT JOIN LATERAL (SELECT *
                              FROM "PairLiquidityInfoHistory"
                              WHERE p.id = "pairId"
