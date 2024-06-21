@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 
@@ -7,6 +6,8 @@ import { ContractAddress } from '@/clients/sdk-client.model';
 import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
 import { TokenDbService } from '@/database/token/token-db.service';
+import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairPathCalculatorService } from '@/tasks/pair-path-calculator/pair-path-calculator.service';
 import { Context } from '@/tasks/pair-sync/pair-sync.model';
 import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
 import * as data from '@/test/mock-data/context-mock-data';
@@ -20,6 +21,7 @@ import { mockupEnvVars, TEST_NET_VARS } from '@/test/utils/env-mock';
 
 describe('PairSyncService', () => {
   let service: PairSyncService;
+  const getAllAddressesMock = jest.fn().mockResolvedValue([]);
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,10 +29,28 @@ describe('PairSyncService', () => {
         PairSyncService,
         SdkClientService,
         { provide: MdwWsClientService, useValue: {} },
-        { provide: PairDbService, useValue: {} },
+        {
+          provide: PairDbService,
+          useValue: {
+            getAllAddresses: getAllAddressesMock,
+            count: jest.fn(),
+          },
+        },
         {
           provide: TokenDbService,
           useValue: {},
+        },
+        {
+          provide: PairLiquidityInfoHistoryImporterService,
+          useValue: {
+            import: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: PairPathCalculatorService,
+          useValue: {
+            sync: jest.fn().mockResolvedValue(null),
+          },
         },
       ],
     }).compile();
@@ -44,25 +64,36 @@ describe('PairSyncService', () => {
     const initTestContext = (service: PairSyncService) => {
       type Ev = {
         onFactory: () => Promise<void>;
-        refreshPairsLiquidity: (contract: ContractAddress) => Promise<void>;
+        refreshPairLiquidityByAddress: (
+          contract: ContractAddress,
+        ) => Promise<void>;
         getAllAddresses: () => Promise<ContractAddress[]>;
       };
-      const { onFactory, refreshPairsLiquidity, getAllAddresses } = mock<Ev>();
-      const logger = mock<Logger>();
-      const eventHandler = service['createOnEventReceived'];
+      const { onFactory, refreshPairLiquidityByAddress } = mock<Ev>();
+
+      service['onFactoryEventReceived'] = onFactory;
+      service['refreshPairLiquidityByAddress'] = refreshPairLiquidityByAddress;
+
+      const logger = {
+        debug: jest.spyOn(service.logger, 'debug'),
+        error: jest.spyOn(service.logger, 'error'),
+      };
+
+      const eventHandler = service['createOnEventReceived'].bind(service);
       return {
-        getAllAddresses,
+        getAllAddresses: getAllAddressesMock,
         logger,
         eventHandler,
         onFactory,
-        refreshPairsLiquidity,
+        refreshPairLiquidityByAddress,
       };
     };
     type T = ReturnType<typeof initTestContext>;
     let logger: T['logger'] = null as any;
     let eventHandler: T['eventHandler'] = null as any;
     let onFactory: T['onFactory'] = null as any;
-    let refreshPairsLiquidity: T['refreshPairsLiquidity'] = null as any;
+    let refreshPairLiquidityByAddress: T['refreshPairLiquidityByAddress'] =
+      null as any;
     let getAllAddresses: T['getAllAddresses'] = null as any;
 
     beforeEach(async () => {
@@ -72,7 +103,7 @@ describe('PairSyncService', () => {
         logger,
         eventHandler,
         onFactory,
-        refreshPairsLiquidity,
+        refreshPairLiquidityByAddress,
         getAllAddresses,
       } = initTestContext(service));
     });
@@ -92,12 +123,9 @@ describe('PairSyncService', () => {
       );
     });
     it('throws error if no txInfo', async () => {
-      expect(
-        async () =>
-          await eventHandler({
-            ...objSubEv,
-          }),
-      ).rejects.toThrow(`No tx info for hash 'th_1'`);
+      expect(eventHandler({ ...objSubEv })).rejects.toThrow(
+        `No tx info for hash 'th_1'`,
+      );
     });
 
     it('ignores inverted transaction', async () => {
@@ -138,7 +166,7 @@ describe('PairSyncService', () => {
             },
           }),
         );
-      getAllAddresses.calledWith().mockReturnValue(Promise.resolve([]));
+      getAllAddresses.mockReturnValue(Promise.resolve([]));
       await eventHandler({
         ...objSubEv,
       });
@@ -174,15 +202,13 @@ describe('PairSyncService', () => {
             },
           }),
         );
-      getAllAddresses
-        .calledWith()
-        .mockReturnValue(Promise.resolve(['ct_p1', 'ct_p2']));
+      getAllAddresses.mockReturnValue(Promise.resolve(['ct_p1', 'ct_p2']));
 
       await eventHandler({
         ...objSubEv,
       });
-      expect(refreshPairsLiquidity).toHaveBeenCalledWith('ct_p1', 1);
-      expect(refreshPairsLiquidity).toHaveBeenCalledWith('ct_p2', 1);
+      expect(refreshPairLiquidityByAddress).toHaveBeenCalledWith('ct_p1', 1);
+      expect(refreshPairLiquidityByAddress).toHaveBeenCalledWith('ct_p2', 1);
     });
   });
 

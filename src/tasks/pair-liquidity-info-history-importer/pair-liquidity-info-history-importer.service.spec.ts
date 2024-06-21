@@ -22,6 +22,7 @@ import {
   initialMicroBlock,
   pairContract,
   pairWithTokens,
+  senderAccount,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 const mockPairDb = { getAll: jest.fn() };
@@ -40,6 +41,7 @@ const mockMdwClient = {
   getContract: jest.fn(),
   getMicroBlock: jest.fn(),
   getContractLogsUntilCondition: jest.fn(),
+  getSenderAccountForTransaction: jest.fn(),
 };
 
 const mockCoinmarketcapClient = {
@@ -95,6 +97,9 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         });
       mockMdwClient.getContract.mockResolvedValue(pairContract);
       mockMdwClient.getMicroBlock.mockResolvedValue(initialMicroBlock);
+      mockMdwClient.getSenderAccountForTransaction.mockResolvedValue(
+        senderAccount,
+      );
       mockCoinmarketcapClient.getHistoricalPriceDataThrottled.mockResolvedValue(
         coinmarketcapResponseAeUsdQuoteData,
       );
@@ -199,6 +204,9 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         contractLog4,
         contractLog5,
       ]);
+      mockMdwClient.getSenderAccountForTransaction.mockResolvedValue(
+        senderAccount,
+      );
 
       // Start import
       await service.import();
@@ -289,6 +297,9 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
         contractLog4,
         contractLog5,
       ]);
+      mockMdwClient.getSenderAccountForTransaction.mockResolvedValue(
+        senderAccount,
+      );
       mockPairLiquidityInfoHistoryDb.getLastlySyncedLogByPairId
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce(undefined)

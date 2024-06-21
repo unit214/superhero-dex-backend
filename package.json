@@ -17,11 +17,11 @@
     "serve:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest",
-    "test:watch": "test jest --watch",
-    "test:cov": "jest --coverage",
+    "test": "dotenv -e .env.test jest",
+    "test:watch": "npm run test -- --watch",
+    "test:cov": "npm run test -- --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "dotenv -e .env.test -- jest --runInBand --config ./test/e2e/jest-e2e.json",
+    "test:e2e": "npm run test -- --runInBand --config ./test/e2e/jest-e2e.json",
     "db": "docker compose up",
     "db:deploy": "docker compose up -d",
     "db:remove": "docker compose down -v",
@@ -44,7 +44,6 @@
     "@prisma/client": "^5.10.2",
     "bignumber.js": "^9.1.2",
     "dex-contracts-v2": "github:aeternity/dex-contracts-v2",
-    "dotenv": "^16.4.3",
     "limiter": "^2.1.0",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.1",
@@ -96,7 +95,6 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "setupFiles": [
-      "dotenv/config",
       "./test/setup.ts"
     ],
     "collectCoverageFrom": [

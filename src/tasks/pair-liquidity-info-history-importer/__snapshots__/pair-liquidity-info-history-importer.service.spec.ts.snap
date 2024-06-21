@@ -1,5 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PairLiquidityInfoHistoryImporterService import should catch and insert any error on log level (e.g. API rate limit reached) 1`] = `
+[
+  [
+    {
+      "aeUsdPrice": "0.050559",
+      "deltaReserve0": "1",
+      "deltaReserve1": "-1",
+      "eventType": "SwapTokens",
+      "height": 30003,
+      "logIndex": 2,
+      "microBlockHash": "mh_hash3",
+      "microBlockTime": 3000000000003n,
+      "pairId": 1,
+      "reserve0": "201",
+      "reserve1": "199",
+      "senderAccount": "ak_sender",
+      "transactionHash": "th_hash3",
+      "transactionIndex": 30000003n,
+    },
+  ],
+]
+`;
+
 exports[`PairLiquidityInfoHistoryImporterService import should import liquidity correctly 1`] = `
 [
   [
@@ -15,6 +38,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should import liquidity 
       "pairId": 1,
       "reserve0": "0",
       "reserve1": "0",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_",
       "transactionIndex": 0n,
     },
@@ -32,6 +56,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should import liquidity 
       "pairId": 1,
       "reserve0": "100",
       "reserve1": "100",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_hash1",
       "transactionIndex": 10000001n,
     },
@@ -49,6 +74,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should import liquidity 
       "pairId": 1,
       "reserve0": "200",
       "reserve1": "200",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_hash2",
       "transactionIndex": 20000002n,
     },
@@ -66,6 +92,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should import liquidity 
       "pairId": 1,
       "reserve0": "201",
       "reserve1": "199",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_hash3",
       "transactionIndex": 30000003n,
     },
@@ -83,6 +110,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should import liquidity 
       "pairId": 1,
       "reserve0": "100",
       "reserve1": "100",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_hash4",
       "transactionIndex": 40000004n,
     },
@@ -105,28 +133,7 @@ exports[`PairLiquidityInfoHistoryImporterService import should skip a log if the
       "pairId": 1,
       "reserve0": "201",
       "reserve1": "199",
-      "transactionHash": "th_hash3",
-      "transactionIndex": 30000003n,
-    },
-  ],
-]
-`;
-
-exports[`PairLiquidityInfoHistoryImporterService import should catch and insert any error on log level (e.g. API rate limit reached) 1`] = `
-[
-  [
-    {
-      "aeUsdPrice": "0.050559",
-      "deltaReserve0": "1",
-      "deltaReserve1": "-1",
-      "eventType": "SwapTokens",
-      "height": 30003,
-      "logIndex": 2,
-      "microBlockHash": "mh_hash3",
-      "microBlockTime": 3000000000003n,
-      "pairId": 1,
-      "reserve0": "201",
-      "reserve1": "199",
+      "senderAccount": "ak_sender",
       "transactionHash": "th_hash3",
       "transactionIndex": 30000003n,
     },
