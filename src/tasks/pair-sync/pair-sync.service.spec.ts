@@ -49,12 +49,7 @@ describe('PairSyncService', () => {
       };
       const { onFactory, refreshPairsLiquidity, getAllAddresses } = mock<Ev>();
       const logger = mock<Logger>();
-      const eventHandler = service['createOnEventReceived'](
-        logger,
-        onFactory,
-        refreshPairsLiquidity,
-        getAllAddresses,
-      );
+      const eventHandler = service['createOnEventReceived'];
       return {
         getAllAddresses,
         logger,

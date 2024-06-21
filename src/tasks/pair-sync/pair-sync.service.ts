@@ -13,6 +13,8 @@ import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { nonNullable } from '@/lib/utils';
+import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairPathCalculatorService } from '@/tasks/pair-path-calculator/pair-path-calculator.service';
 import {
   Aex9Methods,
   Context,
@@ -28,6 +30,8 @@ export class PairSyncService implements OnModuleInit {
     private readonly pairDb: PairDbService,
     private readonly mdwWsClient: MdwWsClientService,
     private readonly sdkClient: SdkClientService,
+    private readonly pairLiquidityInfoHistoryImporterService: PairLiquidityInfoHistoryImporterService,
+    private readonly pairPathCalculatorService: PairPathCalculatorService,
   ) {}
 
   readonly logger = new Logger(PairSyncService.name);
@@ -249,11 +253,15 @@ export class PairSyncService implements OnModuleInit {
       // the factory event handler was also involved here and will take care of the
       // newly created pair
       else if (addresses[contract]) {
-        // TODO trigger history sync here as well
-        return this.refreshPairLiquidityByAddress(
-          contract,
-          event.payload.block_height,
-        );
+        return Promise.all([
+          this.refreshPairLiquidityByAddress(
+            contract,
+            event.payload.block_height,
+          ),
+          this.pairLiquidityInfoHistoryImporterService.import().then(() => {
+            this.pairPathCalculatorService.sync();
+          }),
+        ]);
       }
       return Promise.resolve();
     });

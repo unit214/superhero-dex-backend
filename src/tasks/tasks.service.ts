@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
 import { PairPathCalculatorService } from '@/tasks/pair-path-calculator/pair-path-calculator.service';
 
+const EVERY_5_MINUTES_STARTING_AT_01_30 = '30 1-56/5 * * * *';
 const EVERY_5_MINUTES_STARTING_AT_02_30 = '30 2-57/5 * * * *';
+const EVERY_5_MINUTES_STARTING_AT_03_30 = '30 3-58/5 * * * *';
 
 @Injectable()
 export class TasksService {
@@ -25,7 +27,7 @@ export class TasksService {
     this._isRunning = isRunning;
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(EVERY_5_MINUTES_STARTING_AT_01_30)
   async runPairLiquidityInfoHistoryImporter() {
     try {
       if (!this.isRunning) {
@@ -41,7 +43,7 @@ export class TasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(EVERY_5_MINUTES_STARTING_AT_02_30)
   async runPairLiquidityInfoHistoryExchangeRateCalculator() {
     try {
       if (!this.isRunning) {
@@ -58,7 +60,7 @@ export class TasksService {
     }
   }
 
-  @Cron(EVERY_5_MINUTES_STARTING_AT_02_30)
+  @Cron(EVERY_5_MINUTES_STARTING_AT_03_30)
   async runPairLiquidityInfoHistoryValidator() {
     try {
       if (!this.isRunning) {
