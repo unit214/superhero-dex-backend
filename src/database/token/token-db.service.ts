@@ -27,20 +27,20 @@ export class TokenDbService {
         noContract: boolean;
         listed: boolean;
         priceAe: string;
-        priceUsd: number;
+        priceUsd: string;
         tvlAe: string;
-        tvlUsd: number;
+        tvlUsd: string;
         totalReserve: string;
         pairs: number;
-        volumeUsdDay: number;
-        volumeUsdWeek: number;
-        volumeUsdMonth: number;
-        volumeUsdYear: number;
-        volumeUsdAll: number;
-        priceChangeDay: number;
-        priceChangeWeek: number;
-        priceChangeMonth: number;
-        priceChangeYear: number;
+        volumeUsdDay: string;
+        volumeUsdWeek: string;
+        volumeUsdMonth: string;
+        volumeUsdYear: string;
+        volumeUsdAll: string;
+        priceChangeDay: string;
+        priceChangeWeek: string;
+        priceChangeMonth: string;
+        priceChangeYear: string;
       }[]
     >`
       SELECT
@@ -51,15 +51,18 @@ export class TokenDbService {
         t.malformed,
         t."noContract",
         t.listed,
-        SUM(
-          CASE
-            WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
-              latest_liquidity_info."reserve0" / POW (10, t.decimals)
-            )
-            ELSE (latest_liquidity_info."token1AePrice") * (
-              latest_liquidity_info."reserve1" / POW (10, t.decimals)
-            )
-          END / total_reserve (t.id, INTERVAL '0 DAY')
+        ROUND(
+          SUM(
+            CASE
+              WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+                latest_liquidity_info."reserve0" / POW (10, t.decimals)
+              )
+              ELSE (latest_liquidity_info."token1AePrice") * (
+                latest_liquidity_info."reserve1" / POW (10, t.decimals)
+              )
+            END / total_reserve (t.id, INTERVAL '0 DAY')
+          )::numeric,
+          18
         ) AS "priceAe",
         ROUND(
           SUM(
@@ -74,15 +77,18 @@ export class TokenDbService {
           )::numeric,
           4
         ) AS "priceUsd",
-        SUM(
-          CASE
-            WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
-              latest_liquidity_info."reserve0" / POW (10, t.decimals)
-            )
-            ELSE (latest_liquidity_info."token1AePrice") * (
-              latest_liquidity_info."reserve1" / POW (10, t.decimals)
-            )
-          END
+        ROUND(
+          SUM(
+            CASE
+              WHEN t.id = p.t0 THEN (latest_liquidity_info."token0AePrice") * (
+                latest_liquidity_info."reserve0" / POW (10, t.decimals)
+              )
+              ELSE (latest_liquidity_info."token1AePrice") * (
+                latest_liquidity_info."reserve1" / POW (10, t.decimals)
+              )
+            END
+          )::numeric,
+          18
         ) AS "tvlAe",
         ROUND(
           SUM(
