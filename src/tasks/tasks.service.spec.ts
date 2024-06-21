@@ -8,8 +8,10 @@ import { PairDbService } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PrismaService } from '@/database/prisma.service';
+import { TokenDbService } from '@/database/token/token-db.service';
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 import { PairLiquidityInfoHistoryValidatorService } from '@/tasks/pair-liquidity-info-history-validator/pair-liquidity-info-history-validator.service';
+import { PairPathCalculatorService } from '@/tasks/pair-path-calculator/pair-path-calculator.service';
 import { TasksService } from '@/tasks/tasks.service';
 
 describe('TasksService', () => {
@@ -31,6 +33,8 @@ describe('TasksService', () => {
         PairLiquidityInfoHistoryDbService,
         PairLiquidityInfoHistoryErrorDbService,
         PrismaService,
+        TokenDbService,
+        PairPathCalculatorService,
       ],
     }).compile();
 

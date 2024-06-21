@@ -63,6 +63,9 @@ export const pair3: Pair = {
 };
 
 export const historyEntry1: PairLiquidityInfoHistory = {
+  senderAccount: '',
+  token0AePrice: new Decimal(0.050559),
+  token1AePrice: new Decimal(0.050559),
   id: 111,
   pairId: 1,
   eventType: EventType.PairMint,
@@ -82,6 +85,9 @@ export const historyEntry1: PairLiquidityInfoHistory = {
 };
 
 export const historyEntry2: PairLiquidityInfoHistory = {
+  senderAccount: '',
+  token0AePrice: new Decimal(0.050559),
+  token1AePrice: new Decimal(0.050559),
   id: 222,
   pairId: 1,
   eventType: EventType.SwapTokens,
@@ -101,6 +107,9 @@ export const historyEntry2: PairLiquidityInfoHistory = {
 };
 
 export const historyEntry3: PairLiquidityInfoHistory = {
+  senderAccount: '',
+  token0AePrice: new Decimal(0.050559),
+  token1AePrice: new Decimal(0.050559),
   id: 333,
   pairId: 2,
   eventType: EventType.PairMint,
@@ -120,6 +129,9 @@ export const historyEntry3: PairLiquidityInfoHistory = {
 };
 
 export const historyEntry4: PairLiquidityInfoHistory = {
+  senderAccount: '',
+  token0AePrice: new Decimal(0.050559),
+  token1AePrice: new Decimal(0.050559),
   id: 444,
   pairId: 2,
   eventType: EventType.SwapTokens,
@@ -263,3 +275,5 @@ export const coinmarketcapResponseAeUsdQuoteData = {
     },
   },
 };
+
+export const senderAccount = 'ak_sender';
