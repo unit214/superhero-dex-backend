@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.1](https://www.github.com/unit214/superhero-dex-backend/compare/v1.2.0...v1.2.1) (2024-06-24)
+
+
+### CI / CD
+
+* fix tag in production deploy step ([342f51e](https://www.github.com/unit214/superhero-dex-backend/commit/342f51e6b2bfb83e9db7d8978eeac6170d055f37))
+
 ## [1.2.0](https://www.github.com/aeternity/dex-backend/compare/v1.1.1...v1.2.0) (2024-05-02)
 
 
