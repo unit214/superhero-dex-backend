@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/aeternity/dex-backend/compare/v1.3.0...v1.3.1) (2024-06-25)
+
+
+### Bug Fixes
+
+* removes schema name from migration ([b36b698](https://www.github.com/aeternity/dex-backend/commit/b36b698c1c9e96bef309b12580624021f4f568eb))
+
 ## [1.3.0](https://www.github.com/aeternity/dex-backend/compare/v1.2.0...v1.3.0) (2024-06-25)
 
 
