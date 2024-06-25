@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/unit214/superhero-dex-backend/compare/v1.3.0...v1.3.1) (2024-06-25)
+
+
+### Bug Fixes
+
+* removes schema name from migration ([53f4c1d](https://www.github.com/unit214/superhero-dex-backend/commit/53f4c1d91e24d03fe1fbccb0dc4e281ad00785e9))
+
 ## [1.3.0](https://www.github.com/aeternity/dex-backend/compare/v1.2.0...v1.3.0) (2024-06-25)
 
 
