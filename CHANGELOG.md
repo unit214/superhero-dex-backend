@@ -1,5 +1,119 @@
 # Changelog
 
+## [1.3.0](https://www.github.com/aeternity/dex-backend/compare/v1.2.0...v1.3.0) (2024-06-25)
+
+
+### Features
+
+* add fdvAe, fdvUsd, volumeUsd fields ([9a86f06](https://www.github.com/aeternity/dex-backend/commit/9a86f0658a811d914e67a779281c7a65ed1750d5))
+* add price change percentage ([1718070](https://www.github.com/aeternity/dex-backend/commit/1718070036d645c4399abe97fe5e3299401a6a9a))
+* add priceAe and priceUsd fields ([c6ea21b](https://www.github.com/aeternity/dex-backend/commit/c6ea21b15591cd69fa608b854e7a54b23019d2a4))
+* add transactionHash to error table ([82d60fc](https://www.github.com/aeternity/dex-backend/commit/82d60fc66479341b8753f8083344bba75c075848))
+* added new tables, added v2 importer and dbs ([10b46d9](https://www.github.com/aeternity/dex-backend/commit/10b46d9f9af9e39da0408b4aff4809f8da3b1294))
+* adds sync algorithm to path calculator ([cab8b70](https://www.github.com/aeternity/dex-backend/commit/cab8b70b8852b148855edd2b0b68afd59ca807b4))
+* change eslint simple-import-sort from warn to error, improve comment ([a3011a5](https://www.github.com/aeternity/dex-backend/commit/a3011a5d192c308cceee313e8657567d2ea82324))
+* **explore:** adds api descriptions for updated endpoints ([af70592](https://www.github.com/aeternity/dex-backend/commit/af705926ba498ce5ea35dbab07d7aa7fa5bdf0ad))
+* expose pair transactions count ([dcdcfcb](https://www.github.com/aeternity/dex-backend/commit/dcdcfcb43fcf22c7484cb5031d45f7e0bc67d440))
+* expose tvl usd ([aa101db](https://www.github.com/aeternity/dex-backend/commit/aa101db4fef6c896c9c579017b787b718cfc30dd))
+* expose volumes for given timeframes ([47da600](https://www.github.com/aeternity/dex-backend/commit/47da6001bf5abff16c3e21276c9056369ae0c91a))
+* fetches and exposes data for sender ([b0c92c6](https://www.github.com/aeternity/dex-backend/commit/b0c92c6c44c517f208b060ed6acde251e25ca1dd))
+* **history:** actually returns history entries ([57346bb](https://www.github.com/aeternity/dex-backend/commit/57346bb89c8f85dde3d95222412459ba09cd35b7))
+* **history:** adds aeprice and query for entries without ([9b4dfdf](https://www.github.com/aeternity/dex-backend/commit/9b4dfdf335df11d09f3793ac817ec9a499ef762f))
+* **history:** adds history query by token ([05b90c0](https://www.github.com/aeternity/dex-backend/commit/05b90c037677e102da809316a9167bdd60cb5e0d))
+* **history:** finishes history price api ([2327b8b](https://www.github.com/aeternity/dex-backend/commit/2327b8b42d156b0b9d34322bf9b0c534cc8305ef))
+* **history:** moves usd calculation to the backend ([51fedb2](https://www.github.com/aeternity/dex-backend/commit/51fedb21becaedefd6953686971a52f5bbd902c0))
+* **history:** separates usd values by token ([ae21fff](https://www.github.com/aeternity/dex-backend/commit/ae21fffd4f84be6c4d936d830e52187364d35f44))
+* implemented fetching of fiat price via coinmarketcap api ([37e099a](https://www.github.com/aeternity/dex-backend/commit/37e099ac08a75b81def21183d9d3920ba8131358))
+* implemented validator v2 ([d35b31c](https://www.github.com/aeternity/dex-backend/commit/d35b31c00e165b41e99b338093ac7ead3eeb8e11))
+* **pairs:** adds token filter to pair usd endpoint ([d1dbbb7](https://www.github.com/aeternity/dex-backend/commit/d1dbbb72244edd90e5825c80f5e9f2a309f1e867))
+* parse event and insert reserve and deltaReserve ([7858329](https://www.github.com/aeternity/dex-backend/commit/78583298b61c9db2d89aabf59b37320ddfe22256))
+* pr feedback: sync events with deltaReserves, code improvements, correct CronExpression for v2 importer ([c38f495](https://www.github.com/aeternity/dex-backend/commit/c38f4956b004103366004d8e0d38707562ebd94c))
+* triggers history sync on new tx ([138d45c](https://www.github.com/aeternity/dex-backend/commit/138d45c3056709aa83dab56235f491047f36be8d))
+* update schema in preparation of event parsing, update comments ([aa3bf17](https://www.github.com/aeternity/dex-backend/commit/aa3bf17d6cd53cd4bd1e80e47ab79178f6dca203))
+
+
+### Bug Fixes
+
+* add not previously checked in forgotten migration ([945fd25](https://www.github.com/aeternity/dex-backend/commit/945fd2521b98ba0a6f5bf2e77b6ed43b0017ed66))
+* addresses type issues ([4ae5393](https://www.github.com/aeternity/dex-backend/commit/4ae539331bd6cb498f2e9618512dc63f3e267320))
+* db v2 e2e test ([3b27f2d](https://www.github.com/aeternity/dex-backend/commit/3b27f2d0d66bc65f1e2e6c82e406b9b0e6f9325c))
+* eslint import order ([9786ed1](https://www.github.com/aeternity/dex-backend/commit/9786ed1ee7ee8106afa99da6aa2e7e79a8d6d2e3))
+* fix int-as-string param in mdw paginated calls ([a148233](https://www.github.com/aeternity/dex-backend/commit/a1482338c39526fa19f9d2f59cc84e77f8be0cef))
+* **history:** also sort by log index ([74237c3](https://www.github.com/aeternity/dex-backend/commit/74237c32b8142fee668e8dcfe32c054f670e4b06))
+* **history:** joins in decimals for proper price calculation ([58abcb2](https://www.github.com/aeternity/dex-backend/commit/58abcb276f282088d8026a10e4e33ae5b5d23035))
+* linter ([3d76c9d](https://www.github.com/aeternity/dex-backend/commit/3d76c9d92938cc2d40103f80e6ed8d64ce67212b))
+* PairMint amount parsing ([e560ef8](https://www.github.com/aeternity/dex-backend/commit/e560ef8cea95aff3ffdefdfcc9b60034188ea3bc))
+* **pair:** this being undefined during event based sync ([634b760](https://www.github.com/aeternity/dex-backend/commit/634b76058108e95993e43ae5d37689fc6ab440ca))
+* **pair:** this being undefined during factory event ([932646b](https://www.github.com/aeternity/dex-backend/commit/932646bb511221b7772ff5379bc34ee8b70e7cac))
+* re-added task module to app module, added correct filter in importer v2 ([6766a02](https://www.github.com/aeternity/dex-backend/commit/6766a02e480676aa22aaf19f0bb6e9569b777970))
+* removes .env file from repo ([7daeb55](https://www.github.com/aeternity/dex-backend/commit/7daeb55d3fa7bf34630fa6905dbe47f9bc24cbf4))
+* strict-boolean-expressions eslint errors ([dca0e53](https://www.github.com/aeternity/dex-backend/commit/dca0e536ee675a5efdd401e8835a739f5afdca34))
+* tasks service unit test ([2b518c4](https://www.github.com/aeternity/dex-backend/commit/2b518c438f8f923de59b5280bf9f70d3c7eeeca1))
+* usd value pattern regex ([98f88e3](https://www.github.com/aeternity/dex-backend/commit/98f88e3fc5c5970ee9a55dafd0c9475bc0674416))
+
+
+### CI / CD
+
+* fix tag in production deploy step ([342f51e](https://www.github.com/aeternity/dex-backend/commit/342f51e6b2bfb83e9db7d8978eeac6170d055f37))
+
+
+### Refactorings
+
+* adds senderAccount to data model ([cc01a9a](https://www.github.com/aeternity/dex-backend/commit/cc01a9add10a4ffcf6b62a9caef56e7290bb5aa9))
+* adds senderAccount to database ([873c66f](https://www.github.com/aeternity/dex-backend/commit/873c66fe355dad2a2163a4ab4b19da70403fe13d))
+* adjust and fix worker related tests ([204b799](https://www.github.com/aeternity/dex-backend/commit/204b799eb1bd89522ea9169f33167e5971a7ea39))
+* deleted worker directory ([e4eff52](https://www.github.com/aeternity/dex-backend/commit/e4eff5267d3e0fa4b8209706703fdd8be45ba391))
+* feedback: db changes, move sliding window blocks to constant ([4f2f9ae](https://www.github.com/aeternity/dex-backend/commit/4f2f9ae2215daa65ef5ae616234573df2c822d9d))
+* improve imports in main.ts ([61eac3a](https://www.github.com/aeternity/dex-backend/commit/61eac3a6a333f0ea0c93c8223023afb2dd07b5c1))
+* improved type and variable naming consistency ([86576b5](https://www.github.com/aeternity/dex-backend/commit/86576b569354de45033ae1ac43070f8fa4b1bf4f))
+* include pair and tokens in getWithinHeightSorted ([e3ff28c](https://www.github.com/aeternity/dex-backend/commit/e3ff28c95294e12a6d0a898c4fe60aca73fc6f3f))
+* make private methods private, use square brackets accessor for tests ([056304a](https://www.github.com/aeternity/dex-backend/commit/056304aaf9d25ace2ca81b9fa97bbb3cc67ef86d))
+* move context to PairSyncService, create SdkClientService ([10ad395](https://www.github.com/aeternity/dex-backend/commit/10ad39530d61bda13037d73c239de3a46497b41e))
+* move db logic to nest, create ApiModule ([dc79a59](https://www.github.com/aeternity/dex-backend/commit/dc79a59ed4a6faabb05491301ec3b872d155c85f))
+* move dto.ts to /api and rename to api.model.ts ([c229813](https://www.github.com/aeternity/dex-backend/commit/c22981370eac536f58d52f236e6bd868bba8f4aa))
+* move worker and mdw websocket to nest services, rename worker to PairSyncService ([e5a60d9](https://www.github.com/aeternity/dex-backend/commit/e5a60d915241aff2ecdc17c1fece75745451d80a))
+* **pair:** avoid parametrization of functions ([b7f4cdd](https://www.github.com/aeternity/dex-backend/commit/b7f4cdd7f5e4ac08395f1c13c572d19e4f4be4a5))
+* re-move tokenConditions into PairDbService ([ec48d4d](https://www.github.com/aeternity/dex-backend/commit/ec48d4de8c8bd19071a0f2883ef4263a46aabaca))
+* remove unnecessary type casting ([d1e1426](https://www.github.com/aeternity/dex-backend/commit/d1e1426e9dc979569ac6417a44233991c60c9410))
+* remove v1 history and rename v2 history to just history ([9f13fec](https://www.github.com/aeternity/dex-backend/commit/9f13fec137eaa10d3c0b25b22d9cf46ac3efa951))
+* rename api files to reflect class name ([b5908aa](https://www.github.com/aeternity/dex-backend/commit/b5908aa208ea0987a01850d4a0249a4f5a90b4c7))
+* reorder and adjust privacy of functions in PairSyncService and MdwWsClientService ([bb2c17f](https://www.github.com/aeternity/dex-backend/commit/bb2c17fbbe9afcc17d350fd6c8e644ab120ac891))
+* reorganize tests according to nest best practice ([0540871](https://www.github.com/aeternity/dex-backend/commit/05408710dbfd566858d070faac650d45d72bdec1))
+* simplify total reserve function ([b782098](https://www.github.com/aeternity/dex-backend/commit/b7820981fc06311863d030b76d95bf5cee5b9b4d))
+* updates query params from kebab to camel case ([419dd0d](https://www.github.com/aeternity/dex-backend/commit/419dd0dcee1057224d0d8f9eed30eda25b3edd45))
+* use absolute import paths and sort imports with eslint ([f85499b](https://www.github.com/aeternity/dex-backend/commit/f85499b2c8846e47af43370a5eee3450067506d6))
+* use decimal instead of bigint in db ([89799a9](https://www.github.com/aeternity/dex-backend/commit/89799a9d5ecaa1115a2ecf57c97b42a4c91f554d))
+* use HttpService in MdwHttpClientService ([dce7322](https://www.github.com/aeternity/dex-backend/commit/dce73222a99adb603c608302ab426e2dd06c836d))
+
+
+### Miscellaneous
+
+* add prettier for embedded sql ([c2df26a](https://www.github.com/aeternity/dex-backend/commit/c2df26acba18a16630adcdbc2fb9e5ab85eecf3a))
+* adds todo ([b5737b0](https://www.github.com/aeternity/dex-backend/commit/b5737b01844022104480a29fed74305aa94ff217))
+* adds todos for further fields ([f74f96f](https://www.github.com/aeternity/dex-backend/commit/f74f96fb025bbcc335c96e4799feb639cfdfa565))
+* adds todos for philipp ([1c554a1](https://www.github.com/aeternity/dex-backend/commit/1c554a10e379194433c606eddc1fe35cb6fe2fdc))
+* cleanup api spec, round ae value to 18 decimals, db migrate instead of push ([5c6b99e](https://www.github.com/aeternity/dex-backend/commit/5c6b99ec4508f33a75291423a55e79d14fb88334))
+* fixes mock ae value ([5c34119](https://www.github.com/aeternity/dex-backend/commit/5c34119e088904c283c26af0b89df02b9d3e8a68))
+* removes a few console.log calls ([ab14b04](https://www.github.com/aeternity/dex-backend/commit/ab14b04fff8b3bc57935044993092e6a1e8af268))
+* rename fdv to tvl as we aren't using total supply in calculation ([cb79433](https://www.github.com/aeternity/dex-backend/commit/cb7943345280c9a34d61cb6c6762a0ba20f140cf))
+* wip ([6f6380d](https://www.github.com/aeternity/dex-backend/commit/6f6380d7b91e70fc18d203253edd5d24dcd0ee41))
+
+
+### Testing
+
+* add unit test for CoinmarketcapClient ([d8f4d31](https://www.github.com/aeternity/dex-backend/commit/d8f4d31742e2b779f203e661d3540fc5d3e8e460))
+* add unit tests for validatorV2 ([44d91a5](https://www.github.com/aeternity/dex-backend/commit/44d91a56f609c040124ae8d2e75902f7005a0e07))
+* e2e tests for v2 dbs ([bbcd4a4](https://www.github.com/aeternity/dex-backend/commit/bbcd4a4c5ae1782df69a08b53cb44235040ed8b8))
+* feedback: introduce jest snapshots ([ef61c86](https://www.github.com/aeternity/dex-backend/commit/ef61c86ecb112ff7356358f1410c2d0746152ab3))
+* feedback: use it.skip() for commented out test ([7924c41](https://www.github.com/aeternity/dex-backend/commit/7924c41ce0d7273997ebc6de874c4c3de5f9e033))
+* fix existing tests ([c95d4e2](https://www.github.com/aeternity/dex-backend/commit/c95d4e2f9b1d89ce664435c931f1f0a8bd2b5a86))
+* fix task service unit test ([604580a](https://www.github.com/aeternity/dex-backend/commit/604580a9513874b38fb053a65b66e4b80c255f91))
+* fixes all currently active tests ([0fee94c](https://www.github.com/aeternity/dex-backend/commit/0fee94c8cba49eb3aa40df1a60c5cb52727a6181))
+* improve robustness of CoinmarketcapClient spec ([37c55e2](https://www.github.com/aeternity/dex-backend/commit/37c55e2e6921dea76072a1ca053f1ec0fecdff70))
+* include coinmarketcap API error in importer unit test ([267bb7e](https://www.github.com/aeternity/dex-backend/commit/267bb7e809d7b516a17eb827b7a7249500152395))
+* re-organize mock data and utils ([6152790](https://www.github.com/aeternity/dex-backend/commit/61527903a11f91264c4fddbfc2ee5d692bff993d))
+* unit tests for importerV2 ([3846b84](https://www.github.com/aeternity/dex-backend/commit/3846b84841a3b4aedf94b2bd528bb597054407fd))
+
 ## [1.2.0](https://www.github.com/aeternity/dex-backend/compare/v1.1.1...v1.2.0) (2024-05-02)
 
 
