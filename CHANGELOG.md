@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/aeternity/dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
+
+
+### Features
+
+* adds listing token script ([3c23b68](https://www.github.com/aeternity/dex-backend/commit/3c23b683081e602785415add276d14aa41dc91d4))
+
+
+### Bug Fixes
+
+* removes schema from query ([91b3595](https://www.github.com/aeternity/dex-backend/commit/91b35957c3844a61881c723e2fe8728a7f40449a))
+
 ### [1.3.1](https://www.github.com/aeternity/dex-backend/compare/v1.3.0...v1.3.1) (2024-06-25)
 
 
