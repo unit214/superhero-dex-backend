@@ -131,7 +131,7 @@ export class TokenDbService {
         ) * 100 AS "priceChangeYear"
       FROM
         "Token" t
-        LEFT JOIN public."Pair" p ON t.id = p.t0
+        LEFT JOIN "Pair" p ON t.id = p.t0
         OR t.id = p.t1
         LEFT JOIN LATERAL (
           SELECT
