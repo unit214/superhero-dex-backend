@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
+
+
+### Features
+
+* adds listing token script ([773febb](https://www.github.com/unit214/superhero-dex-backend/commit/773febbe711cb4839f3e3693df2ca2c9812358f7))
+
+
+### Bug Fixes
+
+* removes schema from query ([573a113](https://www.github.com/unit214/superhero-dex-backend/commit/573a113fa0691677c6f205fb6612bdfbe5ce81ac))
+
 ### [1.3.1](https://www.github.com/aeternity/dex-backend/compare/v1.3.0...v1.3.1) (2024-06-25)
 
 
