@@ -13,15 +13,20 @@ async function main() {
     'ct_xtk8rSz9suPb6D6VLquyfVji25FcnFRDjn3dnn5mmvHsPiESt',
   ];
 
+  const testnetTokens = [
+    'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
+    'ct_7tTzPfvv3Vx8pCEcuk1kmgtn4sFsYCQDzLi1LvFs8T5PJqgsC',
+    'ct_28w7VyXS6UDNbyWZxZLtxpDKJorfpYyBQM4f9quseFEByUeDpb',
+    'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
+  ];
+
   const MAINNET_DEX_BACKEND_URL =
     'https://dex-backend-mainnet.prd.service.aepps.com';
   const TESTNET_DEX_BACKEND_URL =
     'https://dex-backend-testnet.prd.service.aepps.com';
 
-  const path = '/tokens/listed/';
-
   for (const token of mainnetTokens) {
-    await fetch(`${MAINNET_DEX_BACKEND_URL}${path}${token}`, {
+    await fetch(`${MAINNET_DEX_BACKEND_URL}/tokens/listed/${token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
