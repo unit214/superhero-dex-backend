@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.4.0...v1.5.0) (2024-07-26)
+
+
+### Features
+
+* adds caching to costly endpoints ([6d21829](https://www.github.com/unit214/superhero-dex-backend/commit/6d21829c98f37e54045b5a9e0c7b9138434b0336))
+
+
+### Miscellaneous
+
+* adds testnet tokens to listing script ([cd2d80f](https://www.github.com/unit214/superhero-dex-backend/commit/cd2d80f52a8db2d1aebb0b068ea797cf308093cf))
+
 ## [1.4.0](https://www.github.com/aeternity/dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
 
 
