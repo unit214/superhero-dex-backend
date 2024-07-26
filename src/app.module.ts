@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 
 import { ApiModule } from '@/api/api.module';
@@ -13,7 +14,15 @@ import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
 import { TasksModule } from '@/tasks/tasks.module';
 
 @Module({
-  imports: [ApiModule, ClientsModule, DatabaseModule, TasksModule],
+  imports: [
+    ApiModule,
+    ClientsModule,
+    DatabaseModule,
+    TasksModule,
+    CacheModule.register({
+      isGlobal: true,
+    }),
+  ],
   controllers: [AppController],
   providers: [
     MdwWsClientService,

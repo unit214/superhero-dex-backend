@@ -7,6 +7,8 @@ import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-inf
 import { bigIntToDecimal } from '@/lib/utils';
 import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
 import resetAllMocks = jest.resetAllMocks;
+import { CacheModule } from '@nestjs/cache-manager';
+
 import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
 import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import {
@@ -72,6 +74,11 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
           provide: CoinmarketcapClientService,
           useValue: mockCoinmarketcapClient,
         },
+      ],
+      imports: [
+        CacheModule.register({
+          isGlobal: true,
+        }),
       ],
     }).compile();
     service = module.get<PairLiquidityInfoHistoryImporterService>(

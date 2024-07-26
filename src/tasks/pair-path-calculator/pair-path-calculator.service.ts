@@ -1,3 +1,4 @@
+import { Cache } from '@nestjs/cache-manager';
 import { Injectable, Logger } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 import BigNumber from 'bignumber.js';
@@ -11,6 +12,7 @@ export class PairPathCalculatorService {
   constructor(
     private pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
     private tokenDb: TokenDbService,
+    private cacheManager: Cache,
   ) {}
 
   readonly logger = new Logger(PairPathCalculatorService.name);
@@ -26,6 +28,8 @@ export class PairPathCalculatorService {
     if (!waeToken) {
       throw new Error('WAE token not found in db');
     }
+
+    let updates = 0;
 
     for (const entry of entries) {
       this.logger.debug(`Processing entry ${entry.id}`);
@@ -127,6 +131,11 @@ export class PairPathCalculatorService {
             ? new Decimal(aePrices[1].toString())
             : new Decimal(-1),
       });
+      updates += 1;
+    }
+    if (updates > 0) {
+      this.logger.debug(`Updated tokenAePrice in ${updates} entries`);
+      await this.cacheManager.reset();
     }
   }
 }
