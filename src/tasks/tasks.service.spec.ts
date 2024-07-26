@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
@@ -35,6 +36,11 @@ describe('TasksService', () => {
         PrismaService,
         TokenDbService,
         PairPathCalculatorService,
+      ],
+      imports: [
+        CacheModule.register({
+          isGlobal: true,
+        }),
       ],
     }).compile();
 

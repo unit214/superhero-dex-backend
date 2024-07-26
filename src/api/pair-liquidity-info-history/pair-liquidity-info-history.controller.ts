@@ -1,9 +1,11 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import {
   Controller,
   Get,
   ParseEnumPipe,
   ParseIntPipe,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import BigNumber from 'bignumber.js';
@@ -15,6 +17,7 @@ import { ContractAddress } from '@/clients/sdk-client.model';
 import { calculateUsdValue } from '@/lib/utils';
 
 @Controller('history')
+@UseInterceptors(CacheInterceptor)
 export class PairLiquidityInfoHistoryController {
   constructor(
     private readonly pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
@@ -76,6 +79,7 @@ export class PairLiquidityInfoHistoryController {
     required: false,
   })
   @ApiResponse({ status: 200, type: [PairLiquidityInfoHistoryEntry] })
+  @CacheTTL(24 * 60 * 60 * 1000)
   async findAll(
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 100,
     @Query('offset', new ParseIntPipe({ optional: true })) offset: number = 0,

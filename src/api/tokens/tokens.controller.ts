@@ -1,3 +1,4 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import {
   Controller,
   Delete,
@@ -7,6 +8,7 @@ import {
   Param,
   Post,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiHeaders,
@@ -43,6 +45,8 @@ const toDtoToken = ({
   id, // eslint-disable-line @typescript-eslint/no-unused-vars
   ...tail
 }: prisma.Token) => tail;
+
+@UseInterceptors(CacheInterceptor)
 @Controller('tokens')
 export class TokensController {
   constructor(private readonly tokensService: TokensService) {}
@@ -53,6 +57,7 @@ export class TokensController {
     description: `All the tokens no matter if are officially supported by the DEX (listed=true) or not will be retrieved`,
   })
   @ApiResponse({ status: 200, type: [dto.TokenWithUsd] })
+  @CacheTTL(24 * 60 * 60 * 1000)
   async getAllTokens(): Promise<dto.TokenWithUsd[]> {
     return this.tokensService.getAllTokensWithAggregation();
   }

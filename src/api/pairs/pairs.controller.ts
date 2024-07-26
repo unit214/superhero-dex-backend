@@ -1,9 +1,11 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import {
   Controller,
   Get,
   NotFoundException,
   Param,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import * as prisma from '@prisma/client';
@@ -45,6 +47,7 @@ const toLiquidityInfoDto = (
 ): dto.LiquidityInfo | undefined =>
   liquidityInfo ? removeId(liquidityInfo) : undefined;
 
+@UseInterceptors(CacheInterceptor)
 @Controller('pairs')
 export class PairsController {
   constructor(private readonly pairsService: PairsService) {}
@@ -70,6 +73,7 @@ for this purpose use the individual \`pairs/:address\` route`,
     required: false,
   })
   @ApiResponse({ status: 200, type: [dto.PairWithUsd] })
+  @CacheTTL(24 * 60 * 60 * 1000)
   async getAllPairs(
     @Query('only-listed') onlyListedStr?: string, // false | true
     @Query('token') token?: ContractAddress,

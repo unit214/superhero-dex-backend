@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Pair, PairLiquidityInfoHistory } from '@prisma/client';
@@ -28,6 +29,11 @@ describe('PairLiquidityInfoHistoryController', () => {
           provide: PairLiquidityInfoHistoryService,
           useValue: mockPairLiquidityInfoHistoryService,
         },
+      ],
+      imports: [
+        CacheModule.register({
+          isGlobal: true,
+        }),
       ],
     }).compile();
 

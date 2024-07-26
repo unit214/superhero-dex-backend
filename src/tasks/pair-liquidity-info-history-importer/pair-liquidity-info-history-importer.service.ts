@@ -1,3 +1,4 @@
+import { Cache } from '@nestjs/cache-manager';
 import { Injectable, Logger } from '@nestjs/common';
 import { orderBy } from 'lodash';
 
@@ -41,6 +42,7 @@ export class PairLiquidityInfoHistoryImporterService {
     private mdwClient: MdwHttpClientService,
     private sdkClient: SdkClientService,
     private coinmarketcapClient: CoinmarketcapClientService,
+    private cacheManager: Cache,
   ) {}
 
   readonly logger = new Logger(PairLiquidityInfoHistoryImporterService.name);
@@ -265,6 +267,7 @@ export class PairLiquidityInfoHistoryImporterService {
         }
 
         if (numUpserted > 0) {
+          await this.cacheManager.reset();
           this.logger.log(
             `Completed sync for pair ${pairWithTokens.id} ${pairWithTokens.address}. Synced ${numUpserted} log(s).`,
           );
