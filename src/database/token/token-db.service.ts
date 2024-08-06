@@ -107,6 +107,7 @@ export class TokenDbService {
         count(p.id)::integer AS "pairs",
         volume_usd (t.id, INTERVAL '1 DAY') AS "volumeUsdDay",
         volume_usd (t.id, INTERVAL '1 WEEK') AS "volumeUsdWeek",
+        volume_usd (t.id, INTERVAL '1 MONTH') AS "volumeUsdMonth",
         volume_usd (t.id, INTERVAL '1 YEAR') AS "volumeUsdYear",
         volume_usd (t.id, INTERVAL '100 YEAR') AS "volumeUsdAll",
         (
