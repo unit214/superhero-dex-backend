@@ -98,7 +98,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
     return token;
   }
 
-  @Get('by-address/:address/pairs')
+  @Get(':address/pairs')
   @ApiParam({
     name: 'address',
     required: true,
