@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Pair, PairLiquidityInfo, Token } from '@prisma/client';
 
+import { TokenWithUsd } from '@/api/api.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { presentInvalidTokens } from '@/lib/utils';
@@ -14,7 +15,7 @@ export class TokensService {
   async getAllTokens(): Promise<Token[]> {
     return this.tokenDbService.getAll(presentInvalidTokens);
   }
-  async getAllTokensWithAggregation() {
+  async getAllTokensWithAggregation(): Promise<TokenWithUsd[]> {
     return this.tokenDbService.getAllWithAggregation(presentInvalidTokens);
   }
   async getListedTokens(): Promise<Token[]> {
@@ -29,14 +30,8 @@ export class TokensService {
     return this.tokenDbService.updateListedValue(address, false);
   }
 
-  async getToken(address: ContractAddress): Promise<
-    | (Token & {
-        pairs0: Pair[];
-        pairs1: Pair[];
-      })
-    | null
-  > {
-    return this.tokenDbService.getByAddressWithPairs(address);
+  async getToken(address: ContractAddress): Promise<TokenWithUsd | null> {
+    return this.tokenDbService.getWithAggregation(address);
   }
 
   async getTokenWithPairsInfo(address: ContractAddress): Promise<
