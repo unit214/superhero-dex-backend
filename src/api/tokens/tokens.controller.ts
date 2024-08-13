@@ -73,7 +73,7 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
     return (await this.tokensService.getListedTokens()).map(toDtoToken);
   }
 
-  @Get('by-address/:address')
+  @Get(':address')
   @ApiParam({
     name: 'address',
     required: true,
@@ -86,26 +86,16 @@ use \`tokens/:address\` or \`tokens/:address/pairs\` `,
     summary: 'Gets a specific token',
     description: `Gets information about a specific token with all belonging pair addresses`,
   })
-  @ApiResponse({ status: 200, type: dto.TokenWithPairAddresses })
+  @ApiResponse({ status: 200, type: dto.TokenWithUsd })
   @ApiResponse({ status: 404 })
   async findOne(
     @Param('address') address: ContractAddress,
-  ): Promise<dto.TokenWithPairAddresses> {
+  ): Promise<dto.TokenWithUsd> {
     const token = await this.tokensService.getToken(address);
     if (!token) {
       throw new NotFoundException('token not found');
     }
-
-    const {
-      pairs0,
-      pairs1,
-      id, // eslint-disable-line @typescript-eslint/no-unused-vars
-      ...tail
-    } = token;
-    return {
-      ...tail,
-      pairs: pairs0.concat(pairs1).map((x) => x.address),
-    };
+    return token;
   }
 
   @Get('by-address/:address/pairs')
