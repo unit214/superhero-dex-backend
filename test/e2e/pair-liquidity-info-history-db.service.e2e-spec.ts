@@ -18,6 +18,7 @@ import {
   token1,
   token2,
   token3,
+  token5,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 describe('PairLiquidityInfoHistoryDbService', () => {
@@ -36,7 +37,9 @@ describe('PairLiquidityInfoHistoryDbService', () => {
   });
 
   beforeEach(async () => {
-    await prismaService.token.createMany({ data: [token1, token2, token3] });
+    await prismaService.token.createMany({
+      data: [token1, token2, token3, token5],
+    });
     await prismaService.pair.createMany({ data: [pair1, pair2, pair3] });
     await prismaService.pairLiquidityInfoHistory.createMany({
       data: [historyEntry4, historyEntry2, historyEntry3, historyEntry1],
@@ -62,11 +65,14 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         reserve1: new Decimal(500),
         deltaReserve0: new Decimal(-500),
         deltaReserve1: new Decimal(-500),
+        token0AePrice: new Decimal(0.060559),
+        token1AePrice: new Decimal(0.060559),
         aeUsdPrice: new Decimal(0.060559),
         height: 200002,
         microBlockHash: historyEntry2.microBlockHash,
         microBlockTime: 2000000000002n,
         transactionHash: historyEntry2.transactionHash,
+        senderAccount: 'abc',
         transactionIndex: 200002n,
         logIndex: historyEntry2.logIndex,
       };
@@ -85,11 +91,14 @@ describe('PairLiquidityInfoHistoryDbService', () => {
         reserve1: new Decimal(500),
         deltaReserve0: new Decimal(-500),
         deltaReserve1: new Decimal(-500),
+        token0AePrice: new Decimal(0),
+        token1AePrice: new Decimal(0),
         aeUsdPrice: new Decimal(0),
         height: 500005,
         microBlockHash: 'mh_entry5',
         microBlockTime: 5000000000005n,
         transactionHash: 'th_entry5',
+        senderAccount: '',
         transactionIndex: 500005n,
         logIndex: 1,
       };
@@ -132,7 +141,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
 
   describe('getAll', () => {
     it('should return all entries', async () => {
-      const result = await service.getAll(100, 0, OrderQueryEnum.asc);
+      const result = await service.getAll({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.asc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: undefined,
+        toBlockTime: undefined,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry1.id,
         historyEntry2.id,
@@ -142,7 +160,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     });
 
     it('should return return entries with limit, offset and order', async () => {
-      const result = await service.getAll(2, 1, OrderQueryEnum.desc);
+      const result = await service.getAll({
+        limit: 2,
+        offset: 1,
+        order: OrderQueryEnum.desc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: undefined,
+        toBlockTime: undefined,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry3.id,
         historyEntry2.id,
@@ -150,15 +177,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     });
 
     it('should correctly filter by pair address', async () => {
-      const result = await service.getAll(
-        100,
-        0,
-        OrderQueryEnum.asc,
-        pair1.address as ContractAddress,
-        undefined,
-        undefined,
-        undefined,
-      );
+      const result = await service.getAll({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.asc,
+        pairAddress: pair1.address as ContractAddress,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: undefined,
+        toBlockTime: undefined,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry1.id,
         historyEntry2.id,
@@ -166,15 +194,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     });
 
     it('should correctly filter by height', async () => {
-      const result = await service.getAll(
-        100,
-        0,
-        OrderQueryEnum.asc,
-        undefined,
-        300003,
-        undefined,
-        undefined,
-      );
+      const result = await service.getAll({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.asc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: 300003,
+        fromBlockTime: undefined,
+        toBlockTime: undefined,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry3.id,
         historyEntry4.id,
@@ -182,15 +211,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     });
 
     it('should correctly return entries newer or equal fromBlockTime', async () => {
-      const result = await service.getAll(
-        100,
-        0,
-        OrderQueryEnum.asc,
-        undefined,
-        undefined,
-        2000000000002n,
-        undefined,
-      );
+      const result = await service.getAll({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.asc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: 2000000000002n,
+        toBlockTime: undefined,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry2.id,
         historyEntry3.id,
@@ -199,15 +229,16 @@ describe('PairLiquidityInfoHistoryDbService', () => {
     });
 
     it('should correctly return entries older or equal toBlockTime', async () => {
-      const result = await service.getAll(
-        100,
-        0,
-        OrderQueryEnum.desc,
-        undefined,
-        undefined,
-        undefined,
-        3000000000003n,
-      );
+      const result = await service.getAll({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.desc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: undefined,
+        toBlockTime: 3000000000003n,
+      });
       expect(result.map((e) => e.id)).toEqual([
         historyEntry4.id,
         historyEntry3.id,

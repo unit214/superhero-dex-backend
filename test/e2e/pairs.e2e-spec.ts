@@ -1,46 +1,58 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
 import { PairsController } from '@/api/pairs/pairs.controller';
 import { PairsService } from '@/api/pairs/pairs.service';
-import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
-import { SdkClientService } from '@/clients/sdk-client.service';
+import { TokensController } from '@/api/tokens/tokens.controller';
+import { TokensService } from '@/api/tokens/tokens.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
 import { PrismaService } from '@/database/prisma.service';
 import { TokenDbService } from '@/database/token/token-db.service';
-import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
-import * as data from '@/test/mock-data/context-mock-data';
-import { mockContext } from '@/test/utils/context-mock';
-import { cleanDb, listToken } from '@/test/utils/db-helper';
-import { sortByAddress } from '@/test/utils/utils';
+import { nonNullable } from '@/lib/utils';
+import {
+  historyEntry1,
+  historyEntry2,
+  historyEntry3,
+  historyEntry4,
+  liquidityInfo1,
+  liquidityInfo2,
+  pair1,
+  pair2,
+  pair3,
+  pair4,
+  token1,
+  token2,
+  token3,
+  token4,
+  token5,
+} from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 // Testing method
 // before all
 //   - initiate nest app
 // before each
 //   - clean db
-//   - create a common context
-//   - refreshPairs
+//   - insert test data
 // after all
 //   - close nest app
 //   - disconnect from prisma
 describe('PairsController', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
-  let pairSyncService: PairSyncService;
+
+  const authToken = nonNullable(process.env.AUTH_TOKEN);
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [PairsController],
+      controllers: [PairsController, TokensController],
+      imports: [CacheModule.register({})],
       providers: [
-        MdwWsClientService,
-        SdkClientService,
-        PairDbService,
-        PairDbService,
         PairsService,
-        PairSyncService,
+        PairDbService,
         PrismaService,
+        TokensService,
         TokenDbService,
       ],
     }).compile();
@@ -49,7 +61,33 @@ describe('PairsController', () => {
     await app.init();
 
     prismaService = module.get(PrismaService);
-    pairSyncService = module.get(PairSyncService);
+  });
+
+  beforeAll(async () => {
+    await prismaService.pairLiquidityInfoHistory.deleteMany();
+    await prismaService.pairLiquidityInfo.deleteMany();
+    await prismaService.pair.deleteMany();
+    await prismaService.token.deleteMany();
+  });
+
+  beforeEach(async () => {
+    await prismaService.token.createMany({
+      data: [token1, token2, token3, token4, token5],
+    });
+    await prismaService.pair.createMany({ data: [pair1, pair2, pair3, pair4] });
+    await prismaService.pairLiquidityInfo.createMany({
+      data: [liquidityInfo1, liquidityInfo2],
+    });
+    await prismaService.pairLiquidityInfoHistory.createMany({
+      data: [historyEntry1, historyEntry2, historyEntry3, historyEntry4],
+    });
+  });
+
+  afterEach(async () => {
+    await prismaService.pairLiquidityInfoHistory.deleteMany();
+    await prismaService.pairLiquidityInfo.deleteMany();
+    await prismaService.pair.deleteMany();
+    await prismaService.token.deleteMany();
   });
 
   afterAll(async () => {
@@ -57,238 +95,45 @@ describe('PairsController', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
-    await cleanDb(prismaService);
-    pairSyncService.ctx = mockContext(data.context2);
-    await pairSyncService['refreshPairs']();
+  describe('GET /pairs', () => {
+    it('should return all pairs', async () => {
+      return request(app.getHttpServer())
+        .get('/pairs')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+
+    it('should return only listed pairs with only-listed=true', async () => {
+      await request(app.getHttpServer())
+        .get('/pairs?only-listed=true')
+        .expect(200)
+        .expect([]);
+
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set('Authorization', authToken);
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token2')
+        .set('Authorization', authToken);
+
+      await request(app.getHttpServer())
+        .get('/pairs?only-listed=true')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
   });
 
-  describe('/pairs', () => {
-    it('/pairs (GET) 200 unsynced', () => {
+  describe('GET /pairs/by-address/{pair_address}', () => {
+    it('should return pair if it exists', async () => {
       return request(app.getHttpServer())
-        .get('/pairs')
+        .get('/pairs/by-address/ct_pair1')
         .expect(200)
-        .expect([
-          {
-            address: 'ct_p1',
-            token0: 'ct_t0',
-            token1: 'ct_t1',
-            synchronized: false,
-          },
-          {
-            address: 'ct_p2',
-            token0: 'ct_t1',
-            token1: 'ct_t3',
-            synchronized: false,
-          },
-          {
-            address: 'ct_p3',
-            token0: 'ct_t0',
-            token1: 'ct_t3',
-            synchronized: false,
-          },
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/pairs (GET) 200 synchronized', async () => {
-      await pairSyncService['refreshPairsLiquidity']();
-      const response = await request(app.getHttpServer())
-        .get('/pairs')
-        .expect(200);
-
-      expect(sortByAddress(JSON.parse(response.text))).toEqual([
-        {
-          address: 'ct_p1',
-          token0: 'ct_t0',
-          token1: 'ct_t1',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p2',
-          token0: 'ct_t1',
-          token1: 'ct_t3',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p3',
-          token0: 'ct_t0',
-          token1: 'ct_t3',
-          synchronized: true,
-        },
-      ]);
-    });
-
-    it('/pairs (GET) 200 with new pair', async () => {
-      await pairSyncService['refreshPairsLiquidity']();
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairs']();
-      const response = await request(app.getHttpServer())
-        .get('/pairs')
-        .expect(200);
-
-      expect(sortByAddress(JSON.parse(response.text))).toEqual([
-        {
-          address: 'ct_p1',
-          token0: 'ct_t0',
-          token1: 'ct_t1',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p2',
-          token0: 'ct_t1',
-          token1: 'ct_t3',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p3',
-          token0: 'ct_t0',
-          token1: 'ct_t3',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p4',
-          synchronized: false,
-          token0: 'ct_t0',
-          token1: 'ct_t4',
-        },
-      ]);
-    });
-
-    it('/pairs (GET) 200 only-listed=true', async () => {
-      await pairSyncService['refreshPairsLiquidity']();
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairs']();
-
-      let response = await request(app.getHttpServer())
-        .get('/pairs?only-listed=true')
-        .expect(200);
-
-      expect(sortByAddress(JSON.parse(response.text))).toEqual([]);
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
-      await listToken(prismaService, 'ct_t4');
-
-      response = await request(app.getHttpServer())
-        .get('/pairs?only-listed=true')
-        .expect(200);
-      expect(sortByAddress(JSON.parse(response.text))).toEqual([
-        {
-          address: 'ct_p3',
-          token0: 'ct_t0',
-          token1: 'ct_t3',
-          synchronized: true,
-        },
-        {
-          address: 'ct_p4',
-          token0: 'ct_t0',
-          token1: 'ct_t4',
-          synchronized: false,
-        },
-      ]);
-    });
-
-    it('/pairs/by-address/ct_p1 (GET) 200 no liquidity', async () => {
+    it('should return 404 if pair does not exist', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/by-address/ct_p1')
-        .expect(200)
-        .expect({
-          address: 'ct_p1',
-          token0: {
-            address: 'ct_t0',
-            symbol: 'A',
-            name: 'A Token',
-            decimals: 18,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          token1: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          synchronized: false,
-        });
-    });
-
-    it('/pairs/by-address/ct_p1 (GET) 200 synchronized', async () => {
-      await pairSyncService['refreshPairsLiquidity']();
-      return request(app.getHttpServer())
-        .get('/pairs/by-address/ct_p1')
-        .expect(200)
-        .expect({
-          address: 'ct_p1',
-          token0: {
-            address: 'ct_t0',
-            symbol: 'A',
-            name: 'A Token',
-            decimals: 18,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          token1: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          synchronized: true,
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '2',
-            reserve0: '1',
-            reserve1: '2',
-          },
-        });
-    });
-
-    it('/pairs/by-address/ct_p1 (GET) 200 unsynchronized with liquidity', async () => {
-      await pairSyncService['refreshPairsLiquidity']();
-      await pairSyncService['unsyncAllPairs']();
-      return request(app.getHttpServer())
-        .get('/pairs/by-address/ct_p1')
-        .expect(200)
-        .expect({
-          address: 'ct_p1',
-          token0: {
-            address: 'ct_t0',
-            symbol: 'A',
-            name: 'A Token',
-            decimals: 18,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          token1: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          synchronized: false,
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '2',
-            reserve0: '1',
-            reserve1: '2',
-          },
-        });
-    });
-
-    it('/pairs/by-address/ct_0000 (GET) 404 not founded pair', async () => {
-      return request(app.getHttpServer())
-        .get('/pairs/by-address/ct_0000')
+        .get('/pairs/by-address/ct_xxxx')
         .expect(404)
         .expect({
           statusCode: 404,
@@ -298,237 +143,61 @@ describe('PairsController', () => {
     });
   });
 
-  describe('/pairs/swap-routes', () => {
-    it('/pairs/swap-routes/ct_t0/ct_t5 (GET) 200 no path for unexisting token ', async () => {
+  describe('GET /pairs/swap-routes/{from}/{to}', () => {
+    it('should return 200 with [] if no path for unexisting token ', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t5')
+        .get('/pairs/swap-routes/ct_token1/ct_xxxx')
         .expect(200)
         .expect([]);
     });
 
-    it('/pairs/swap-routes/ct_t0/ct_t5 (GET) 200 no path for unexisting pair', async () => {
-      pairSyncService.ctx = mockContext({
-        ...data.context2,
-        tokens: data.context2.tokens.concat({
-          address: 'ct_t4',
-          metaInfo: {
-            name: 'D Token',
-            symbol: 'D',
-            decimals: 18n,
-          },
-        }),
-      });
-      await pairSyncService['refreshPairs']();
-
+    it('should return 200 with [] for existing token if no pair or path exists', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t5')
+        .get('/pairs/swap-routes/ct_token1/ct_token4')
         .expect(200)
         .expect([]);
     });
 
-    it('/pairs/swap-routes/ct_t0/ct_t4 (GET) 200 direct path', async () => {
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairs']();
-
+    it('should return a direct path', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t4')
+        .get('/pairs/swap-routes/ct_token2/ct_token3')
         .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p4',
-              token0: 'ct_t0',
-              token1: 'ct_t4',
-              synchronized: false,
-            },
-          ],
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/pairs/swap-routes/ct_t0/ct_t3 (GET) 200 synchronized', async () => {
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairsLiquidity']();
-
+    it('should return an indirect path', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t1')
+        .get('/pairs/swap-routes/ct_token1/ct_token3')
         .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p1',
-              token0: 'ct_t0',
-              token1: 'ct_t1',
-              synchronized: true,
-              liquidityInfo: {
-                height: 1,
-                totalSupply: '2',
-                reserve0: '1',
-                reserve1: '2',
-              },
-            },
-          ],
-          [
-            {
-              address: 'ct_p3',
-              token0: 'ct_t0',
-              token1: 'ct_t3',
-              synchronized: true,
-              liquidityInfo: {
-                height: 1,
-                totalSupply: '3',
-                reserve0: '1',
-                reserve1: '3',
-              },
-            },
-            {
-              address: 'ct_p2',
-              token0: 'ct_t1',
-              token1: 'ct_t3',
-              synchronized: true,
-              liquidityInfo: {
-                height: 1,
-                totalSupply: '200000',
-                reserve0: '10',
-                reserve1: '20000',
-              },
-            },
-          ],
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/pairs/swap-routes/ct_t0/ct_t1 (GET) 200 one direct path and one indirect path', async () => {
+    it('should return one direct path and one indirect path', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t1')
+        .get('/pairs/swap-routes/ct_token1/ct_token5')
         .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p1',
-              token0: 'ct_t0',
-              token1: 'ct_t1',
-              synchronized: false,
-            },
-          ],
-          [
-            {
-              address: 'ct_p3',
-              token0: 'ct_t0',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-            {
-              address: 'ct_p2',
-              token0: 'ct_t1',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-          ],
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/pairs/swap-routes/ct_t0/ct_t1?only-listed=true (GET) 200 suppress some paths', async () => {
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t1');
+    it('should suppress some paths with only-listed=true ', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set('Authorization', authToken);
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token5')
+        .set('Authorization', authToken);
+
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t1?only-listed=true')
+        .get('/pairs/swap-routes/ct_token1/ct_token5?only-listed=true')
         .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p1',
-              token0: 'ct_t0',
-              token1: 'ct_t1',
-              synchronized: false,
-            },
-          ],
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/pairs/swap-routes/ct_t1/ct_t2 (GET) 200 testing reverse order of tokens', async () => {
+    it('should return paths oven on reverse order of tokens', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t1/ct_t0')
+        .get('/pairs/swap-routes/ct_token1/ct_token5')
         .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p1',
-              token0: 'ct_t0',
-              token1: 'ct_t1',
-              synchronized: false,
-            },
-          ],
-          [
-            {
-              address: 'ct_p2',
-              token0: 'ct_t1',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-            {
-              address: 'ct_p3',
-              token0: 'ct_t0',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-          ],
-        ]);
-    });
-
-    it('/pairs/swap-routes/ct_t0/ct_t1 (GET) 200 one direct path and multiple indirect path', async () => {
-      pairSyncService.ctx = mockContext({
-        ...data.context21,
-        pairs: data.context21.pairs.concat({
-          address: 'ct_p5',
-          reserve0: 1n,
-          reserve1: 4n,
-          totalSupply: 1n * 4n,
-          t0: 1,
-          t1: 3,
-        }),
-      });
-      await pairSyncService['refreshPairs']();
-
-      return request(app.getHttpServer())
-        .get('/pairs/swap-routes/ct_t0/ct_t1')
-        .expect(200)
-        .expect([
-          [
-            {
-              address: 'ct_p1',
-              token0: 'ct_t0',
-              token1: 'ct_t1',
-              synchronized: false,
-            },
-          ],
-          [
-            {
-              address: 'ct_p3',
-              token0: 'ct_t0',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-            {
-              address: 'ct_p2',
-              token0: 'ct_t1',
-              token1: 'ct_t3',
-              synchronized: false,
-            },
-          ],
-          [
-            {
-              address: 'ct_p4',
-              token0: 'ct_t0',
-              token1: 'ct_t4',
-              synchronized: false,
-            },
-            {
-              address: 'ct_p5',
-              token0: 'ct_t1',
-              token1: 'ct_t4',
-              synchronized: false,
-            },
-          ],
-        ]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
   });
 });
