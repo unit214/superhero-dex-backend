@@ -1,4 +1,9 @@
-import { Pair, PairLiquidityInfoHistory, Token } from '@prisma/client';
+import {
+  Pair,
+  PairLiquidityInfo,
+  PairLiquidityInfoHistory,
+  Token,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { Contract } from '@/clients/mdw-http-client.model';
@@ -38,6 +43,28 @@ export const token3: Token = {
   listed: false,
 };
 
+export const token4: Token = {
+  id: 4,
+  address: 'ct_token4',
+  symbol: '4',
+  name: '4',
+  decimals: 18,
+  malformed: false,
+  noContract: false,
+  listed: false,
+};
+
+export const token5: Token = {
+  id: 5,
+  address: 'ct_token5',
+  symbol: '5',
+  name: '5',
+  decimals: 18,
+  malformed: false,
+  noContract: false,
+  listed: false,
+};
+
 export const pair1: Pair = {
   id: 1,
   address: 'ct_pair1',
@@ -56,10 +83,34 @@ export const pair2: Pair = {
 
 export const pair3: Pair = {
   id: 3,
-  address: 'ct_pair4',
+  address: 'ct_pair3',
   t0: 2,
-  t1: 3,
+  t1: 5,
   synchronized: true,
+};
+
+export const pair4: Pair = {
+  id: 4,
+  address: 'ct_pair4',
+  t0: 1,
+  t1: 5,
+  synchronized: true,
+};
+
+export const liquidityInfo1: PairLiquidityInfo = {
+  id: 2,
+  height: 1,
+  totalSupply: '1',
+  reserve0: '1',
+  reserve1: '1',
+};
+
+export const liquidityInfo2: PairLiquidityInfo = {
+  id: 3,
+  height: 2,
+  totalSupply: '2',
+  reserve0: '2',
+  reserve1: '2',
 };
 
 export const historyEntry1: PairLiquidityInfoHistory = {

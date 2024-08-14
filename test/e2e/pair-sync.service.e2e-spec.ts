@@ -1,11 +1,19 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import prisma from '@prisma/client';
 
+import { CoinmarketcapClientService } from '@/clients/coinmarketcap-client.service';
+import { HttpService } from '@/clients/http.service';
+import { MdwHttpClientService } from '@/clients/mdw-http-client.service';
 import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
 import { SdkClientService } from '@/clients/sdk-client.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { PairLiquidityInfoHistoryErrorDbService } from '@/database/pair-liquidity-info-history-error/pair-liquidity-info-history-error-db.service';
 import { PrismaService } from '@/database/prisma.service';
 import { TokenDbService } from '@/database/token/token-db.service';
+import { PairLiquidityInfoHistoryImporterService } from '@/tasks/pair-liquidity-info-history-importer/pair-liquidity-info-history-importer.service';
+import { PairPathCalculatorService } from '@/tasks/pair-path-calculator/pair-path-calculator.service';
 import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
 import * as data from '@/test/mock-data/context-mock-data';
 import { mockContext } from '@/test/utils/context-mock';
@@ -22,13 +30,21 @@ describe('PairSyncService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [CacheModule.register({})],
       providers: [
         PairSyncService,
         PrismaService,
         TokenDbService,
         PairDbService,
+        HttpService,
+        CoinmarketcapClientService,
+        MdwHttpClientService,
         MdwWsClientService,
         SdkClientService,
+        PairLiquidityInfoHistoryImporterService,
+        PairLiquidityInfoHistoryDbService,
+        PairLiquidityInfoHistoryErrorDbService,
+        PairPathCalculatorService,
       ],
     }).compile();
 

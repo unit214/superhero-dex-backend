@@ -14,6 +14,9 @@ exports[`PairLiquidityInfoHistoryDbService upsert should correctly upsert an exi
   "pairId": 1,
   "reserve0": "500",
   "reserve1": "500",
+  "senderAccount": "abc",
+  "token0AePrice": "0.060559",
+  "token1AePrice": "0.060559",
   "transactionHash": "th_entry2",
   "transactionIndex": 200002n,
 }

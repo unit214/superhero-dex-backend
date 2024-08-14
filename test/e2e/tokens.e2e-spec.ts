@@ -1,62 +1,84 @@
+import * as process from 'node:process';
+
+import { CacheModule } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
-import * as dto from '@/api/api.model';
 import { TokensController } from '@/api/tokens/tokens.controller';
 import { TokensService } from '@/api/tokens/tokens.service';
-import { MdwWsClientService } from '@/clients/mdw-ws-client.service';
-import { SdkClientService } from '@/clients/sdk-client.service';
-import { PairDbService } from '@/database/pair/pair-db.service';
 import { PrismaService } from '@/database/prisma.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 import { nonNullable } from '@/lib/utils';
-import { PairSyncService } from '@/tasks/pair-sync/pair-sync.service';
-import * as data from '@/test/mock-data/context-mock-data';
-import { mockContext } from '@/test/utils/context-mock';
-import { cleanDb, listToken } from '@/test/utils/db-helper';
-import { sortByAddress } from '@/test/utils/utils';
+import {
+  historyEntry1,
+  historyEntry2,
+  historyEntry3,
+  historyEntry4,
+  liquidityInfo1,
+  liquidityInfo2,
+  pair1,
+  pair2,
+  pair3,
+  token1,
+  token2,
+  token3,
+  token5,
+} from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 // Testing method
 // before all
 //   - initiate nest app
 // before each
 //   - clean db
-//   - create a common context
-//   - refreshPairs
+//   - insert test data
 // after all
 //   - close nest app
 //   - disconnect from prisma
 describe('TokenController', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
-  let pairSyncService: PairSyncService;
+
+  const authToken = nonNullable(process.env.AUTH_TOKEN);
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TokensController],
-      providers: [
-        MdwWsClientService,
-        SdkClientService,
-        PairDbService,
-        PairSyncService,
-        PrismaService,
-        TokenDbService,
-        TokensService,
-      ],
+      imports: [CacheModule.register({})],
+      providers: [TokenDbService, TokensService, PrismaService],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
 
     prismaService = module.get(PrismaService);
-    pairSyncService = module.get(PairSyncService);
+  });
+
+  beforeAll(async () => {
+    await prismaService.pairLiquidityInfoHistory.deleteMany();
+    await prismaService.pairLiquidityInfo.deleteMany();
+    await prismaService.pair.deleteMany();
+    await prismaService.token.deleteMany();
   });
 
   beforeEach(async () => {
-    await cleanDb(prismaService);
-    pairSyncService.ctx = mockContext(data.context2);
-    await pairSyncService['refreshPairs']();
+    await prismaService.token.createMany({
+      data: [token1, token2, token3, token5],
+    });
+    await prismaService.pair.createMany({ data: [pair1, pair2, pair3] });
+    await prismaService.pairLiquidityInfo.createMany({
+      data: [liquidityInfo1, liquidityInfo2],
+    });
+    await prismaService.pairLiquidityInfoHistory.createMany({
+      data: [historyEntry1, historyEntry2, historyEntry3, historyEntry4],
+    });
+  });
+
+  afterEach(async () => {
+    await prismaService.pairLiquidityInfoHistory.deleteMany();
+    await prismaService.pairLiquidityInfo.deleteMany();
+    await prismaService.pair.deleteMany();
+    await prismaService.token.deleteMany();
   });
 
   afterAll(async () => {
@@ -64,433 +86,39 @@ describe('TokenController', () => {
     await app.close();
   });
 
-  describe('/tokens', () => {
-    it('/tokens (GET)', async () => {
-      const response = await request(app.getHttpServer())
+  describe('GET /tokens', () => {
+    it('should return all tokens when none are listed', async () => {
+      await request(app.getHttpServer())
         .get('/tokens')
-        .expect(200);
-      const value: dto.TokenWithListed[] = JSON.parse(response.text);
-
-      expect(sortByAddress(value)).toEqual([
-        {
-          address: 'ct_t0',
-          symbol: 'A',
-          name: 'A Token',
-          decimals: 18,
-          listed: false,
-          malformed: false,
-          noContract: false,
-        },
-        {
-          address: 'ct_t1',
-          symbol: 'B',
-          name: 'B Token',
-          decimals: 6,
-          listed: false,
-          malformed: false,
-          noContract: false,
-        },
-        {
-          address: 'ct_t3',
-          symbol: 'C',
-          name: 'C Token',
-          decimals: 10,
-          listed: false,
-          malformed: false,
-          noContract: false,
-        },
-      ]);
-    });
-
-    it('/tokens/listed (GET) 200 empty', () => {
-      return request(app.getHttpServer())
-        .get('/tokens/listed')
         .expect(200)
-        .expect([]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/tokens/listed (GET) 200 non-empty', async () => {
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
-      const response = await request(app.getHttpServer())
-        .get('/tokens/listed')
-        .expect(200);
-      const value: dto.Token[] = JSON.parse(response.text);
-
-      expect(sortByAddress(value)).toEqual([
-        {
-          address: 'ct_t0',
-          symbol: 'A',
-          name: 'A Token',
-          decimals: 18,
-          malformed: false,
-          noContract: false,
-        },
-        {
-          address: 'ct_t3',
-          symbol: 'C',
-          name: 'C Token',
-          decimals: 10,
-          malformed: false,
-          noContract: false,
-        },
-      ]);
-    });
-
-    it('/tokens (GET) 200 with some listed', async () => {
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
-      const response = await request(app.getHttpServer())
+    it('should return all tokens even if some are listed', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set({ Authorization: authToken });
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token3')
+        .set({ Authorization: authToken });
+      await request(app.getHttpServer())
         .get('/tokens')
-        .expect(200);
-      const value: dto.TokenWithListed[] = JSON.parse(response.text);
-
-      expect(
-        value.sort((a: dto.TokenWithListed, b: dto.TokenWithListed) =>
-          a.address.localeCompare(b.address),
-        ),
-      ).toEqual([
-        {
-          address: 'ct_t0',
-          symbol: 'A',
-          name: 'A Token',
-          decimals: 18,
-          listed: true,
-          malformed: false,
-          noContract: false,
-        },
-        {
-          address: 'ct_t1',
-          symbol: 'B',
-          name: 'B Token',
-          decimals: 6,
-          listed: false,
-          malformed: false,
-          noContract: false,
-        },
-        {
-          address: 'ct_t3',
-          symbol: 'C',
-          name: 'C Token',
-          decimals: 10,
-          listed: true,
-          malformed: false,
-          noContract: false,
-        },
-      ]);
-    });
-
-    it('/tokens/by-address/ct_t0 (GET) 200', () => {
-      return request(app.getHttpServer())
-        .get('/tokens/by-address/ct_t0')
         .expect(200)
-        .expect({
-          address: 'ct_t0',
-          symbol: 'A',
-          name: 'A Token',
-          decimals: 18,
-          listed: false,
-          malformed: false,
-          noContract: false,
-          pairs: ['ct_p1', 'ct_p3'],
-        });
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+  });
+
+  describe('GET /tokens/{token_address}', () => {
+    it('should return a single token if it exists', async () => {
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token1')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('/tokens/by-address/ct_tXXX (GET) 404', () => {
+    it('should return 404 if the token does not exist', () => {
       return request(app.getHttpServer())
-        .get('/tokens/by-address/ct_tXXX')
-        .expect(404)
-        .expect({
-          statusCode: 404,
-          message: 'token not found',
-          error: 'Not Found',
-        });
-    });
-
-    it('/tokens/by-address/ct_t0/pairs (GET) 200 with no liquidityInfo', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/tokens/by-address/ct_t0/pairs')
-        .expect(200);
-
-      const value: dto.TokenPairs = JSON.parse(response.text);
-
-      expect(sortByAddress(value.pairs0)).toEqual([
-        {
-          address: 'ct_p1',
-          synchronized: false,
-          oppositeToken: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-        },
-        {
-          address: 'ct_p3',
-          synchronized: false,
-          oppositeToken: {
-            address: 'ct_t3',
-            symbol: 'C',
-            name: 'C Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-        },
-      ]);
-    });
-
-    it('/tokens/by-address/ct_t0/pairs (GET) 200 with pairs only on pairs0', async () => {
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairs']();
-      await pairSyncService['refreshPairsLiquidity']();
-
-      const response = await request(app.getHttpServer())
-        .get('/tokens/by-address/ct_t0/pairs')
-        .expect(200);
-
-      const value: dto.TokenPairs = JSON.parse(response.text);
-
-      expect(value.pairs1).toEqual([]);
-      expect(sortByAddress(value.pairs0)).toEqual([
-        {
-          address: 'ct_p1',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '2',
-            reserve0: '1',
-            reserve1: '2',
-          },
-        },
-        {
-          address: 'ct_p3',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t3',
-            symbol: 'C',
-            name: 'C Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '3',
-            reserve0: '1',
-            reserve1: '3',
-          },
-        },
-        {
-          address: 'ct_p4',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t4',
-            symbol: 'D',
-            name: 'D Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '3',
-            reserve0: '1',
-            reserve1: '3',
-          },
-        },
-      ]);
-    });
-
-    it('/tokens/by-address/ct_t3/pairs (GET) 200 with pairs only on pairs1', async () => {
-      pairSyncService.ctx = mockContext(data.context21);
-      await pairSyncService['refreshPairs']();
-      await pairSyncService['refreshPairsLiquidity']();
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
-
-      const response = await request(app.getHttpServer())
-        .get('/tokens/by-address/ct_t3/pairs')
-        .expect(200);
-
-      const value: dto.TokenPairs = JSON.parse(response.text);
-
-      expect(value.pairs0).toEqual([]);
-      expect(sortByAddress(value.pairs1)).toEqual([
-        {
-          address: 'ct_p2',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            totalSupply: '200000',
-            reserve0: '10',
-            reserve1: '20000',
-            height: 1,
-          },
-        },
-        {
-          address: 'ct_p3',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t0',
-            symbol: 'A',
-            name: 'A Token',
-            decimals: 18,
-            listed: true,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '3',
-            reserve0: '1',
-            reserve1: '3',
-          },
-        },
-      ]);
-    });
-
-    it('/tokens/by-address/ct_t3/pairs (GET) 200 with pairs on pairs0 and pairs1', async () => {
-      pairSyncService.ctx = mockContext({
-        ...data.context21,
-        pairs: data.context21.pairs.concat([
-          {
-            address: 'ct_p5',
-            reserve0: 1n,
-            reserve1: 3n,
-            totalSupply: 1n * 3n,
-            t0: 2,
-            t1: 3,
-          },
-          {
-            address: 'ct_p6',
-            reserve0: 4n,
-            reserve1: 10n,
-            totalSupply: 4n * 10n,
-            t0: 2,
-            t1: 1,
-          },
-        ]),
-      });
-      await pairSyncService['refreshPairs']();
-      await pairSyncService['refreshPairsLiquidity']();
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
-
-      const response = await request(app.getHttpServer())
-        .get('/tokens/by-address/ct_t3/pairs')
-        .expect(200);
-
-      const value: dto.TokenPairs = JSON.parse(response.text);
-
-      expect(sortByAddress(value.pairs0)).toEqual([
-        {
-          address: 'ct_p5',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t4',
-            symbol: 'D',
-            name: 'D Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '3',
-            reserve0: '1',
-            reserve1: '3',
-          },
-        },
-        {
-          address: 'ct_p6',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '40',
-            reserve0: '4',
-            reserve1: '10',
-          },
-        },
-      ]);
-      expect(sortByAddress(value.pairs1)).toEqual([
-        {
-          address: 'ct_p2',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '200000',
-            reserve0: '10',
-            reserve1: '20000',
-          },
-        },
-        {
-          address: 'ct_p3',
-          synchronized: true,
-          oppositeToken: {
-            address: 'ct_t0',
-            symbol: 'A',
-            name: 'A Token',
-            decimals: 18,
-            listed: true,
-            malformed: false,
-            noContract: false,
-          },
-          liquidityInfo: {
-            height: 1,
-            totalSupply: '3',
-            reserve0: '1',
-            reserve1: '3',
-          },
-        },
-      ]);
-    });
-
-    it('/tokens/by-address/ct_tXXX/pairs (GET) 404', () => {
-      return request(app.getHttpServer())
-        .get('/tokens/by-address/ct_tXXX')
+        .get('/tokens/ct_xxxx')
         .expect(404)
         .expect({
           statusCode: 404,
@@ -500,172 +128,170 @@ describe('TokenController', () => {
     });
   });
 
-  describe('/tokens/listed', () => {
+  describe('GET /tokens/{token_address}/pairs', () => {
+    it('should return pairs with no liquidity info', async () => {
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token1/pairs')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+
+    it('should return pairs with liquidity info', async () => {
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token2/pairs')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+
+    it('should return 404 if the token does not exist', () => {
+      return request(app.getHttpServer())
+        .get('/tokens/ct_xxxx')
+        .expect(404)
+        .expect({
+          statusCode: 404,
+          message: 'token not found',
+          error: 'Not Found',
+        });
+    });
+  });
+
+  describe('GET /tokens/listed', () => {
+    it('should return no tokens if none are listed', () => {
+      return request(app.getHttpServer())
+        .get('/tokens/listed')
+        .expect(200)
+        .expect([]);
+    });
+
+    it('should return listed tokens if some are listed', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set('Authorization', authToken);
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token3')
+        .set('Authorization', authToken);
+      await request(app.getHttpServer())
+        .get('/tokens/listed')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+  });
+
+  describe('POST /tokens/listed/{token_address}', () => {
+    it('should return 401 with no auth key and invalid token address', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .expect(401);
+    });
+
+    it('should return 401 with no auth key and valid token address', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .expect(401);
+    });
+
+    it('should return 401 with invalid auth key and invalid token', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+
+    it('should return 401 with invalid auth key and valid token', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
+
+    it('should return 404 with valid auth key but with invalid token', async () => {
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_xxxx')
+        .set('Authorization', authToken)
+        .expect(404);
+    });
+
+    it('should return 201 with valid auth key and valid token and mark the token as listed', async () => {
+      //verify before listing ct_t1
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token1')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+
+      //listing it
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token1')
+        .set('Authorization', authToken)
+        .expect(201)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+
+      //re-verify ct_t1 to be sure it was persisted also
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token1')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+  });
+
+  describe('DELETE /tokens/listed/{token_address}', () => {
     beforeEach(async () => {
-      await listToken(prismaService, 'ct_t0');
-      await listToken(prismaService, 'ct_t3');
+      await request(app.getHttpServer())
+        .post('/tokens/listed/ct_token3')
+        .set('Authorization', authToken);
     });
 
-    describe('add to token list', () => {
-      it('/tokens/listed/ct_xxxx(POST) 401 with no auth key and with invalid token', async () => {
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_xxxx')
-          .expect(401);
-      });
-
-      it('/tokens/listed/ct_t0 (POST) 401 with no auth key provided and valid token address', async () => {
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_t0')
-          .expect(401);
-      });
-
-      it('/tokens/listed/ct_xxxx (POST) 401 with invalid auth key and invalid token', async () => {
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_xxxx')
-          .set('Authorization', 'wrong-key')
-          .expect(401);
-      });
-
-      it('/tokens/listed/ct_xxxx (POST) 401 with invalid auth key and valid token', async () => {
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_t0')
-          .set('Authorization', 'wrong-key')
-          .expect(401);
-      });
-
-      it('/tokens/listed/ct_xxxx (POST) 404 with valid auth key but with invalid token', async () => {
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_xxxx')
-          .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
-          .expect(404);
-      });
-
-      it('/tokens/listed/ct_t1 (POST) 201 with valid auth key and with valid token', async () => {
-        //verify before listing ct_t1
-        await request(app.getHttpServer())
-          .get('/tokens/by-address/ct_t1')
-          .expect(200)
-          .expect({
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: false,
-            malformed: false,
-            noContract: false,
-            pairs: ['ct_p2', 'ct_p1'],
-          });
-
-        //listing it
-        await request(app.getHttpServer())
-          .post('/tokens/listed/ct_t1')
-          .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
-          .expect(201)
-          .expect({
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: true,
-            malformed: false,
-            noContract: false,
-          });
-        //re-verify ct_t1 to be sure it was persisted also
-        await request(app.getHttpServer())
-          .get('/tokens/by-address/ct_t1')
-          .expect(200)
-          .expect({
-            address: 'ct_t1',
-            symbol: 'B',
-            name: 'B Token',
-            decimals: 6,
-            listed: true,
-            malformed: false,
-            noContract: false,
-            pairs: ['ct_p2', 'ct_p1'],
-          });
-      });
+    it('should return 401 with no auth key and invalid token', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .expect(401);
     });
 
-    describe('remove from token list', () => {
-      it('/tokens/listed/ct_xxxx (DELETE) 401 with no auth key and with invalid token', async () => {
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_xxxx')
-          .expect(401);
-      });
+    it('should return 401 with no auth key and valid token address', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_token3')
+        .expect(401);
+    });
 
-      it('/tokens/listed/ct_t0 (DELETE) 401 with no auth key provided and valid token address', async () => {
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_t0')
-          .expect(401);
-      });
+    it('should return 401 with invalid auth key and invalid token', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
 
-      it('/tokens/listed/ct_xxxx (DELETE) 401 with invalid auth key and invalid token', async () => {
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_xxxx')
-          .set('Authorization', 'wrong-key')
-          .expect(401);
-      });
+    it('should return 401 with invalid auth key and valid token', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_token3')
+        .set('Authorization', 'wrong-key')
+        .expect(401);
+    });
 
-      it('/tokens/listed/ct_xxxx (DELETE) 401 with invalid auth key and valid token', async () => {
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_t0')
-          .set('Authorization', 'wrong-key')
-          .expect(401);
-      });
+    it('should return 404 with valid auth key but with invalid token', async () => {
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_xxxx')
+        .set('Authorization', authToken)
+        .expect(404);
+    });
 
-      it('/tokens/listed/ct_xxxx (DELETE) 404 with valid auth key but with invalid token', async () => {
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_xxxx')
-          .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
-          .expect(404);
-      });
+    it('should return 200 with valid auth key and valid token', async () => {
+      //verify before unlisting ct_t3
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token3')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
 
-      it('/tokens/listed/ct_t3 (DELETE) 200 with valid auth key and with valid token', async () => {
-        //verify before unlisting ct_t3
-        await request(app.getHttpServer())
-          .get('/tokens/by-address/ct_t3')
-          .expect(200)
-          .expect({
-            address: 'ct_t3',
-            symbol: 'C',
-            name: 'C Token',
-            decimals: 10,
-            listed: true,
-            malformed: false,
-            noContract: false,
-            pairs: ['ct_p2', 'ct_p3'],
-          });
+      //unlisting it
+      await request(app.getHttpServer())
+        .delete('/tokens/listed/ct_token3')
+        .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
 
-        //unlisting it
-        await request(app.getHttpServer())
-          .delete('/tokens/listed/ct_t3')
-          .set('Authorization', nonNullable(process.env.AUTH_TOKEN))
-          .expect(200)
-          .expect({
-            address: 'ct_t3',
-            symbol: 'C',
-            name: 'C Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-          });
-        //re-verify ct_t3 to be sure the unlisting was persisted too
-        await request(app.getHttpServer())
-          .get('/tokens/by-address/ct_t3')
-          .expect(200)
-          .expect({
-            address: 'ct_t3',
-            symbol: 'C',
-            name: 'C Token',
-            decimals: 10,
-            listed: false,
-            malformed: false,
-            noContract: false,
-            pairs: ['ct_p2', 'ct_p3'],
-          });
-      });
+      //re-verify ct_t3 to be sure the unlisting was persisted too
+      await request(app.getHttpServer())
+        .get('/tokens/ct_token3')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
   });
 });

@@ -1,3 +1,4 @@
+import { Cache } from '@nestjs/cache-manager';
 import { Injectable } from '@nestjs/common';
 import { Pair, PairLiquidityInfo, Token } from '@prisma/client';
 
@@ -8,7 +9,10 @@ import { presentInvalidTokens } from '@/lib/utils';
 
 @Injectable()
 export class TokensService {
-  constructor(private readonly tokenDbService: TokenDbService) {}
+  constructor(
+    private readonly tokenDbService: TokenDbService,
+    private cacheManager: Cache,
+  ) {}
   async getCount(onlyListed?: boolean) {
     return this.tokenDbService.count(presentInvalidTokens, onlyListed);
   }
@@ -23,11 +27,15 @@ export class TokensService {
   }
 
   async listToken(address: ContractAddress) {
-    return this.tokenDbService.updateListedValue(address, true);
+    const res = this.tokenDbService.updateListedValue(address, true);
+    await this.cacheManager.reset();
+    return res;
   }
 
   async unlistToken(address: ContractAddress) {
-    return this.tokenDbService.updateListedValue(address, false);
+    const res = this.tokenDbService.updateListedValue(address, false);
+    await this.cacheManager.reset();
+    return res;
   }
 
   async getToken(address: ContractAddress): Promise<TokenWithUsd | null> {

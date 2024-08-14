@@ -1,0 +1,224 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PairsController GET /pairs should return all pairs 1`] = `
+[
+  {
+    "address": "ct_pair1",
+    "synchronized": true,
+    "token0": "ct_token1",
+    "token1": "ct_token2",
+    "transactions": 2,
+    "tvlUsd": "0",
+    "volumeUsdAll": "0",
+    "volumeUsdDay": "0",
+    "volumeUsdMonth": "0",
+    "volumeUsdWeek": "0",
+    "volumeUsdYear": "0",
+  },
+  {
+    "address": "ct_pair2",
+    "synchronized": true,
+    "token0": "ct_token2",
+    "token1": "ct_token3",
+    "transactions": 1,
+    "tvlUsd": "0",
+    "volumeUsdAll": "0",
+    "volumeUsdDay": "0",
+    "volumeUsdMonth": "0",
+    "volumeUsdWeek": "0",
+    "volumeUsdYear": "0",
+  },
+  {
+    "address": "ct_pair3",
+    "synchronized": true,
+    "token0": "ct_token2",
+    "token1": "ct_token5",
+    "transactions": 0,
+    "tvlUsd": "0",
+    "volumeUsdAll": null,
+    "volumeUsdDay": null,
+    "volumeUsdMonth": null,
+    "volumeUsdWeek": null,
+    "volumeUsdYear": null,
+  },
+  {
+    "address": "ct_pair4",
+    "synchronized": true,
+    "token0": "ct_token1",
+    "token1": "ct_token5",
+    "transactions": 0,
+    "tvlUsd": "0",
+    "volumeUsdAll": null,
+    "volumeUsdDay": null,
+    "volumeUsdMonth": null,
+    "volumeUsdWeek": null,
+    "volumeUsdYear": null,
+  },
+]
+`;
+
+exports[`PairsController GET /pairs should return only listed pairs with only-listed=true 1`] = `
+[
+  {
+    "address": "ct_pair1",
+    "synchronized": true,
+    "token0": "ct_token1",
+    "token1": "ct_token2",
+    "transactions": 2,
+    "tvlUsd": "0",
+    "volumeUsdAll": "0",
+    "volumeUsdDay": "0",
+    "volumeUsdMonth": "0",
+    "volumeUsdWeek": "0",
+    "volumeUsdYear": "0",
+  },
+]
+`;
+
+exports[`PairsController GET /pairs/by-address/{pair_address} should return pair if it exists 1`] = `
+{
+  "address": "ct_pair1",
+  "synchronized": true,
+  "token0": {
+    "address": "ct_token1",
+    "decimals": 18,
+    "listed": false,
+    "malformed": false,
+    "name": "1",
+    "noContract": false,
+    "symbol": "1",
+  },
+  "token1": {
+    "address": "ct_token2",
+    "decimals": 18,
+    "listed": false,
+    "malformed": false,
+    "name": "2",
+    "noContract": false,
+    "symbol": "2",
+  },
+}
+`;
+
+exports[`PairsController GET /pairs/swap-routes/{from}/{to} should return a direct path 1`] = `
+[
+  [
+    {
+      "address": "ct_pair2",
+      "liquidityInfo": {
+        "height": 1,
+        "reserve0": "1",
+        "reserve1": "1",
+        "totalSupply": "1",
+      },
+      "synchronized": true,
+      "token0": "ct_token2",
+      "token1": "ct_token3",
+    },
+  ],
+]
+`;
+
+exports[`PairsController GET /pairs/swap-routes/{from}/{to} should return an indirect path 1`] = `
+[
+  [
+    {
+      "address": "ct_pair1",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token2",
+    },
+    {
+      "address": "ct_pair2",
+      "liquidityInfo": {
+        "height": 1,
+        "reserve0": "1",
+        "reserve1": "1",
+        "totalSupply": "1",
+      },
+      "synchronized": true,
+      "token0": "ct_token2",
+      "token1": "ct_token3",
+    },
+  ],
+]
+`;
+
+exports[`PairsController GET /pairs/swap-routes/{from}/{to} should return one direct path and one indirect path 1`] = `
+[
+  [
+    {
+      "address": "ct_pair4",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token5",
+    },
+  ],
+  [
+    {
+      "address": "ct_pair1",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token2",
+    },
+    {
+      "address": "ct_pair3",
+      "liquidityInfo": {
+        "height": 2,
+        "reserve0": "2",
+        "reserve1": "2",
+        "totalSupply": "2",
+      },
+      "synchronized": true,
+      "token0": "ct_token2",
+      "token1": "ct_token5",
+    },
+  ],
+]
+`;
+
+exports[`PairsController GET /pairs/swap-routes/{from}/{to} should return paths oven on reverse order of tokens 1`] = `
+[
+  [
+    {
+      "address": "ct_pair4",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token5",
+    },
+  ],
+  [
+    {
+      "address": "ct_pair1",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token2",
+    },
+    {
+      "address": "ct_pair3",
+      "liquidityInfo": {
+        "height": 2,
+        "reserve0": "2",
+        "reserve1": "2",
+        "totalSupply": "2",
+      },
+      "synchronized": true,
+      "token0": "ct_token2",
+      "token1": "ct_token5",
+    },
+  ],
+]
+`;
+
+exports[`PairsController GET /pairs/swap-routes/{from}/{to} should suppress some paths with only-listed=true  1`] = `
+[
+  [
+    {
+      "address": "ct_pair4",
+      "synchronized": true,
+      "token0": "ct_token1",
+      "token1": "ct_token5",
+    },
+  ],
+]
+`;

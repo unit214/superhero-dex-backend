@@ -30,7 +30,7 @@
     "db:push-schema": "npx prisma db push",
     "db:migrate": "npx prisma migrate deploy",
     "postdb:deploy": "sleep 1.5; npm run db:migrate",
-    "pretest:e2e": "dotenv -e .env.test npm run db:push-schema",
+    "pretest:e2e": "dotenv -e .env.test npx prisma migrate dev",
     "prisma:test-studio": "dotenv -e .env.test npx prisma studio",
     "prisma:studio": "npx prisma studio"
   },
