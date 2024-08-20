@@ -3,8 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
-import { PairsController } from '@/api/pairs/pairs.controller';
-import { PairsService } from '@/api/pairs/pairs.service';
+import { SwapRoutesService } from '@/api/swap-routes/swap-route.service';
+import { SwapRoutesController } from '@/api/swap-routes/swap-routes.controller';
 import { TokensController } from '@/api/tokens/tokens.controller';
 import { TokensService } from '@/api/tokens/tokens.service';
 import { PairDbService } from '@/database/pair/pair-db.service';
@@ -29,16 +29,7 @@ import {
   token5,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
-// Testing method
-// before all
-//   - initiate nest app
-// before each
-//   - clean db
-//   - insert test data
-// after all
-//   - close nest app
-//   - disconnect from prisma
-describe('PairsController', () => {
+describe('SwapRoutesController', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -46,10 +37,10 @@ describe('PairsController', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [PairsController, TokensController],
+      controllers: [SwapRoutesController, TokensController],
       imports: [CacheModule.register({})],
       providers: [
-        PairsService,
+        SwapRoutesService,
         PairDbService,
         PrismaService,
         TokensService,
@@ -95,51 +86,61 @@ describe('PairsController', () => {
     await app.close();
   });
 
-  describe('GET /pairs', () => {
-    it('should return all pairs', async () => {
+  describe('GET /swap-routes/{from}/{to}', () => {
+    it('should return 200 with [] if no path for unexisting token ', async () => {
       return request(app.getHttpServer())
-        .get('/pairs')
+        .get('/swap-routes/ct_token1/ct_xxxx')
+        .expect(200)
+        .expect([]);
+    });
+
+    it('should return 200 with [] for existing token if no pair or path exists', async () => {
+      return request(app.getHttpServer())
+        .get('/swap-routes/ct_token1/ct_token4')
+        .expect(200)
+        .expect([]);
+    });
+
+    it('should return a direct path', async () => {
+      return request(app.getHttpServer())
+        .get('/swap-routes/ct_token2/ct_token3')
         .expect(200)
         .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('should return only listed pairs with only-listed=true', async () => {
-      await request(app.getHttpServer())
-        .get('/pairs?only-listed=true')
+    it('should return an indirect path', async () => {
+      return request(app.getHttpServer())
+        .get('/swap-routes/ct_token1/ct_token3')
         .expect(200)
-        .expect([]);
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
 
+    it('should return one direct path and one indirect path', async () => {
+      return request(app.getHttpServer())
+        .get('/swap-routes/ct_token1/ct_token5')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
+    });
+
+    it('should suppress some paths with only-listed=true ', async () => {
       await request(app.getHttpServer())
         .post('/tokens/listed/ct_token1')
         .set('Authorization', authToken);
       await request(app.getHttpServer())
-        .post('/tokens/listed/ct_token2')
+        .post('/tokens/listed/ct_token5')
         .set('Authorization', authToken);
 
-      await request(app.getHttpServer())
-        .get('/pairs?only-listed=true')
-        .expect(200)
-        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
-    });
-  });
-
-  describe('GET /pairs/{pair_address}', () => {
-    it('should return pair if it exists', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/ct_pair1')
+        .get('/swap-routes/ct_token1/ct_token5?only-listed=true')
         .expect(200)
         .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
 
-    it('should return 404 if pair does not exist', async () => {
+    it('should return paths oven on reverse order of tokens', async () => {
       return request(app.getHttpServer())
-        .get('/pairs/ct_xxxx')
-        .expect(404)
-        .expect({
-          statusCode: 404,
-          message: 'pair not found',
-          error: 'Not Found',
-        });
+        .get('/swap-routes/ct_token1/ct_token5')
+        .expect(200)
+        .then((res) => expect(JSON.parse(res.text)).toMatchSnapshot());
     });
   });
 });
