@@ -1,17 +1,19 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Pair, PairLiquidityInfoHistory } from '@prisma/client';
 import * as request from 'supertest';
 
 import { OrderQueryEnum } from '@/api/api.model';
 import { PairLiquidityInfoHistoryController } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.controller';
+import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import {
   historyEntry1,
   historyEntry3,
   pair1,
   pair2,
+  token1,
+  token2,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
 const mockPairLiquidityInfoHistoryService = {
@@ -46,17 +48,16 @@ describe('PairLiquidityInfoHistoryController', () => {
       jest.clearAllMocks();
     });
 
-    // TODO fix with updated return
-    it.skip('should return history entries and use default values for empty params', async () => {
+    it('should return history entries and use default values for empty params', async () => {
       // Mocks
-      const historyEntryWithPair1: { pair: Pair } & PairLiquidityInfoHistory = {
+      const historyEntryWithPair1: PairLiquidityInfoHistoryWithTokens = {
         ...historyEntry1,
-        pair: pair1,
+        pair: { ...pair1, token0: token1, token1: token2 },
       };
 
-      const historyEntryWithPair2: { pair: Pair } & PairLiquidityInfoHistory = {
+      const historyEntryWithPair2: PairLiquidityInfoHistoryWithTokens = {
         ...historyEntry3,
-        pair: pair2,
+        pair: { ...pair2, token0: token2, token1: token2 },
       };
 
       mockPairLiquidityInfoHistoryService.getAllHistoryEntries.mockResolvedValue(
@@ -69,38 +70,18 @@ describe('PairLiquidityInfoHistoryController', () => {
       // Assertions
       expect(
         mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
-      ).toHaveBeenCalledWith(
-        100,
-        0,
-        OrderQueryEnum.asc,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-      );
+      ).toHaveBeenCalledWith({
+        limit: 100,
+        offset: 0,
+        order: OrderQueryEnum.asc,
+        pairAddress: undefined,
+        tokenAddress: undefined,
+        height: undefined,
+        fromBlockTime: undefined,
+        toBlockTime: undefined,
+      });
       expect(result.status).toBe(200);
-      expect(result.body).toEqual([
-        {
-          pairAddress: historyEntryWithPair1.pair.address,
-          liquidityInfo: {
-            reserve0: historyEntryWithPair1.reserve0,
-            reserve1: historyEntryWithPair1.reserve1,
-          },
-          height: historyEntryWithPair1.height,
-          microBlockHash: historyEntryWithPair1.microBlockHash,
-          microBlockTime: historyEntryWithPair1.microBlockTime.toString(),
-        },
-        {
-          pairAddress: historyEntryWithPair2.pair.address,
-          liquidityInfo: {
-            reserve0: historyEntryWithPair2.reserve0,
-            reserve1: historyEntryWithPair2.reserve1,
-          },
-          height: historyEntryWithPair2.height,
-          microBlockHash: historyEntryWithPair2.microBlockHash,
-          microBlockTime: historyEntryWithPair2.microBlockTime.toString(),
-        },
-      ]);
+      expect(result.body).toMatchSnapshot();
     });
 
     it('should parse all query params correctly', async () => {
