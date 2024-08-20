@@ -18,13 +18,6 @@ export class PairsService {
     );
   }
 
-  async getAllPairsWithLiquidityInfo(onlyListed?: boolean) {
-    return this.pairDbService.getAllWithLiquidityInfo(
-      presentInvalidTokens,
-      onlyListed,
-    );
-  }
-
   async getCountStats() {
     return {
       all: await this.pairDbService.count(presentInvalidTokens),

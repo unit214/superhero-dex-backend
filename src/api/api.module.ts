@@ -4,6 +4,8 @@ import { PairLiquidityInfoHistoryController } from '@/api/pair-liquidity-info-hi
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { PairsController } from '@/api/pairs/pairs.controller';
 import { PairsService } from '@/api/pairs/pairs.service';
+import { SwapRoutesService } from '@/api/swap-routes/swap-route.service';
+import { SwapRoutesController } from '@/api/swap-routes/swap-routes.controller';
 import { TokensController } from '@/api/tokens/tokens.controller';
 import { TokensService } from '@/api/tokens/tokens.service';
 import { DatabaseModule } from '@/database/database.module';
@@ -14,7 +16,13 @@ import { DatabaseModule } from '@/database/database.module';
     PairLiquidityInfoHistoryController,
     PairsController,
     TokensController,
+    SwapRoutesController,
   ],
-  providers: [PairLiquidityInfoHistoryService, PairsService, TokensService],
+  providers: [
+    PairLiquidityInfoHistoryService,
+    PairsService,
+    TokensService,
+    SwapRoutesService,
+  ],
 })
 export class ApiModule {}
