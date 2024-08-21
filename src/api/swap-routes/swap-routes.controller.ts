@@ -1,6 +1,13 @@
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import * as prisma from '@prisma/client';
 
 import * as dto from '@/api/api.model';
@@ -42,10 +49,9 @@ export class SwapRoutesController {
 
   @ApiOperation({
     summary: 'Retrieves all swap routes between two tokens',
-    description: `Gets all swap routes directly or with one intermediate token from one token to another. \
-The routes are represented as arrays of pairs.<br\> <b>NOTE</b>: the response is an array of pair arrays, but \
-because of nest-swagger limitation the documentation can't show a multi-dimensional array. Though, please take in consideration \
-the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
+    description:
+      'Gets all swap routes directly or with one intermediate token from one token to another. \
+The routes are represented as arrays of pairs.',
   })
   @Get(':from/:to?')
   @ApiQuery({
@@ -55,10 +61,18 @@ the real response type is \`Array<Array<PairWithLiquidityAndTokenAddresses>>\``,
       'Retrieves only the pairs having both tokens added in the official token list',
     required: false,
   })
+  @ApiExtraModels(dto.PairWithLiquidityAndTokenAddresses)
   @ApiResponse({
     status: 200,
-    type: dto.PairWithLiquidityAndTokenAddresses,
-    isArray: true,
+    schema: {
+      type: 'array',
+      items: {
+        type: 'array',
+        items: {
+          $ref: getSchemaPath(dto.PairWithLiquidityAndTokenAddresses),
+        },
+      },
+    },
   })
   @ApiParam({
     name: 'from',
