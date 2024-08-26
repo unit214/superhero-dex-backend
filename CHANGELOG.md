@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.5.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.4.0...v1.5.0) (2024-08-26)
+
+
+### Features
+
+* adds caching to costly endpoints ([6d21829](https://www.github.com/unit214/superhero-dex-backend/commit/6d21829c98f37e54045b5a9e0c7b9138434b0336))
+* change get token route to token/:address and include price data ([39ba837](https://www.github.com/unit214/superhero-dex-backend/commit/39ba83798285b34a48b2d23816f16655f4d1d6c0))
+
+
+### Bug Fixes
+
+* add volumeUsdMonth to token getAllWithAggregation query ([f49a43d](https://www.github.com/unit214/superhero-dex-backend/commit/f49a43daa0d88dec70ad76d59a9ac7f53daaab4f))
+
+
+### Miscellaneous
+
+* adds testnet tokens to listing script ([cd2d80f](https://www.github.com/unit214/superhero-dex-backend/commit/cd2d80f52a8db2d1aebb0b068ea797cf308093cf))
+
+
+### Testing
+
+* adjust e2e tests to newest changes ([57088d2](https://www.github.com/unit214/superhero-dex-backend/commit/57088d2349a03a18b8c16787880ffb107aee89cb))
+* fix execution of e2e tests ([5901d67](https://www.github.com/unit214/superhero-dex-backend/commit/5901d674f215e68dfa5269296617a9b2793242f6))
+* force exit jest in e2e tests ([620e54d](https://www.github.com/unit214/superhero-dex-backend/commit/620e54d4fc016792cfb59cf4c7095d507ed8bc68))
+* unskip test in pair-liquidity-info-history.controller.spec.ts ([a31e949](https://www.github.com/unit214/superhero-dex-backend/commit/a31e949fe883e154b36e2948f5a20807832d3591))
+
+
+### Refactorings
+
+* change get token pairs route to token/:address/pair ([c7f48c7](https://www.github.com/unit214/superhero-dex-backend/commit/c7f48c7b4628d40f769197bafd68741dc6d2642e))
+* improve api structure of pairs endpoints ([c2748ab](https://www.github.com/unit214/superhero-dex-backend/commit/c2748abe960261b040985d6ebe768f6358fea2a6))
+
 ## [1.4.0](https://www.github.com/aeternity/dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
 
 
