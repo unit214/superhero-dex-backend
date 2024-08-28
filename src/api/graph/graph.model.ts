@@ -15,6 +15,8 @@ export enum GraphType {
   TVL = 'TVL',
   Volume = 'Volume',
   Price = 'Price',
+  Price0_1 = 'Price0_1',
+  Price1_0 = 'Price1_0',
   Locked = 'Locked',
   Fees = 'Fees',
 }
