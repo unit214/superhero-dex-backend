@@ -11,6 +11,7 @@ import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-hi
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { OrderQueryEnum } from '@/api/api.model';
+import { ContractAddress } from '@/clients/sdk-client.model';
 
 const TIME_FRAMES = {
   '1H': 1,
@@ -31,20 +32,33 @@ export class GraphService {
   async getGraph(
     graphType: GraphType = GraphType.TVL,
     timeFrame: TimeFrame = TimeFrame.MAX,
+    tokenAddress?: ContractAddress,
+    pairAddress?: ContractAddress,
   ): Promise<Graph> {
     const history = await this.pairLiquidityInfoHistoryDb.getAll({
       limit: 9999999,
       offset: 0,
       order: OrderQueryEnum.asc,
+      pairAddress,
+      tokenAddress,
     });
-    const graphData = this.graphData(history);
-    const filteredData = this.filteredData(graphData, graphType, timeFrame);
-    const bucketedGraphData = this.bucketedGraphData(filteredData, graphType);
 
-    return bucketedGraphData;
+    const graphData = this.graphData(
+      history,
+      pairAddress,
+      tokenAddress,
+      graphType,
+    );
+    const filteredData = this.filteredData(graphData, graphType, timeFrame);
+    return this.bucketedGraphData(filteredData, graphType);
   }
 
-  private graphData(history: PairLiquidityInfoHistoryWithTokens[]) {
+  private graphData(
+    history: PairLiquidityInfoHistoryWithTokens[],
+    pairAddress: ContractAddress | undefined,
+    tokenAddress: ContractAddress | undefined,
+    graphType: GraphType,
+  ) {
     let tvl = new BigNumber(0);
     return history.reduce(
       (
@@ -56,34 +70,104 @@ export class GraphService {
       ) => {
         const entry =
           this.pairLiquidityInfoHistoryService.mapToEntryWithPrice(tx);
-        // TVL
-        // deltaUsdValue is already calculated but absolute, so we need to check the deltaReserve to get the sign
-        const delta0 = new BigNumber(entry.delta0UsdValue || '').times(
-          Math.sign(Number(entry.deltaReserve0)),
-        );
-        const delta1 = new BigNumber(entry.delta1UsdValue || '').times(
-          Math.sign(Number(entry.deltaReserve1)),
-        );
-        tvl = tvl
-          .plus(delta0.isNaN() ? 0 : delta0)
-          .plus(delta1.isNaN() ? 0 : delta1);
-        acc.datasets[0].data = [...acc.datasets[0].data, tvl.toString()].map(
-          (d) => d || '0',
-        );
 
-        // VOLUME
-        if (entry.type === 'SwapTokens') {
-          acc.datasets[1].data = [
-            ...acc.datasets[1].data,
-            new BigNumber(entry.delta0UsdValue || 0)
-              .plus(entry.delta1UsdValue || 0)
-              .toString(),
-          ].map((d) => d || '0');
-        } else {
-          acc.datasets[1].data = [...acc.datasets[1].data, '0'].map(
-            (d) => d || '0',
-          );
+        if (!pairAddress && !tokenAddress) {
+          // OVERVIEW
+          if (graphType === GraphType.TVL) {
+            // TVL
+            // deltaUsdValue is already calculated but absolute, so we need to check the deltaReserve to get the sign
+            const delta0 = new BigNumber(entry.delta0UsdValue || '').times(
+              Math.sign(Number(entry.deltaReserve0)),
+            );
+            const delta1 = new BigNumber(entry.delta1UsdValue || '').times(
+              Math.sign(Number(entry.deltaReserve1)),
+            );
+            tvl = tvl
+              .plus(delta0.isNaN() ? 0 : delta0)
+              .plus(delta1.isNaN() ? 0 : delta1);
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              tvl.toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Volume) {
+            // VOLUME
+            if (entry.type === 'SwapTokens') {
+              acc.datasets[0].data = [
+                ...acc.datasets[0].data,
+                new BigNumber(entry.delta0UsdValue || 0)
+                  .plus(entry.delta1UsdValue || 0)
+                  .toString(),
+              ].map((d) => d || '0');
+            } else {
+              acc.datasets[0].data = [...acc.datasets[0].data, '0'].map(
+                (d) => d || '0',
+              );
+            }
+          } else {
+            return [];
+          }
+        } else if (tokenAddress && !pairAddress) {
+          // TOKENS
+          // TODO FILL
+        } else if (!tokenAddress && pairAddress) {
+          // POOLS
+          if (graphType === GraphType.Price0_1) {
+            // Price 0/1
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              new BigNumber(entry.reserve0)
+                .div(BigNumber(10).pow(tx.pair.token0.decimals))
+                .div(
+                  new BigNumber(entry.reserve1).div(
+                    BigNumber(10).pow(tx.pair.token1.decimals),
+                  ),
+                )
+                .toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Price1_0) {
+            // Price 1/0
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              new BigNumber(entry.reserve1)
+                .div(BigNumber(10).pow(tx.pair.token1.decimals))
+                .div(
+                  new BigNumber(entry.reserve0).div(
+                    BigNumber(10).pow(tx.pair.token0.decimals),
+                  ),
+                )
+                .toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.TVL) {
+            // TVL
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              new BigNumber(entry.reserve0Usd || '')
+                .plus(entry.reserve1Usd || '')
+                .toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Fees) {
+            // Fee
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              entry.txUsdFee,
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Volume) {
+            // Volume
+            if (entry.type === 'SwapTokens') {
+              acc.datasets[0].data = [
+                ...acc.datasets[0].data,
+                new BigNumber(entry.delta0UsdValue || '')
+                  .plus(entry.delta1UsdValue || '')
+                  .toString(),
+              ].map((d) => d || '0');
+            } else {
+              acc.datasets[0].data = [...acc.datasets[0].data, '0'].map(
+                (d) => d || '0',
+              );
+            }
+          }
         }
+
         acc.x = [...acc.x, entry.microBlockTime];
         return acc;
       },
@@ -91,11 +175,7 @@ export class GraphService {
         x: [],
         datasets: [
           {
-            label: GraphType.TVL,
-            data: [],
-          },
-          {
-            label: GraphType.Volume,
+            label: graphType,
             data: [],
           },
         ],
