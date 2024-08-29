@@ -1,6 +1,6 @@
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
-import { microBlockTimePattern, usdValuePattern } from '@/api/api.model';
+import { bigNumberPattern, microBlockTimePattern } from '@/api/api.model';
 
 export enum TimeFrame {
   '1H' = '1H',
@@ -21,32 +21,27 @@ export enum GraphType {
   Fees = 'Fees',
 }
 
-export class GraphData {
-  @ApiProperty({
-    description: 'Label',
-    example: GraphType.TVL,
-  })
-  label: GraphType;
-  @ApiProperty({
-    description: 'Data',
-    pattern: usdValuePattern,
-    type: [String],
-  })
-  data: string[];
-}
-
-@ApiExtraModels(GraphData)
 export class Graph {
   @ApiProperty({
-    description: 'Datasets',
-    type: 'array',
-    items: { $ref: getSchemaPath(GraphData) },
+    description: 'Graph type',
+    example: GraphType.TVL,
   })
-  datasets: GraphData[];
+  graphType: GraphType;
   @ApiProperty({
-    description: 'Labels',
+    description: 'Time frame',
+    example: TimeFrame.MAX,
+  })
+  timeFrame: TimeFrame;
+  @ApiProperty({
+    description: 'Labels / X-Axis',
     pattern: microBlockTimePattern,
     type: [String],
   })
   labels: string[];
+  @ApiProperty({
+    description: 'Data / Y-Axis',
+    pattern: bigNumberPattern,
+    type: [String],
+  })
+  data: string[];
 }
