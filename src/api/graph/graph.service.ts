@@ -3,12 +3,7 @@ import { Token } from '@prisma/client';
 import BigNumber from 'bignumber.js';
 
 import { OrderQueryEnum } from '@/api/api.model';
-import {
-  Graph,
-  GraphData,
-  GraphType,
-  TimeFrame,
-} from '@/api/graph/graph.model';
+import { Graph, GraphType, TimeFrame } from '@/api/graph/graph.model';
 import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
@@ -58,7 +53,7 @@ export class GraphService {
       graphType,
     );
     const filteredData = this.filteredData(graphData, graphType, timeFrame);
-    return this.bucketedGraphData(filteredData, graphType);
+    return this.bucketedGraphData(filteredData, graphType, timeFrame);
   }
 
   private graphData(
@@ -73,8 +68,8 @@ export class GraphService {
     return history.reduce(
       (
         acc: {
-          x: string[];
-          datasets: GraphData[];
+          x: number[];
+          data: string[];
         },
         tx,
       ) => {
@@ -95,26 +90,19 @@ export class GraphService {
             tvl = tvl
               .plus(delta0.isNaN() ? 0 : delta0)
               .plus(delta1.isNaN() ? 0 : delta1);
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
-              tvl.toString(),
-            ].map((d) => d || '0');
+            acc.data = [...acc.data, tvl.toString()].map((d) => d || '0');
           } else if (graphType === GraphType.Volume) {
             // VOLUME
             if (entry.type === 'SwapTokens') {
-              acc.datasets[0].data = [
-                ...acc.datasets[0].data,
+              acc.data = [
+                ...acc.data,
                 new BigNumber(entry.delta0UsdValue || 0)
                   .plus(entry.delta1UsdValue || 0)
                   .toString(),
               ].map((d) => d || '0');
             } else {
-              acc.datasets[0].data = [...acc.datasets[0].data, '0'].map(
-                (d) => d || '0',
-              );
+              acc.data = [...acc.data, '0'].map((d) => d || '0');
             }
-          } else {
-            return [];
           }
         } else if (token && !pairAddress) {
           // TOKENS
@@ -130,14 +118,13 @@ export class GraphService {
           ).multipliedBy(entry.aeUsdPrice);
           if (graphType === GraphType.Price) {
             // PRICE
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
-              txPriceUsd.toString(),
-            ].map((d) => d || '0');
+            acc.data = [...acc.data, txPriceUsd.toString()].map(
+              (d) => d || '0',
+            );
           } else if (graphType === GraphType.TVL) {
             // TVL
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
+            acc.data = [
+              ...acc.data,
               new BigNumber(reserve)
                 .multipliedBy(txPriceUsd)
                 .div(new BigNumber(10).pow(token.decimals))
@@ -145,8 +132,8 @@ export class GraphService {
             ].map((d) => d || '0');
           } else if (graphType === GraphType.Locked) {
             // LOCKED
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
+            acc.data = [
+              ...acc.data,
               new BigNumber(reserve)
                 .div(new BigNumber(10).pow(token.decimals))
                 .toString(),
@@ -154,8 +141,8 @@ export class GraphService {
           } else if (graphType === GraphType.Volume) {
             // Volume
             if (entry.type === 'SwapTokens') {
-              acc.datasets[0].data = [
-                ...acc.datasets[0].data,
+              acc.data = [
+                ...acc.data,
                 new BigNumber(txDeltaReserve)
                   .abs()
                   .multipliedBy(txPriceUsd)
@@ -163,15 +150,15 @@ export class GraphService {
                   .toString(),
               ].map((d) => d || '0');
             } else {
-              acc.datasets[0].data = [...acc.datasets[0].data, '0'];
+              acc.data = [...acc.data, '0'];
             }
           }
         } else if (!tokenAddress && pairAddress) {
           // POOLS
           if (graphType === GraphType.Price0_1) {
             // Price 0/1
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
+            acc.data = [
+              ...acc.data,
               new BigNumber(entry.reserve0)
                 .div(BigNumber(10).pow(tx.pair.token0.decimals))
                 .div(
@@ -183,8 +170,8 @@ export class GraphService {
             ].map((d) => d || '0');
           } else if (graphType === GraphType.Price1_0) {
             // Price 1/0
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
+            acc.data = [
+              ...acc.data,
               new BigNumber(entry.reserve1)
                 .div(BigNumber(10).pow(tx.pair.token1.decimals))
                 .div(
@@ -196,72 +183,66 @@ export class GraphService {
             ].map((d) => d || '0');
           } else if (graphType === GraphType.TVL) {
             // TVL
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
+            acc.data = [
+              ...acc.data,
               new BigNumber(entry.reserve0Usd || '')
                 .plus(entry.reserve1Usd || '')
                 .toString(),
             ].map((d) => d || '0');
           } else if (graphType === GraphType.Fees) {
             // Fee
-            acc.datasets[0].data = [
-              ...acc.datasets[0].data,
-              entry.txUsdFee,
-            ].map((d) => d || '0');
+            acc.data = [...acc.data, entry.txUsdFee].map((d) => d || '0');
           } else if (graphType === GraphType.Volume) {
             // Volume
             if (entry.type === 'SwapTokens') {
-              acc.datasets[0].data = [
-                ...acc.datasets[0].data,
+              acc.data = [
+                ...acc.data,
                 new BigNumber(entry.delta0UsdValue || '')
                   .plus(entry.delta1UsdValue || '')
                   .toString(),
               ].map((d) => d || '0');
             } else {
-              acc.datasets[0].data = [...acc.datasets[0].data, '0'].map(
-                (d) => d || '0',
-              );
+              acc.data = [...acc.data, '0'].map((d) => d || '0');
             }
           }
         }
 
-        acc.x = [...acc.x, entry.microBlockTime];
+        acc.x = [...acc.x, Number(entry.microBlockTime)];
         return acc;
       },
       {
         x: [],
-        datasets: [
-          {
-            label: graphType,
-            data: [],
-          },
-        ],
+        data: [],
       },
     );
   }
 
-  private filteredData(graphData, graphType: GraphType, timeFrame: TimeFrame) {
-    const selectedDataSet = graphData.datasets.find(
-      (d) => d.label === graphType,
-    );
+  private filteredData(
+    graphData: {
+      x: number[];
+      data: string[];
+    },
+    graphType: GraphType,
+    timeFrame: TimeFrame,
+  ) {
     const minTime =
       timeFrame === TimeFrame.MAX
         ? Math.min(...graphData.x)
         : Date.now() - 1000 * 60 * 60 * TIME_FRAMES[timeFrame];
 
     const data = {
-      filteredData: selectedDataSet.data
+      filteredData: graphData.data
         .filter((_, i) => graphData.x[i] >= minTime)
         .filter((d) => !new BigNumber(d).isNaN()),
-      excludedData: selectedDataSet.data
+      excludedData: graphData.data
         .filter((_, i) => graphData.x[i] < minTime)
         .filter((d) => !new BigNumber(d).isNaN()),
       filteredTime: graphData.x
-        .filter((_, i) => !new BigNumber(selectedDataSet.data[i]).isNaN())
+        .filter((_, i) => !new BigNumber(graphData.data[i]).isNaN())
         .filter((d) => d >= minTime)
         .map((d) => Number(d)),
       excludedTime: graphData.x
-        .filter((_, i) => !new BigNumber(selectedDataSet.data[i]).isNaN())
+        .filter((_, i) => !new BigNumber(graphData.data[i]).isNaN())
         .filter((d) => d < minTime)
         .map((d) => Number(d)),
     };
@@ -273,7 +254,7 @@ export class GraphService {
       data.excludedData.length > 0
     ) {
       // all of these are aggregated and summed, so we need to have baseline
-      data.filteredData.unshift(data.excludedData.pop());
+      data.filteredData.unshift(<string>data.excludedData.pop());
       data.filteredTime.unshift(minTime);
       data.excludedTime.pop();
     }
@@ -284,7 +265,7 @@ export class GraphService {
     ) {
       // these just show the last value, so we need to have a baseline for the graph time but no value
       // if there is no data, we do not need to add anything as we can show "no data"
-      data.filteredData.unshift(0);
+      data.filteredData.unshift('0');
       data.filteredTime.unshift(minTime);
     }
 
@@ -298,24 +279,32 @@ export class GraphService {
 
     return {
       ...data,
-      selectedDataSet,
       minTime,
     };
   }
 
-  private bucketedGraphData(filteredDataInput, graphType: GraphType): Graph {
+  private bucketedGraphData(
+    filteredDataInput: {
+      filteredData: string[];
+      excludedData: string[];
+      filteredTime: number[];
+      excludedTime: number[];
+      minTime: number;
+    },
+    graphType: GraphType,
+    timeFrame: TimeFrame,
+  ): Graph {
     // filter data based on selected time
-    const { filteredTime, filteredData, selectedDataSet, minTime } =
-      filteredDataInput;
+    const { filteredTime, filteredData, minTime } = filteredDataInput;
     if (
-      (filteredData.length === 0 ||
-        filteredTime.length === 0 ||
-        !selectedDataSet) &&
+      (filteredData.length === 0 || filteredTime.length === 0) &&
       (graphType === GraphType.Fees || graphType === GraphType.Volume)
     ) {
       return {
+        graphType: graphType,
+        timeFrame: timeFrame,
         labels: [],
-        datasets: [],
+        data: [],
       };
     }
 
@@ -379,24 +368,18 @@ export class GraphService {
         );
       }
       return {
+        graphType: graphType,
+        timeFrame: timeFrame,
         labels: Object.keys(bucketedData).map((x) => Number(x).toString()),
-        datasets: [
-          {
-            label: selectedDataSet.label,
-            data: Object.values(bucketedData).map((y) => Number(y).toString()),
-          },
-        ],
+        data: Object.values(bucketedData).map((y) => Number(y).toString()),
       };
     }
 
     return {
+      graphType: graphType,
+      timeFrame: timeFrame,
       labels: filteredTime.map((x) => Number(x).toString()),
-      datasets: [
-        {
-          label: selectedDataSet.label,
-          data: filteredData.map((y) => Number(y).toString()),
-        },
-      ],
+      data: filteredData.map((y) => Number(y).toString()),
     };
   }
 }
