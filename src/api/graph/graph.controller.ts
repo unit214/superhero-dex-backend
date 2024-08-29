@@ -17,31 +17,31 @@ import { ContractAddress } from '@/clients/sdk-client.model';
 export class GraphController {
   @Get()
   @ApiOperation({
-    summary: 'Gets graph data',
-    description: `Gets graph data`,
+    summary: 'Retrieve graph data',
+    description: `Retrieve desired graph type with desired time frame for the Overview, a specific Token or a specific Pair`,
   })
   @ApiQuery({
     name: 'graphType',
     enum: GraphType,
-    description: 'Desired Graph Type',
+    description: 'Desired graph type',
     required: true,
   })
   @ApiQuery({
     name: 'timeFrame',
     enum: TimeFrame,
-    description: 'Desired Time Frame (Default: MAX)',
+    description: 'Desired time frame (Default: MAX)',
     required: false,
   })
   @ApiQuery({
     name: 'tokenAddress',
     type: String,
-    description: 'Get graph for specific token',
+    description: 'Get graph for specific Token',
     required: false,
   })
   @ApiQuery({
     name: 'pairAddress',
     type: String,
-    description: 'Get graph for specific pair',
+    description: 'Get graph for specific Pair',
     required: false,
   })
   @ApiResponse({ status: 200, type: Graph })
