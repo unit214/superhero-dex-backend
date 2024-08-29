@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Token } from '@prisma/client';
 import BigNumber from 'bignumber.js';
 
+import { OrderQueryEnum } from '@/api/api.model';
 import {
   Graph,
   GraphData,
@@ -9,9 +11,9 @@ import {
 } from '@/api/graph/graph.model';
 import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
-import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
-import { OrderQueryEnum } from '@/api/api.model';
 import { ContractAddress } from '@/clients/sdk-client.model';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
+import { TokenDbService } from '@/database/token/token-db.service';
 
 const TIME_FRAMES = {
   '1H': 1,
@@ -26,6 +28,7 @@ const TIME_FRAMES = {
 export class GraphService {
   constructor(
     private readonly pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
+    private readonly tokenDb: TokenDbService,
     private readonly pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
   ) {}
 
@@ -43,10 +46,15 @@ export class GraphService {
       tokenAddress,
     });
 
+    let token: Token | undefined = undefined;
+    if (tokenAddress) {
+      token = await this.tokenDb.getWithAggregation(tokenAddress);
+    }
     const graphData = this.graphData(
       history,
       pairAddress,
       tokenAddress,
+      token,
       graphType,
     );
     const filteredData = this.filteredData(graphData, graphType, timeFrame);
@@ -57,9 +65,11 @@ export class GraphService {
     history: PairLiquidityInfoHistoryWithTokens[],
     pairAddress: ContractAddress | undefined,
     tokenAddress: ContractAddress | undefined,
+    token: Token | undefined,
     graphType: GraphType,
   ) {
     let tvl = new BigNumber(0);
+    let reserve = new BigNumber(0);
     return history.reduce(
       (
         acc: {
@@ -106,9 +116,56 @@ export class GraphService {
           } else {
             return [];
           }
-        } else if (tokenAddress && !pairAddress) {
+        } else if (token && !pairAddress) {
           // TOKENS
-          // TODO FILL
+          const txDeltaReserve =
+            token.address === tx.pair.token0.address
+              ? entry.deltaReserve0
+              : entry.deltaReserve1;
+          reserve = reserve.plus(txDeltaReserve);
+          const txPriceUsd = BigNumber(
+            token.address === tx.pair.token0.address
+              ? entry.token0AePrice || ''
+              : entry.token1AePrice || '',
+          ).multipliedBy(entry.aeUsdPrice);
+          if (graphType === GraphType.Price) {
+            // PRICE
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              txPriceUsd.toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.TVL) {
+            // TVL
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              new BigNumber(reserve)
+                .multipliedBy(txPriceUsd)
+                .div(new BigNumber(10).pow(token.decimals))
+                .toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Locked) {
+            // LOCKED
+            acc.datasets[0].data = [
+              ...acc.datasets[0].data,
+              new BigNumber(reserve)
+                .div(new BigNumber(10).pow(token.decimals))
+                .toString(),
+            ].map((d) => d || '0');
+          } else if (graphType === GraphType.Volume) {
+            // Volume
+            if (entry.type === 'SwapTokens') {
+              acc.datasets[0].data = [
+                ...acc.datasets[0].data,
+                new BigNumber(txDeltaReserve)
+                  .abs()
+                  .multipliedBy(txPriceUsd)
+                  .div(new BigNumber(10).pow(token.decimals))
+                  .toString(),
+              ].map((d) => d || '0');
+            } else {
+              acc.datasets[0].data = [...acc.datasets[0].data, '0'];
+            }
+          }
         } else if (!tokenAddress && pairAddress) {
           // POOLS
           if (graphType === GraphType.Price0_1) {
