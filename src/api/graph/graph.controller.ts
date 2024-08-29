@@ -1,4 +1,4 @@
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import {
   Controller,
   Get,
@@ -47,6 +47,7 @@ export class GraphController {
   @ApiResponse({ status: 200, type: Graph })
   @ApiResponse({ status: 400 })
   @ApiResponse({ status: 404 })
+  @CacheTTL(24 * 60 * 60 * 1000)
   async get(
     @Query('graphType', new ParseEnumPipe(GraphType))
     graphType: GraphType,
