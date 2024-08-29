@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Token } from '@prisma/client';
 import BigNumber from 'bignumber.js';
 
@@ -7,6 +11,7 @@ import { Graph, GraphType, TimeFrame } from '@/api/graph/graph.model';
 import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
 import { ContractAddress } from '@/clients/sdk-client.model';
+import { PairDbService } from '@/database/pair/pair-db.service';
 import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import { TokenDbService } from '@/database/token/token-db.service';
 
@@ -24,15 +29,37 @@ export class GraphService {
   constructor(
     private readonly pairLiquidityInfoHistoryDb: PairLiquidityInfoHistoryDbService,
     private readonly tokenDb: TokenDbService,
+    private readonly pairDb: PairDbService,
     private readonly pairLiquidityInfoHistoryService: PairLiquidityInfoHistoryService,
   ) {}
 
   async getGraph(
-    graphType: GraphType = GraphType.TVL,
-    timeFrame: TimeFrame = TimeFrame.MAX,
+    graphType: GraphType,
+    timeFrame: TimeFrame,
     tokenAddress?: ContractAddress,
     pairAddress?: ContractAddress,
   ): Promise<Graph> {
+    let token: Token | undefined = undefined;
+    // VALIDATION
+    if (pairAddress && tokenAddress) {
+      throw new BadRequestException(
+        'It is not possible to request a graph for both tokenAddress and pairAddress',
+      );
+    }
+    if (tokenAddress) {
+      const res = await this.tokenDb.getWithAggregation(tokenAddress);
+      if (!res) {
+        throw new NotFoundException('Token not found');
+      }
+      token = res;
+    }
+    if (pairAddress) {
+      const pair = await this.pairDb.getOne(pairAddress);
+      if (!pair) {
+        throw new NotFoundException('Pair not found');
+      }
+    }
+
     const history = await this.pairLiquidityInfoHistoryDb.getAll({
       limit: 9999999,
       offset: 0,
@@ -41,10 +68,6 @@ export class GraphService {
       tokenAddress,
     });
 
-    let token: Token | undefined = undefined;
-    if (tokenAddress) {
-      token = await this.tokenDb.getWithAggregation(tokenAddress);
-    }
     const graphData = this.graphData(
       history,
       pairAddress,
@@ -103,6 +126,10 @@ export class GraphService {
             } else {
               acc.data = [...acc.data, '0'].map((d) => d || '0');
             }
+          } else {
+            throw new BadRequestException(
+              `The graph type '${graphType}' is not available for the overview.`,
+            );
           }
         } else if (token && !pairAddress) {
           // TOKENS
@@ -152,6 +179,10 @@ export class GraphService {
             } else {
               acc.data = [...acc.data, '0'];
             }
+          } else {
+            throw new BadRequestException(
+              `The graph type '${graphType}' is not available for tokens.`,
+            );
           }
         } else if (!tokenAddress && pairAddress) {
           // POOLS
@@ -204,6 +235,10 @@ export class GraphService {
             } else {
               acc.data = [...acc.data, '0'].map((d) => d || '0');
             }
+          } else {
+            throw new BadRequestException(
+              `The graph type '${graphType}' is not available for pairs.`,
+            );
           }
         }
 
