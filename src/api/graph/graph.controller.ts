@@ -6,7 +6,7 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 import { Graph, GraphType, TimeFrame } from '@/api/graph/graph.model';
 import { GraphService } from '@/api/graph/graph.service';
@@ -16,6 +16,10 @@ import { ContractAddress } from '@/clients/sdk-client.model';
 @Controller('graph')
 export class GraphController {
   @Get()
+  @ApiOperation({
+    summary: 'Gets graph data',
+    description: `Gets graph data`,
+  })
   @ApiQuery({
     name: 'graphType',
     enum: GraphType,
@@ -41,11 +45,13 @@ export class GraphController {
     required: false,
   })
   @ApiResponse({ status: 200, type: Graph })
+  @ApiResponse({ status: 400 })
+  @ApiResponse({ status: 404 })
   async get(
     @Query('graphType', new ParseEnumPipe(GraphType))
     graphType: GraphType,
     @Query('timeFrame', new ParseEnumPipe(TimeFrame, { optional: true }))
-    timeFrame?: TimeFrame,
+    timeFrame: TimeFrame = TimeFrame.MAX,
     @Query('tokenAddress') tokenAddress?: ContractAddress,
     @Query('pairAddress') pairAddress?: ContractAddress,
   ): Promise<any> {
