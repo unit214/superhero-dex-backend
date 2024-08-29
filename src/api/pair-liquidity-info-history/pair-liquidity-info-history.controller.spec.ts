@@ -7,6 +7,7 @@ import { OrderQueryEnum } from '@/api/api.model';
 import { PairLiquidityInfoHistoryController } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.controller';
 import { PairLiquidityInfoHistoryWithTokens } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.model';
 import { PairLiquidityInfoHistoryService } from '@/api/pair-liquidity-info-history/pair-liquidity-info-history.service';
+import { PairLiquidityInfoHistoryDbService } from '@/database/pair-liquidity-info-history/pair-liquidity-info-history-db.service';
 import {
   historyEntry1,
   historyEntry3,
@@ -16,8 +17,8 @@ import {
   token2,
 } from '@/test/mock-data/pair-liquidity-info-history-mock-data';
 
-const mockPairLiquidityInfoHistoryService = {
-  getAllHistoryEntries: jest.fn(),
+const mockPairLiquidityInfoHistoryDbService = {
+  getAll: jest.fn(),
 };
 
 describe('PairLiquidityInfoHistoryController', () => {
@@ -27,9 +28,10 @@ describe('PairLiquidityInfoHistoryController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PairLiquidityInfoHistoryController],
       providers: [
+        PairLiquidityInfoHistoryService,
         {
-          provide: PairLiquidityInfoHistoryService,
-          useValue: mockPairLiquidityInfoHistoryService,
+          provide: PairLiquidityInfoHistoryDbService,
+          useValue: mockPairLiquidityInfoHistoryDbService,
         },
       ],
       imports: [
@@ -60,35 +62,34 @@ describe('PairLiquidityInfoHistoryController', () => {
         pair: { ...pair2, token0: token2, token1: token2 },
       };
 
-      mockPairLiquidityInfoHistoryService.getAllHistoryEntries.mockResolvedValue(
-        [historyEntryWithPair1, historyEntryWithPair2],
-      );
+      mockPairLiquidityInfoHistoryDbService.getAll.mockResolvedValue([
+        historyEntryWithPair1,
+        historyEntryWithPair2,
+      ]);
 
       // Call route
       const result = await request(app.getHttpServer()).get('/history');
 
       // Assertions
-      expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
-      ).toHaveBeenCalledWith({
-        limit: 100,
-        offset: 0,
-        order: OrderQueryEnum.asc,
-        pairAddress: undefined,
-        tokenAddress: undefined,
-        height: undefined,
-        fromBlockTime: undefined,
-        toBlockTime: undefined,
-      });
+      expect(mockPairLiquidityInfoHistoryDbService.getAll).toHaveBeenCalledWith(
+        {
+          limit: 100,
+          offset: 0,
+          order: OrderQueryEnum.asc,
+          pairAddress: undefined,
+          tokenAddress: undefined,
+          height: undefined,
+          fromBlockTime: undefined,
+          toBlockTime: undefined,
+        },
+      );
       expect(result.status).toBe(200);
       expect(result.body).toMatchSnapshot();
     });
 
     it('should parse all query params correctly', async () => {
       // Mocks
-      mockPairLiquidityInfoHistoryService.getAllHistoryEntries.mockResolvedValue(
-        [],
-      );
+      mockPairLiquidityInfoHistoryDbService.getAll.mockResolvedValue([]);
 
       // Call route
       const result = await request(app.getHttpServer()).get(
@@ -96,18 +97,18 @@ describe('PairLiquidityInfoHistoryController', () => {
       );
 
       // Assertions
-      expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
-      ).toHaveBeenCalledWith({
-        fromBlockTime: 1709027642807n,
-        height: 912485,
-        limit: 50,
-        offset: 50,
-        order: 'desc',
-        pairAddress: 'ct_22iY9',
-        toBlockTime: 1709027642807n,
-        tokenAddress: undefined,
-      });
+      expect(mockPairLiquidityInfoHistoryDbService.getAll).toHaveBeenCalledWith(
+        {
+          fromBlockTime: 1709027642807n,
+          height: 912485,
+          limit: 50,
+          offset: 50,
+          order: 'desc',
+          pairAddress: 'ct_22iY9',
+          toBlockTime: 1709027642807n,
+          tokenAddress: undefined,
+        },
+      );
       expect(result.status).toBe(200);
       expect(result.body).toEqual([]);
     });
@@ -120,7 +121,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
@@ -133,7 +134,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
@@ -146,7 +147,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
@@ -159,7 +160,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
@@ -172,7 +173,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
@@ -185,7 +186,7 @@ describe('PairLiquidityInfoHistoryController', () => {
 
       // Assertions
       expect(
-        mockPairLiquidityInfoHistoryService.getAllHistoryEntries,
+        mockPairLiquidityInfoHistoryDbService.getAll,
       ).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
