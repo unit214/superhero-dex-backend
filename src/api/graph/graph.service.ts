@@ -186,8 +186,8 @@ export class GraphService {
           }
         } else if (!tokenAddress && pairAddress) {
           // POOLS
-          if (graphType === GraphType.Price0_1) {
-            // Price 0/1
+          if (graphType === GraphType.PriceToken1InToken0) {
+            // Price token 1 in token 0: Reserve 0 normalized / Reserve 1 normalized
             acc.data = [
               ...acc.data,
               new BigNumber(entry.reserve0)
@@ -199,8 +199,8 @@ export class GraphService {
                 )
                 .toString(),
             ].map((d) => d || '0');
-          } else if (graphType === GraphType.Price1_0) {
-            // Price 1/0
+          } else if (graphType === GraphType.PriceToken0InToken1) {
+            // Price token 0 in token 1: Reserve 1 normalized / Reserve 0 normalized
             acc.data = [
               ...acc.data,
               new BigNumber(entry.reserve1)
