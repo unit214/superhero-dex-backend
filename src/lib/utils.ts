@@ -43,7 +43,7 @@ export const calculateUsdValue = ({
   tokenAePrice: string;
   decimals: number;
   aeUsdPrice: string;
-}) => {
+}): string => {
   if (!reserve || !tokenAePrice || !aeUsdPrice) {
     return '0';
   }

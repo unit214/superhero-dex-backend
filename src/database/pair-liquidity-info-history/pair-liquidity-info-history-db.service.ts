@@ -50,8 +50,8 @@ export class PairLiquidityInfoHistoryDbService {
     fromBlockTime,
     toBlockTime,
   }: {
-    limit: number;
-    offset: number;
+    limit?: number;
+    offset?: number;
     order?: OrderQueryEnum;
     pairAddress?: ContractAddress;
     tokenAddress?: ContractAddress;
