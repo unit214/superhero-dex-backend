@@ -61,8 +61,6 @@ export class GraphService {
     }
 
     const history = await this.pairLiquidityInfoHistoryDb.getAll({
-      limit: 9999999,
-      offset: 0,
       order: OrderQueryEnum.asc,
       pairAddress,
       tokenAddress,
