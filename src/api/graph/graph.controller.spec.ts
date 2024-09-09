@@ -96,5 +96,7 @@ describe('GraphController', () => {
       expect(mockGraphService.getGraph).toHaveBeenCalledTimes(0);
       expect(result.status).toBe(400);
     });
+
+    it.todo('should calculate the graph data correctly');
   });
 });
