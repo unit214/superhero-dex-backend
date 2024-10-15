@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+// Patterns
 export const contractPattern =
   'ct_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const transactionPattern =
@@ -7,38 +8,48 @@ export const transactionPattern =
 export const accountPattern =
   'ak_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 export const bigNumberPattern = '[1-9]+';
-export const usdValuePattern = '[1-9]+(.[1-9]{0,4})?';
-export const aeValuePattern = '[1-9]+(.[1-9]{0,18})?';
-export const percentPattern = '[1-9]+(.[1-9]+)?';
+export const usdValuePattern = '[1-9]+([.][1-9]{1,4})?'; // [.] instead of \. needed, because of the \ being interpreted as an escape character in JavaScript resulting in incorrect pattern
+export const aeValuePattern = '[1-9]+([.][1-9]{1,18})?'; // [.] instead of \. needed, because of the \ being interpreted as an escape character in JavaScript resulting in incorrect pattern
+export const percentPattern = '[1-9]+([.][1-9]+)?'; // [.] instead of \. needed, because of the \ being interpreted as a escape character in JavaScript resulting in incorrect pattern
 export const microBlockTimePattern = '[1-9]{13}';
 export const microBlockHashPattern =
   'mh_([23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz]){49,50}';
 
+// Examples
+export const heightExample = 598149;
+export const bigNumberExample = '75819422625233931920';
+export const usdValueExample = '0.1114';
+export const aeValueExample = '6.251274413368500893';
+export const percentExample = '26.579964573';
+
 export const pairAddressPropertyOptions = {
-  pattern: contractPattern,
   description: 'Pair contract address',
+  pattern: contractPattern,
 };
 export const tokenAddressPropertyOptions = {
-  pattern: contractPattern,
   description: 'Token contract address',
+  pattern: contractPattern,
 };
 
 export class LiquidityInfo {
   @ApiProperty({
     description: 'Total supply of Liquidity Tokens',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   totalSupply: string;
 
   @ApiProperty({
     description: 'Whole reserve of token0 owned by the Pair contract',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   reserve0: string;
 
   @ApiProperty({
     description: 'Whole reserve of token1 owned by the Pair contract',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   reserve1: string;
 }
@@ -48,32 +59,32 @@ export class PairBase {
   address: string;
 
   @ApiProperty({
-    examples: [true, false],
     description: `When service just started and it is in synchronization process or an error \
 occurred regarding this pair, the pair is considered unsynced, therefore the user should not \
 take in consideration it's liquidity info as the latest representation`,
+    examples: [true, false],
   })
   synchronized: boolean;
 }
 
 export class Token {
   @ApiProperty({
-    pattern: contractPattern,
     description: 'Token contract address',
+    pattern: contractPattern,
   })
   address: string;
 
   @ApiProperty({
+    description: 'Symbol which represents the token',
     examples: ['WAE', 'FST', 'SND', 'USDT'],
     example: 'WAE',
-    description: 'Symbol which represents the token',
   })
   symbol: string;
 
   @ApiProperty({
+    description: 'Full name of the token',
     examples: ['Wrapped AE', 'Token-A', 'Token-B', 'Wrapped Theter'],
     example: 'Wrapped AE',
-    description: 'Full name of the token',
   })
   name: string;
 
@@ -109,10 +120,10 @@ export class TokenWithListed extends Token {
 }
 
 const liquidityInfoPropertyOptions = {
-  type: LiquidityInfo,
-  nullable: true,
   description: `Liquidity pair information. NOTE: between the pair addition moment and the first liquidity fetching \
 liquidityInfo will be null. After that it will always have the last fetched values`,
+  type: LiquidityInfo,
+  nullable: true,
 };
 
 export class TokenWithPairAddresses extends TokenWithListed {
@@ -144,105 +155,119 @@ export class TokenPairWithLiquidityInfo {
 export class TokenWithUsd extends TokenWithListed {
   @ApiProperty({
     description: 'Price of the token in AE',
-    pattern: aeValuePattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
   })
   priceAe: string;
 
   @ApiProperty({
     description: 'Price of the token in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   priceUsd: string;
 
   @ApiProperty({
     description: 'Total locked value in AE',
     pattern: aeValuePattern,
+    example: aeValueExample,
   })
   tvlAe: string;
 
   @ApiProperty({
     description: 'Total locked value in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   tvlUsd: string;
 
   @ApiProperty({
     description: 'Total Reserve',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   totalReserve: string;
 
   @ApiProperty({
     description: 'Number of pairs for this token',
-    pattern: bigNumberPattern,
+    example: 16,
   })
   pairs: number;
 
   @ApiProperty({
     description: 'Volume for last day in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdDay: string;
 
   @ApiProperty({
     description: 'Volume for last week in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdWeek: string;
 
   @ApiProperty({
     description: 'Volume for last month in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdMonth: string;
 
   @ApiProperty({
     description: 'Volume for last year in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdYear: string;
 
   @ApiProperty({
     description: 'Volume for all time in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdAll: string;
 
   @ApiProperty({
     description: 'Price change for last day in percent',
     pattern: percentPattern,
+    example: percentExample,
   })
   priceChangeDay: string;
 
   @ApiProperty({
     description: 'Price change for last week in percent',
     pattern: percentPattern,
+    example: percentExample,
   })
   priceChangeWeek: string;
 
   @ApiProperty({
     description: 'Price change for last month in percent',
     pattern: percentPattern,
+    example: percentExample,
   })
   priceChangeMonth: string;
 
   @ApiProperty({
     description: 'Price change for last year in percent',
     pattern: percentPattern,
+    example: percentExample,
   })
   priceChangeYear: string;
 }
 
 export class PairWithUsd extends PairBase {
   @ApiProperty({
-    pattern: contractPattern,
     description: 'Contract address for the token stored as token0',
+    pattern: contractPattern,
   })
   token0: string;
 
   @ApiProperty({
-    pattern: contractPattern,
     description: 'Contract address for the token stored as token1',
+    pattern: contractPattern,
   })
   token1: string;
 
@@ -255,36 +280,42 @@ export class PairWithUsd extends PairBase {
   @ApiProperty({
     description: 'Total Value Locked in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   tvlUsd: string;
 
   @ApiProperty({
     description: 'Volume for last day in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdDay: string;
 
   @ApiProperty({
     description: 'Volume for last week in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdWeek: string;
 
   @ApiProperty({
     description: 'Volume for last month in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdMonth: string;
 
   @ApiProperty({
     description: 'Volume for last year in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdYear: string;
 
   @ApiProperty({
     description: 'Volume for all time in USD',
     pattern: usdValuePattern,
+    example: usdValueExample,
   })
   volumeUsdAll: string;
 }
@@ -323,8 +354,8 @@ export class PairWithLiquidityAndTokens extends PairWithLiquidity {
 
 export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
   @ApiProperty({
-    pattern: contractPattern,
     description: 'Contract address for the token stored as token0',
+    pattern: contractPattern,
     example:
       process.env.DOC_TOKEN1 ||
       'ct_b7FZHQzBcAW4r43ECWpV3qQJMQJp5BxkZUGNKrqqLyjVRN3SC',
@@ -332,8 +363,8 @@ export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
   token0: string;
 
   @ApiProperty({
-    pattern: contractPattern,
     description: 'Contract address for the token stored as token1',
+    pattern: contractPattern,
     example:
       process.env.DOC_TOKEN2 ||
       'ct_JDp175ruWd7mQggeHewSLS1PFXt9AzThCDaFedxon8mF8xTRF',
@@ -343,14 +374,14 @@ export class PairWithLiquidityAndTokenAddresses extends PairWithLiquidity {
 
 export class TokenPairs {
   @ApiProperty({
-    type: [TokenPairWithLiquidityInfo],
     description: 'All the pairs which have as token0 the given token',
+    type: [TokenPairWithLiquidityInfo],
   })
   pairs0: TokenPairWithLiquidityInfo[];
 
   @ApiProperty({
-    type: [TokenPairWithLiquidityInfo],
     description: 'All the pairs which have as token1 the given token',
+    type: [TokenPairWithLiquidityInfo],
   })
   pairs1: TokenPairWithLiquidityInfo[];
 }
@@ -358,7 +389,7 @@ export class TokenPairs {
 export class GlobalState {
   @ApiProperty({
     description: 'Maximum block-height found in liquidity-info',
-    example: 598149,
+    example: heightExample,
   })
   topBlockHeight: number | null;
 
@@ -412,52 +443,67 @@ export class PairLiquidityInfoHistoryEntry {
     pattern: contractPattern,
   })
   pairAddress: string;
-  @ApiProperty({ description: 'Type of the event' })
+
+  @ApiProperty({
+    description: 'Type of the event',
+    example: EventTypeEnum.SwapTokens,
+  })
   type: EventTypeEnum;
 
   @ApiProperty({
     description: 'Whole reserve of token0 owned by the Pair contract',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   reserve0: string;
 
   @ApiProperty({
     description: 'Whole reserve of token1 owned by the Pair contract',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   reserve1: string;
 
   @ApiProperty({
     description: 'Change in reserve0',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   deltaReserve0: string;
 
   @ApiProperty({
     description: 'Change in reserve1',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
   })
   deltaReserve1: string;
 
   @ApiProperty({
     description: 'Exchange rate of token0 to AE',
-    pattern: bigNumberPattern,
+    pattern: aeValuePattern,
+    example: aeValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   token0AePrice: string | null;
 
   @ApiProperty({
     description: 'Exchange rate of token1 to AE',
-    pattern: bigNumberPattern,
+    pattern: aeValuePattern,
+    example: aeValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   token1AePrice: string | null;
 
   @ApiProperty({
     description: 'Price of AE in USD',
+    pattern: usdValuePattern,
+    example: usdValueExample,
   })
   aeUsdPrice: string;
 
   @ApiProperty({
     description: 'Block height of the history entry',
+    example: heightExample,
   })
   height: number;
 
@@ -501,31 +547,41 @@ export class PairLiquidityInfoHistoryEntry {
 
   @ApiProperty({
     description: 'USD value of the reserve of token 0 of the pair',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   reserve0Usd: string | null;
 
   @ApiProperty({
     description: 'USD value of the reserve of token 1 of the pair',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   reserve1Usd: string | null;
 
   @ApiProperty({
     description: 'USD value of the transaction of token 0 of the pair',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   delta0UsdValue: string | null;
 
   @ApiProperty({
     description: 'USD value of the transaction of token 1 of the pair',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   delta1UsdValue: string | null;
 
   @ApiProperty({
     description: 'USD value of the pool fee',
-    pattern: bigNumberPattern,
+    pattern: usdValuePattern,
+    example: usdValueExample,
+    type: 'string', // needed if type is string | null for the example to render correctly
   })
   txUsdFee: string | null;
 }
