@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { bigNumberPattern, microBlockTimePattern } from '@/api/api.model';
+import {
+  bigNumberExample,
+  bigNumberPattern,
+  microBlockTimePattern,
+} from '@/api/api.model';
 
 export enum TimeFrame {
   '1H' = '1H',
@@ -41,6 +45,7 @@ export class Graph {
   @ApiProperty({
     description: 'Data / Y-Axis',
     pattern: bigNumberPattern,
+    example: bigNumberExample,
     type: [String],
   })
   data: string[];
