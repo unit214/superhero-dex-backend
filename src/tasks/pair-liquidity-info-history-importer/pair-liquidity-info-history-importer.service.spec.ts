@@ -142,7 +142,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
 
       expect(
         mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours,
-      ).toHaveBeenCalledTimes(5); // Once for pair and 4 times for each inserted event
+      ).toHaveBeenCalledTimes(8); // Once for pair and 7 times for each (relevant) event log
 
       expect(mockPairLiquidityInfoHistoryDb.upsert).toHaveBeenCalledTimes(5);
       expect(
@@ -235,7 +235,7 @@ describe('PairLiquidityInfoHistoryImporterService', () => {
 
       expect(
         mockPairLiquidityInfoHistoryErrorDb.getErrorWithinHours,
-      ).toHaveBeenCalledTimes(3); // Once for pair and 2 times for each event
+      ).toHaveBeenCalledTimes(5); // Once for pair and 4 times for each event log
 
       expect(
         mockPairLiquidityInfoHistoryDb.upsert.mock.calls,

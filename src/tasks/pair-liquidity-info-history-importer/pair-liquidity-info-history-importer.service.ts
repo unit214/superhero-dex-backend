@@ -155,6 +155,22 @@ export class PairLiquidityInfoHistoryImporterService {
         let numUpserted = 0;
         for (const current of logsAndEvents) {
           try {
+            // If an error occurred for this log recently, skip block
+            const error =
+              await this.pairLiquidityInfoHistoryErrorDb.getErrorWithinHours(
+                pairWithTokens.id,
+                current.log.block_hash,
+                current.log.call_tx_hash,
+                parseInt(current.log.log_idx),
+                this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
+              );
+            if (error) {
+              this.logger.log(
+                `Skipped log with block hash ${current.log.block_hash} tx hash ${current.log.call_tx_hash} and log index ${current.log.log_idx} due to recent error.`,
+              );
+              continue;
+            }
+
             const succeeding =
               logsAndEvents[logsAndEvents.indexOf(current) + 1];
 
@@ -230,22 +246,6 @@ export class PairLiquidityInfoHistoryImporterService {
               };
               // Else continue, as every non-Sync event is preceded by a Sync event and thus already inserted previously
             } else {
-              continue;
-            }
-
-            // If an error occurred for this log recently, skip block
-            const error =
-              await this.pairLiquidityInfoHistoryErrorDb.getErrorWithinHours(
-                pairWithTokens.id,
-                current.log.block_hash,
-                current.log.call_tx_hash,
-                parseInt(current.log.log_idx),
-                this.WITHIN_HOURS_TO_SKIP_IF_ERROR,
-              );
-            if (error) {
-              this.logger.log(
-                `Skipped log with block hash ${current.log.block_hash} tx hash ${current.log.call_tx_hash} and log index ${current.log.log_idx} due to recent error.`,
-              );
               continue;
             }
 
