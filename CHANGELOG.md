@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.5.0](https://www.github.com/unit214/superhero-dex-backend/compare/v1.4.0...v1.5.0) (2024-11-07)
+
+
+### Features
+
+* add caching to graph endpoint ([e9f06dc](https://www.github.com/unit214/superhero-dex-backend/commit/e9f06dc33f0a906a5a283b2c857a8041a4c26c93))
+* add pool graphs to graph endpoint ([412d462](https://www.github.com/unit214/superhero-dex-backend/commit/412d4620391726c92e96a612d4193969317a8be5))
+* add token graphs to graph endpoint ([3a91246](https://www.github.com/unit214/superhero-dex-backend/commit/3a91246cb76ea212307774ee94e48d378ac8bcb0))
+* add validation of query params to graph endpoint ([4d4ec69](https://www.github.com/unit214/superhero-dex-backend/commit/4d4ec697a049404eaf12b265cf1f7055db51a180))
+* adds caching to costly endpoints ([6d21829](https://www.github.com/unit214/superhero-dex-backend/commit/6d21829c98f37e54045b5a9e0c7b9138434b0336))
+* adjust graph route response ([b09c8e2](https://www.github.com/unit214/superhero-dex-backend/commit/b09c8e29d45a2fdb11a55a9d07bd1ba5c8ab0733))
+* change get token route to token/:address and include price data ([39ba837](https://www.github.com/unit214/superhero-dex-backend/commit/39ba83798285b34a48b2d23816f16655f4d1d6c0))
+* create graph endpoint and add overview graphs ([6d7dd12](https://www.github.com/unit214/superhero-dex-backend/commit/6d7dd12059a88461d188e929623191c6af7ac726))
+* improve naming of available graph types ([6470015](https://www.github.com/unit214/superhero-dex-backend/commit/6470015b7023bd787685d7030e460b584d993a60))
+
+
+### Bug Fixes
+
+* add volumeUsdMonth to token getAllWithAggregation query ([f49a43d](https://www.github.com/unit214/superhero-dex-backend/commit/f49a43daa0d88dec70ad76d59a9ac7f53daaab4f))
+
+
+### Miscellaneous
+
+* adds testnet tokens to listing script ([cd2d80f](https://www.github.com/unit214/superhero-dex-backend/commit/cd2d80f52a8db2d1aebb0b068ea797cf308093cf))
+
+
+### Testing
+
+* adjust e2e tests to newest changes ([57088d2](https://www.github.com/unit214/superhero-dex-backend/commit/57088d2349a03a18b8c16787880ffb107aee89cb))
+* fix execution of e2e tests ([5901d67](https://www.github.com/unit214/superhero-dex-backend/commit/5901d674f215e68dfa5269296617a9b2793242f6))
+* fix unit tests ([bc615a8](https://www.github.com/unit214/superhero-dex-backend/commit/bc615a811e9bc51baef8f5bc0020628fe3a7ee65))
+* force exit jest in e2e tests ([620e54d](https://www.github.com/unit214/superhero-dex-backend/commit/620e54d4fc016792cfb59cf4c7095d507ed8bc68))
+* implement graph.controller.spec.ts ([acdd9cf](https://www.github.com/unit214/superhero-dex-backend/commit/acdd9cf2dd463a4eeac5fd7b1e07f505d21c3a1a))
+* unskip test in pair-liquidity-info-history.controller.spec.ts ([a31e949](https://www.github.com/unit214/superhero-dex-backend/commit/a31e949fe883e154b36e2948f5a20807832d3591))
+
+
+### Refactorings
+
+* change get token pairs route to token/:address/pair ([c7f48c7](https://www.github.com/unit214/superhero-dex-backend/commit/c7f48c7b4628d40f769197bafd68741dc6d2642e))
+* improve api structure of pairs endpoints ([c2748ab](https://www.github.com/unit214/superhero-dex-backend/commit/c2748abe960261b040985d6ebe768f6358fea2a6))
+* make limit and offset optional in history db ([01b290a](https://www.github.com/unit214/superhero-dex-backend/commit/01b290a6568ebb1e5f1daee21a11bb4b8be15462))
+
 ## [1.4.0](https://www.github.com/aeternity/dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
 
 
