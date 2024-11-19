@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.1](https://www.github.com/unit214/superhero-dex-backend/compare/v1.6.0...v1.6.1) (2024-11-19)
+
+
+### Bug Fixes
+
+* build now only includes src ([c3c4a3d](https://www.github.com/unit214/superhero-dex-backend/commit/c3c4a3db62cb1982810cdea23e8d032ad07ba872))
+
 ## [1.6.0](https://www.github.com/aeternity/dex-backend/compare/v1.5.0...v1.6.0) (2024-11-19)
 
 
