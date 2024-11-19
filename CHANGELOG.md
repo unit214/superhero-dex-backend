@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://www.github.com/aeternity/dex-backend/compare/v1.4.0...v1.5.0) (2024-07-29)
+
+
+### Features
+
+* adds caching to costly endpoints ([1a2d975](https://www.github.com/aeternity/dex-backend/commit/1a2d975fd0ce4670188b786e58e97cb639307302))
+
+
+### Miscellaneous
+
+* adds testnet tokens to listing script ([fcb5fb4](https://www.github.com/aeternity/dex-backend/commit/fcb5fb42c220cfd055b79941090c9c8ea5ca1fa4))
+
 ## [1.4.0](https://www.github.com/aeternity/dex-backend/compare/v1.3.1...v1.4.0) (2024-06-26)
 
 
