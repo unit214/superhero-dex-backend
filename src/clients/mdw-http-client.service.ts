@@ -8,6 +8,9 @@ import {
   ContractLog,
   MdwMicroBlock,
   MdwPaginatedResponse,
+  PayingForTx,
+  PayingForTxType,
+  Transaction,
   TransactionWithContext,
 } from '@/clients/mdw-http-client.model';
 import {
@@ -91,7 +94,10 @@ export class MdwHttpClientService {
   async getSenderAccountForTransaction(txHash: TxHash): Promise<string> {
     if (!this.transactionSenderMapping.has(txHash)) {
       const tx = await this.getTransaction(txHash);
-      this.transactionSenderMapping.set(txHash, tx.tx.caller_id);
+      this.transactionSenderMapping.set(
+        txHash,
+        this.getSenderFromTransaction(tx),
+      );
     }
     return this.transactionSenderMapping.get(txHash)!;
   }
@@ -105,7 +111,10 @@ export class MdwHttpClientService {
       `/v3/transactions?contract_id=${process.env.ROUTER_ADDRESS}&${this.defaultParams}`,
     );
     transactions.forEach((tx) => {
-      this.transactionSenderMapping.set(tx.hash, tx.tx.caller_id);
+      this.transactionSenderMapping.set(
+        tx.hash,
+        this.getSenderFromTransaction(tx),
+      );
     });
   }
 
@@ -139,5 +148,15 @@ export class MdwHttpClientService {
     }
 
     return result.data;
+  }
+
+  private getSenderFromTransaction(
+    transactionWithContext: TransactionWithContext,
+  ): string {
+    if (transactionWithContext.tx.type === PayingForTxType.PayingForTx) {
+      return (transactionWithContext.tx as PayingForTx).tx.tx.caller_id;
+    } else {
+      return (transactionWithContext.tx as Transaction).caller_id;
+    }
   }
 }

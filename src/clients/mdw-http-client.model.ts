@@ -81,8 +81,19 @@ export type TransactionWithContext = {
   micro_index: string;
   micro_time: string;
   signatures: string[];
-  tx: Transaction;
+  tx: Transaction | PayingForTx;
 };
+
+export type PayingForTx = {
+  type: PayingForTxType;
+  tx: {
+    tx: Transaction;
+  };
+};
+
+export enum PayingForTxType {
+  PayingForTx = 'PayingForTx',
+}
 
 export type Transaction = {
   abi_version: string;
