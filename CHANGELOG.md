@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.6.0](https://www.github.com/aeternity/dex-backend/compare/v1.5.0...v1.6.0) (2024-11-19)
+
+
+### Features
+
+* add caching to graph endpoint ([32519a9](https://www.github.com/aeternity/dex-backend/commit/32519a954e50765151a8e0e5708688d3c8f65ef5))
+* add pool graphs to graph endpoint ([67b679c](https://www.github.com/aeternity/dex-backend/commit/67b679cbeaf880db431193bda3836eb7a7f4d878))
+* add token graphs to graph endpoint ([8813407](https://www.github.com/aeternity/dex-backend/commit/88134079acbe8877bd0ad5215b64718cfaf99c60))
+* add validation of query params to graph endpoint ([9fb632d](https://www.github.com/aeternity/dex-backend/commit/9fb632d603e41ab6c1ed0613e1f7b9591aacc251))
+* adjust graph route response ([c97b19b](https://www.github.com/aeternity/dex-backend/commit/c97b19b5c65c507bd9fba074c832386575d1fc61))
+* change get token route to token/:address and include price data ([3b6df5a](https://www.github.com/aeternity/dex-backend/commit/3b6df5a75610fb1dd7a9aa7078931d9158cecfb4))
+* create graph endpoint and add overview graphs ([276a5f7](https://www.github.com/aeternity/dex-backend/commit/276a5f71694869a27ff1a6c5d57280bfdf263ddb))
+* improve naming of available graph types ([dfde438](https://www.github.com/aeternity/dex-backend/commit/dfde438de9b24902c56d3814a2db82637b4c87ff))
+
+
+### Bug Fixes
+
+* add volumeUsdMonth to token getAllWithAggregation query ([07fa9dc](https://www.github.com/aeternity/dex-backend/commit/07fa9dc4dbdfcb85d8c53e6893cbc20fbe6d9d4e))
+* correctly extract sender account from paying for transactions ([ff1cf07](https://www.github.com/aeternity/dex-backend/commit/ff1cf0782d3646e3ad16d8ae2d0e882b6c057e49))
+
+
+### CI / CD
+
+* change pr closed triggers ([64303fc](https://www.github.com/aeternity/dex-backend/commit/64303fc676cd33db9e80152c0bbc5824c890c663))
+* update gh actions versions ([442e260](https://www.github.com/aeternity/dex-backend/commit/442e2603c734ce3db5140fb06b5cc09862d55ab9))
+
+
+### Testing
+
+* adjust e2e tests to newest changes ([7ff3cb8](https://www.github.com/aeternity/dex-backend/commit/7ff3cb8c0daf55d76c6694a13c271a211ccd3832))
+* fix execution of e2e tests ([b8a7df3](https://www.github.com/aeternity/dex-backend/commit/b8a7df3786ef9a2e16038f4bcc7dbb259c99a731))
+* fix unit tests ([8b7d0a3](https://www.github.com/aeternity/dex-backend/commit/8b7d0a30d1a7343265ddf6b530bd906a7c7808d3))
+* force exit jest in e2e tests ([699e58e](https://www.github.com/aeternity/dex-backend/commit/699e58e1fd799e0ad65c486c098a9e158f6820ba))
+* implement graph.controller.spec.ts ([231e3f1](https://www.github.com/aeternity/dex-backend/commit/231e3f1291282a449ecf39dc3ba86d6640285512))
+* unskip test in pair-liquidity-info-history.controller.spec.ts ([8da59cb](https://www.github.com/aeternity/dex-backend/commit/8da59cbe49d24011a1b677f40a1ea4a76ace6f03))
+
+
+### Refactorings
+
+* change get token pairs route to token/:address/pair ([993e4d9](https://www.github.com/aeternity/dex-backend/commit/993e4d90439e03336db42fd3fc671029f64af759))
+* improve api structure of pairs endpoints ([d4a0b88](https://www.github.com/aeternity/dex-backend/commit/d4a0b88e3292c45e4d9d17629319c4406a0bcc87))
+* make limit and offset optional in history db ([082b4c5](https://www.github.com/aeternity/dex-backend/commit/082b4c544b4ca82472ccc9fb63a11cf89e73aaaa))
+
 ## [1.5.0](https://www.github.com/aeternity/dex-backend/compare/v1.4.0...v1.5.0) (2024-07-29)
 
 
